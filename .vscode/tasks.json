@@ -1,0 +1,33 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "build ok3506 demo",
+      "type": "shell",
+      "command": "sh",
+      "args": ["scripts/build.sh"],
+      "group": "build",
+      "problemMatcher": []
+    },
+    {
+      "label": "deploy ok3506 and run gdbserver",
+      "type": "shell",
+      "command": "sh",
+      "args": ["scripts/deploy_and_run_gdbserver.sh"],
+      "isBackground": true,
+      "problemMatcher": {
+        "owner": "cpp",
+        "pattern": [
+          {
+            "regexp": ".*"
+          }
+        ],
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": "Copying .* to .*",
+          "endsPattern": "Listening on port 1234"
+        }
+      }
+    }
+  ]
+}

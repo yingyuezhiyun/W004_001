@@ -1,0 +1,97 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "OK3506 Build Only",
+      "type": "cppdbg",
+      "request": "launch",
+      "program": "/bin/true",
+      "cwd": "${workspaceFolder}",
+      "MIMode": "gdb",
+      "miDebuggerPath": "/usr/bin/gdb",
+      "preLaunchTask": "build ok3506 demo",
+      "noDebug": true,
+      "internalConsoleOptions": "neverOpen"
+    },
+    {
+      "name": "OK3506 Remote GDB (192.168.0.232:1234)",
+      "type": "cppdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/build/ok3506_demo",
+      "cwd": "${workspaceFolder}",
+      "MIMode": "gdb",
+      "miDebuggerPath": "gdb-multiarch",
+      "miDebuggerServerAddress": "192.168.0.232:1234",
+      "stopAtEntry": true,
+      "externalConsole": false,
+      "setupCommands": [
+        {
+          "description": "Enable pretty-printing for gdb",
+          "text": "-enable-pretty-printing",
+          "ignoreFailures": true
+        },
+        {
+          "description": "Set ARM architecture",
+          "text": "-gdb-set architecture arm",
+          "ignoreFailures": true
+        }
+      ]
+    },
+    {
+      "name": "OK3506 Debug with Deploy",
+      "type": "cppdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/build/ok3506_demo",
+      "cwd": "${workspaceFolder}",
+      "MIMode": "gdb",
+      "miDebuggerPath": "gdb-multiarch",
+      "miDebuggerServerAddress": "192.168.0.232:1234",
+      "preLaunchTask": "deploy ok3506 and run gdbserver",
+      "stopAtEntry": true,
+      "externalConsole": false,
+      "setupCommands": [
+        {
+          "description": "Enable pretty-printing for gdb",
+          "text": "-enable-pretty-printing",
+          "ignoreFailures": true
+        },
+        {
+          "description": "Set ARM architecture",
+          "text": "-gdb-set architecture arm",
+          "ignoreFailures": true
+        }
+      ]
+    },
+    {
+      "name": "OK3506 Remote GDB (custom)",
+      "type": "cppdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/build/ok3506_demo",
+      "cwd": "${workspaceFolder}",
+      "MIMode": "gdb",
+      "miDebuggerPath": "gdb-multiarch",
+      "miDebuggerServerAddress": "${input:targetAddress}",
+      "stopAtEntry": true,
+      "externalConsole": false,
+      "setupCommands": [
+        {
+          "description": "Enable pretty-printing for gdb",
+          "text": "-enable-pretty-printing",
+          "ignoreFailures": true
+        },
+        {
+          "description": "Set ARM architecture",
+          "text": "-gdb-set architecture arm",
+          "ignoreFailures": true
+        }
+      ]
+    }
+  ],
+  "inputs": [
+    {
+      "id": "targetAddress",
+      "type": "promptString",
+      "description": "Target board gdbserver address, for example 192.168.1.10:1234"
+    }
+  ]
+}
