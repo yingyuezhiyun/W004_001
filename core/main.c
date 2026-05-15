@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <stdint.h>
+#include "src_thread.h"
 
 int main(int argc, char **argv)
 {
@@ -15,9 +17,12 @@ int main(int argc, char **argv)
     printf("pid: %d\n", getpid());
     printf("sleep: %d seconds\n", delay_seconds);
 
-    for (int i = 0; i < delay_seconds; ++i) {
-        printf("tick %d/%d\n", i + 1, delay_seconds);
-        sleep(1);
+    thread_init();
+
+   
+    while (1)
+    {
+        usleep(1000);
     }
 
     printf("done\n");

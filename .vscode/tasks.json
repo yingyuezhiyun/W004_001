@@ -2,6 +2,14 @@
   "version": "2.0.0",
   "tasks": [
     {
+      "label": "build and deploy ok3506",
+      "dependsOrder": "sequence",
+      "dependsOn": [
+        "build ok3506 demo",
+        "deploy ok3506 and run gdbserver"
+      ]
+    },
+    {
       "label": "build ok3506 demo",
       "type": "shell",
       "command": "/usr/bin/sh",

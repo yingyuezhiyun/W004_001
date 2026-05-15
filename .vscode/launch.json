@@ -46,7 +46,7 @@
       "MIMode": "gdb",
       "miDebuggerPath": "${config:ok3506.gdbMultiarch}",
       "miDebuggerServerAddress": "${config:ok3506.targetHost}:${config:ok3506.targetPort}",
-      "preLaunchTask": "deploy ok3506 and run gdbserver",
+      "preLaunchTask": "build and deploy ok3506",
       "stopAtEntry": true,
       "externalConsole": false,
       "setupCommands": [
