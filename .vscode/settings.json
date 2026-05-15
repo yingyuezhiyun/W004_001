@@ -1,0 +1,7 @@
+{
+  "ok3506.targetHost": "192.168.0.232",
+  "ok3506.targetUser": "root",
+  "ok3506.targetPort": "1234",
+  "ok3506.targetPath": "/root/ok3506_demo",
+  "ok3506.gdbMultiarch": "/usr/bin/gdb-multiarch"
+}

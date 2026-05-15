@@ -4,7 +4,7 @@
     {
       "label": "build ok3506 demo",
       "type": "shell",
-      "command": "sh",
+      "command": "/usr/bin/sh",
       "args": ["scripts/build.sh"],
       "group": "build",
       "problemMatcher": []
@@ -12,20 +12,31 @@
     {
       "label": "deploy ok3506 and run gdbserver",
       "type": "shell",
-      "command": "sh",
+      "command": "/usr/bin/sh",
       "args": ["scripts/deploy_and_run_gdbserver.sh"],
+      "options": {
+        "env": {
+          "TARGET_HOST": "${config:ok3506.targetHost}",
+          "TARGET_USER": "${config:ok3506.targetUser}",
+          "TARGET_PORT": "${config:ok3506.targetPort}",
+          "TARGET_PATH": "${config:ok3506.targetPath}"
+        }
+      },
       "isBackground": true,
       "problemMatcher": {
         "owner": "cpp",
-        "pattern": [
-          {
-            "regexp": ".*"
-          }
-        ],
+        "pattern": {
+          "regexp": "^(.*):(\\d+):(\\d+):\\s+(warning|error):\\s+(.*)$",
+          "file": 1,
+          "line": 2,
+          "column": 3,
+          "severity": 4,
+          "message": 5
+        },
         "background": {
           "activeOnStart": true,
           "beginsPattern": "Copying .* to .*",
-          "endsPattern": "Listening on port 1234"
+          "endsPattern": "Listening on port [0-9]+"
         }
       }
     }
