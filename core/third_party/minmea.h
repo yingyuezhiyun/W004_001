@@ -31,15 +31,21 @@ extern "C"
     {
         MINMEA_INVALID = -1,
         MINMEA_UNKNOWN = 0,
-        MINMEA_SENTENCE_GBS,
-        MINMEA_SENTENCE_GGA,
-        MINMEA_SENTENCE_GLL,
-        MINMEA_SENTENCE_GSA,
-        MINMEA_SENTENCE_GST,
-        MINMEA_SENTENCE_GSV,
-        MINMEA_SENTENCE_RMC,
-        MINMEA_SENTENCE_VTG,
-        MINMEA_SENTENCE_ZDA,
+        MINMEA_SENTENCE_GBS, // GNSS卫星故障信息
+        MINMEA_SENTENCE_GGA, // 位置信息
+        MINMEA_SENTENCE_GLL, // 大地坐标位置信息
+        MINMEA_SENTENCE_GSA, // 参与定位卫星及DOP值等信息
+        MINMEA_SENTENCE_GST, // 伪距误差统计信息
+        MINMEA_SENTENCE_GSV, // 可视卫星状态
+        MINMEA_SENTENCE_RMC, // 最简导航传输信息
+        MINMEA_SENTENCE_VTG, // 地面速度信息
+        MINMEA_SENTENCE_ZDA, // UTC时间信息
+        MINMEA_SENTENCE_HDT, // todo 航向角，以真北为参考
+        MINMEA_SENTENCE_NTR, // todo 输出移动站与基准站的距离
+        MINMEA_SENTENCE_ORI, // todo 定向数据
+        MINMEA_SENTENCE_ROT, // todo 转向速率信息
+        MINMEA_SENTENCE_TRA, // todo 航向角信息
+        MINMEA_SENTENCE_DTM, // todo 参考坐标系信息
     };
 
     struct minmea_float
@@ -70,26 +76,26 @@ extern "C"
         char buf[6]; // 完整句型标识，如 GPRMC
         struct
         {
-            char talker_id[2];   // 说话者标识，如 GP/GN
-            char sentence_id[3]; // 句型标识，如 RMC/GGA
+            char talker_id[2];    // 说话者标识，如 GP/GN
+            char sentence_id[3];  // 句型标识，如 RMC/GGA
             char null_terminator; // 字符串结束符
         };
     };
 
-    struct minmea_sentence_gbs
+    struct minmea_sentence_gbs // GNSS卫星故障信息
     {
-        union minmea_type type;          // 句型类型
-        struct minmea_time time;         // 时间
+        union minmea_type type;            // 句型类型
+        struct minmea_time time;           // 时间
         struct minmea_float err_latitude;  // 纬度误差
         struct minmea_float err_longitude; // 经度误差
         struct minmea_float err_altitude;  // 高程误差
-        int svid;                        // 卫星编号
-        struct minmea_float prob;        // 置信概率
-        struct minmea_float bias;        // 偏差
-        struct minmea_float stddev;      // 标准差
+        int svid;                          // 卫星编号
+        struct minmea_float prob;          // 置信概率
+        struct minmea_float bias;          // 偏差
+        struct minmea_float stddev;        // 标准差
     };
 
-    struct minmea_sentence_rmc
+    struct minmea_sentence_rmc // 最简导航传输信息
     {
         union minmea_type type;        // 句型类型
         struct minmea_time time;       // UTC 时间
@@ -102,20 +108,20 @@ extern "C"
         struct minmea_float variation; // 磁偏角
     };
 
-    struct minmea_sentence_gga
+    struct minmea_sentence_gga // 位置信息
     {
-        union minmea_type type;      // 句型类型
-        struct minmea_time time;     // UTC 时间
+        union minmea_type type;        // 句型类型
+        struct minmea_time time;       // UTC 时间
         struct minmea_float latitude;  // 纬度
         struct minmea_float longitude; // 经度
-        int fix_quality;             // 定位质量
-        int satellites_tracked;      // 跟踪卫星数
-        struct minmea_float hdop;    // 水平精度因子
-        struct minmea_float altitude; // 海拔高度
-        char altitude_units;         // 高度单位
-        struct minmea_float height;   // 椭球高
-        char height_units;           // 椭球高度单位
-        struct minmea_float dgps_age; // 差分数据龄期
+        int fix_quality;               // 定位质量
+        int satellites_tracked;        // 跟踪卫星数
+        struct minmea_float hdop;      // 水平精度因子
+        struct minmea_float altitude;  // 海拔高度
+        char altitude_units;           // 高度单位
+        struct minmea_float height;    // 椭球高
+        char height_units;             // 椭球高度单位
+        struct minmea_float dgps_age;  // 差分数据龄期
     };
 
     enum minmea_gll_status
@@ -125,7 +131,7 @@ extern "C"
     };
 
     // FAA mode added to some fields in NMEA 2.3.
-    enum minmea_faa_mode
+    enum minmea_faa_mode // 定位模式
     {
         MINMEA_FAA_MODE_AUTONOMOUS = 'A',
         MINMEA_FAA_MODE_DIFFERENTIAL = 'D',
@@ -136,27 +142,27 @@ extern "C"
         MINMEA_FAA_MODE_PRECISE = 'P',
     };
 
-    struct minmea_sentence_gll
+    struct minmea_sentence_gll // 大地坐标位置信息
     {
-        union minmea_type type;      // 句型类型
+        union minmea_type type;        // 句型类型
         struct minmea_float latitude;  // 纬度
         struct minmea_float longitude; // 经度
-        struct minmea_time time;     // UTC 时间
-        char status;                 // 状态 A/V
-        char mode;                   // 定位模式
+        struct minmea_time time;       // UTC 时间
+        char status;                   // 状态 A/V
+        char mode;                     // 定位模式
     };
 
-    struct minmea_sentence_gst
+    struct minmea_sentence_gst // 伪距误差统计信息
     {
-        union minmea_type type;              // 句型类型
-        struct minmea_time time;             // UTC 时间
-        struct minmea_float rms_deviation;   // 均方根偏差
-        struct minmea_float semi_major_deviation; // 长半轴偏差
-        struct minmea_float semi_minor_deviation; // 短半轴偏差
-        struct minmea_float semi_major_orientation; // 长半轴方向角
+        union minmea_type type;                        // 句型类型
+        struct minmea_time time;                       // UTC 时间
+        struct minmea_float rms_deviation;             // 均方根偏差
+        struct minmea_float semi_major_deviation;      // 长半轴偏差
+        struct minmea_float semi_minor_deviation;      // 短半轴偏差
+        struct minmea_float semi_major_orientation;    // 长半轴方向角
         struct minmea_float latitude_error_deviation;  // 纬度误差偏差
         struct minmea_float longitude_error_deviation; // 经度误差偏差
-        struct minmea_float altitude_error_deviation;   // 高度误差偏差
+        struct minmea_float altitude_error_deviation;  // 高度误差偏差
     };
 
     enum minmea_gsa_mode
@@ -172,18 +178,18 @@ extern "C"
         MINMEA_GPGSA_FIX_3D = 3,
     };
 
-    struct minmea_sentence_gsa
+    struct minmea_sentence_gsa // 参与定位卫星及DOP值等信息
     {
-        union minmea_type type; // 句型类型
-        char mode;              // 模式 A/M
-        int fix_type;           // 定位类型 1/2/3
-        int sats[12];           // 参与定位的卫星号
+        union minmea_type type;   // 句型类型
+        char mode;                // 模式 A/M
+        int fix_type;             // 定位类型 1/2/3
+        int sats[12];             // 参与定位的卫星号
         struct minmea_float pdop; // 位置精度因子
         struct minmea_float hdop; // 水平精度因子
         struct minmea_float vdop; // 垂直精度因子
     };
 
-    struct minmea_sat_info
+    struct minmea_sat_info // 卫星信息
     {
         int nr;                  // 卫星号
         int elevation;           // 仰角
@@ -191,30 +197,30 @@ extern "C"
         struct minmea_float snr; // 信噪比
     };
 
-    struct minmea_sentence_gsv
+    struct minmea_sentence_gsv // 可视卫星状态
     {
-        union minmea_type type;     // 句型类型
-        int total_msgs;             // 总消息数
-        int msg_nr;                 // 当前消息序号
-        int total_sats;             // 可见卫星总数
+        union minmea_type type;         // 句型类型
+        int total_msgs;                 // 总消息数
+        int msg_nr;                     // 当前消息序号
+        int total_sats;                 // 可见卫星总数
         struct minmea_sat_info sats[4]; // 当前消息中的卫星信息
     };
 
-    struct minmea_sentence_vtg
+    struct minmea_sentence_vtg // 地面速度信息
     {
-        union minmea_type type;              // 句型类型
+        union minmea_type type;                     // 句型类型
         struct minmea_float true_track_degrees;     // 真航向角
         struct minmea_float magnetic_track_degrees; // 磁航向角
-        struct minmea_float speed_knots;             // 速度，单位节
-        struct minmea_float speed_kph;               // 速度，单位千米每小时
-        enum minmea_faa_mode faa_mode;               // FAA 模式
+        struct minmea_float speed_knots;            // 速度，单位节
+        struct minmea_float speed_kph;              // 速度，单位千米每小时
+        enum minmea_faa_mode faa_mode;              // FAA 模式
     };
 
-    struct minmea_sentence_zda
+    struct minmea_sentence_zda // UTC时间信息
     {
         union minmea_type type;  // 句型类型
         struct minmea_time time; // UTC 时间
-        struct minmea_date date;  // 日期
+        struct minmea_date date; // 日期
         int hour_offset;         // 时区偏移小时
         int minute_offset;       // 时区偏移分钟
     };

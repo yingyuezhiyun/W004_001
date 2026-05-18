@@ -428,6 +428,12 @@ struct sentence_id_map_entry sentence_id_map[] = {
     {"RMC", MINMEA_SENTENCE_RMC},
     {"VTG", MINMEA_SENTENCE_VTG},
     {"ZDA", MINMEA_SENTENCE_ZDA},
+    {"HDT", MINMEA_SENTENCE_HDT},
+    {"NTR", MINMEA_SENTENCE_NTR},
+    {"ORI", MINMEA_SENTENCE_ORI},
+    {"ROT", MINMEA_SENTENCE_ROT},
+    {"TRA", MINMEA_SENTENCE_TRA},
+    {"DTM", MINMEA_SENTENCE_DTM},
 };
 
 const char *minmea_sentence(enum minmea_sentence_id id)

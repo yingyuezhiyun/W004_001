@@ -5,7 +5,10 @@ extern "C"
 #endif
 
     int thread_init();
-    void *gnss_thread_func(void *arg);  
+    void *gnss_thread_func(void *arg);
+    void *lora_thread_func(void *arg);
+    void *eth_4g_thread_func(void *arg);
+    void *dbb_thread_func(void *arg);
 
 #ifdef __cplusplus
 }
