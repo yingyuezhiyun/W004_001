@@ -17,6 +17,7 @@ add_executable(ok3506_demo
 target_include_directories(ok3506_demo PRIVATE
     "${CMAKE_CURRENT_SOURCE_DIR}/core"
     "${CMAKE_CURRENT_SOURCE_DIR}/core/inc"
+    "${CMAKE_CURRENT_SOURCE_DIR}/core/third_party"
 )
 
 target_link_libraries(ok3506_demo PRIVATE m pthread)
