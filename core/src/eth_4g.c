@@ -8,11 +8,15 @@
 #include <sys/select.h>
 #include <termios.h>
 #include <unistd.h>
+#include <stdarg.h>
 
 #include "stdint.h"
 #include "glob_cfg.h"
 #include "src_io.h"
 #include "src_tty.h"
+
+#define ETH_4G_DEBUG_INFO (0)
+#define ETH_4G_DEBUG_ERR (1)
 
 #define ETH_4G_DEFAULT_APN "internet"
 #define ETH_4G_DEFAULT_NET_IF "usb0"
@@ -60,6 +64,30 @@ eth_4g_ctrl_t eth_4g_ctrl = {
     .net_if = ETH_4G_DEFAULT_NET_IF,
     .ping_host = ETH_4G_DEFAULT_PING_HOST,
     .device = DEV_4G};
+
+void debug_err_4g(char *fmt, ...)
+{
+#if ETH_4G_DEBUG_ERR
+    va_list args;
+    va_start(args, fmt);
+    fprintf(stderr, "[4G][ERROR] ");
+    vfprintf(stderr, fmt, args);
+    fprintf(stderr, "\n");
+    va_end(args);
+#endif
+}
+
+void debug_info_4g(char *fmt, ...)
+{
+#if ETH_4G_DEBUG_INFO
+    va_list args;
+    va_start(args, fmt);
+    fprintf(stdout, "[4G][INFO] ");
+    vfprintf(stdout, fmt, args);
+    fprintf(stdout, "\n");
+    va_end(args);
+#endif
+}
 
 /// @brief Load environment variables for 4G configuration
 /// @param
@@ -245,12 +273,7 @@ static void eth_4g_dump_response(const char *response)
     {
         return;
     }
-
-    printf("%s", response);
-    if (response[strlen(response) - 1] != '\n')
-    {
-        printf("\n");
-    }
+    debug_info_4g("%s", response);
 }
 
 /// @brief Expect a specific response to an AT command
@@ -261,11 +284,11 @@ static void eth_4g_dump_response(const char *response)
 static int eth_4g_at_expect(const char *name, const char *cmd, const char *expect)
 {
     char response[ETH_4G_MAX_RESPONSE];
-    printf("[4G] %s\n", name);
+    debug_info_4g("[4G] %s", name);
 
     if (eth_4g_capture_at_response(cmd, response, sizeof(response), 2000) < 0)
     {
-        fprintf(stderr, "[4G] %s failed: no AT response\n", name);
+        debug_err_4g("%s failed: no AT response", name);
         return -1;
     }
 
@@ -273,13 +296,13 @@ static int eth_4g_at_expect(const char *name, const char *cmd, const char *expec
 
     if (strstr(response, "OK") == NULL)
     {
-        fprintf(stderr, "[4G] %s failed: missing OK\n", name);
+        debug_err_4g("%s failed: missing OK", name);
         return -1;
     }
 
     if (expect != NULL && strstr(response, expect) == NULL)
     {
-        fprintf(stderr, "[4G] %s failed: expected '%s'\n", name, expect);
+        debug_err_4g("%s failed: expected '%s'", name, expect);
         return -1;
     }
 
@@ -294,14 +317,14 @@ static int eth_4g_sim_ready(void)
     char response[ETH_4G_MAX_RESPONSE];
     if (eth_4g_capture_at_response("AT+CPIN?", response, sizeof(response), 2000) < 0)
     {
-        fprintf(stderr, "[4G] CPIN query failed\n");
+        debug_err_4g("CPIN query failed");
         return -1;
     }
 
     eth_4g_dump_response(response);
     if (strstr(response, "+CPIN: READY") == NULL)
     {
-        fprintf(stderr, "[4G] SIM is not ready\n");
+        debug_err_4g("SIM is not ready");
         return -1;
     }
 
@@ -316,14 +339,14 @@ static int eth_4g_signal_quality(void)
     char response[ETH_4G_MAX_RESPONSE];
     if (eth_4g_capture_at_response("AT+CSQ", response, sizeof(response), 2000) < 0)
     {
-        fprintf(stderr, "[4G] CSQ query failed\n");
+        debug_err_4g("CSQ query failed");
         return -1;
     }
 
     eth_4g_dump_response(response);
     if (strstr(response, "+CSQ: 99,") != NULL)
     {
-        fprintf(stderr, "[4G] signal quality is unknown or unavailable\n");
+        debug_err_4g("signal quality is unknown or unavailable");
     }
 
     return strstr(response, "OK") != NULL ? 0 : -1;
@@ -337,7 +360,7 @@ static int eth_4g_registration_ok(void)
     char response[ETH_4G_MAX_RESPONSE];
     if (eth_4g_capture_at_response("AT+CEREG?", response, sizeof(response), 2000) < 0)
     {
-        fprintf(stderr, "[4G] CEREG query failed\n");
+        debug_err_4g("CEREG query failed");
         return -1;
     }
 
@@ -351,7 +374,7 @@ static int eth_4g_registration_ok(void)
         return 0;
     }
 
-    fprintf(stderr, "[4G] module is not registered on the network\n");
+    debug_err_4g("module is not registered on the network");
     return -1;
 }
 
@@ -363,14 +386,14 @@ static int eth_4g_packet_attached(void)
     char response[ETH_4G_MAX_RESPONSE];
     if (eth_4g_capture_at_response("AT+CGATT?", response, sizeof(response), 2000) < 0)
     {
-        fprintf(stderr, "[4G] CGATT query failed\n");
+        debug_err_4g("CGATT query failed");
         return -1;
     }
 
     eth_4g_dump_response(response);
     if (strstr(response, "+CGATT: 1") == NULL)
     {
-        fprintf(stderr, "[4G] packet service is not attached\n");
+        debug_err_4g("packet service is not attached");
         return -1;
     }
 
@@ -386,7 +409,7 @@ static int eth_4g_set_apn(void)
     int written = snprintf(command, sizeof(command), "AT+CGDCONT=1,\"IP\",\"%s\"", eth_4g_ctrl.apn);
     if (written < 0 || (size_t)written >= sizeof(command))
     {
-        fprintf(stderr, "[4G] APN is too long\n");
+        debug_err_4g("APN is too long");
         return -1;
     }
 
@@ -466,7 +489,7 @@ static int eth_4g_start_dhcp(void)
         return system(command) == 0 ? 0 : -1;
     }
 
-    fprintf(stderr, "[4G] no DHCP client found\n");
+    debug_err_4g("no DHCP client found");
     return -1;
 }
 
@@ -529,7 +552,7 @@ static int eth_4g_test_internet(void)
         return 0;
     }
 
-    fprintf(stderr, "[4G] connectivity test failed\n");
+    debug_err_4g("connectivity test failed");
     return -1;
 }
 
@@ -550,142 +573,6 @@ static void eth_4g_show_status(void)
     {
         system(command);
     }
-}
-
-/// @brief Prepare the 4G interface for online use
-/// @param
-/// @return 0 on success, -1 on failure
-static int eth_4g_prepare_online(void)
-{
-    if (eth_4g_open_device() < 0)
-    {
-        return -1;
-    }
-
-    if (eth_4g_at_expect("AT", "AT", "OK") < 0)
-    {
-        return -1;
-    }
-
-    if (eth_4g_at_expect("echo off", "ATE0", "OK") < 0) // 关闭回显
-    {
-        return -1;
-    }
-
-    if (eth_4g_sim_ready() < 0)
-    {
-        return -1;
-    }
-
-    if (eth_4g_signal_quality() < 0)
-    {
-        return -1;
-    }
-
-    if (eth_4g_at_expect("full functionality", "AT+CFUN=1", "OK") < 0)
-    {
-        return -1;
-    }
-
-    if (eth_4g_at_expect("confirm functionality", "AT+CFUN?", "+CFUN: 1") < 0)
-    {
-        return -1;
-    }
-
-    if (eth_4g_registration_ok() < 0)
-    {
-        return -1;
-    }
-
-    if (eth_4g_set_apn() < 0)
-    {
-        return -1;
-    }
-
-    if (eth_4g_at_expect("attach packet service", "AT+CGATT=1", "OK") < 0)
-    {
-        return -1;
-    }
-
-    if (eth_4g_packet_attached() < 0)
-    {
-        return -1;
-    }
-
-    if (eth_4g_bring_iface_up() < 0)
-    {
-        fprintf(stderr, "[4G] failed to bring interface up\n");
-        return -1;
-    }
-
-    if (eth_4g_wait_for_iface(10) < 0)
-    {
-        fprintf(stderr, "[4G] network interface %s not found\n", eth_4g_ctrl.net_if);
-        return -1;
-    }
-
-    if (eth_4g_start_dhcp() < 0)
-    {
-        fprintf(stderr, "[4G] DHCP failed\n");
-        return -1;
-    }
-
-    if (eth_4g_wait_for_ip(30) < 0)
-    {
-        fprintf(stderr, "[4G] no IPv4 address obtained on %s\n", eth_4g_ctrl.net_if);
-        return -1;
-    }
-
-    eth_4g_show_status();
-
-    if (eth_4g_test_internet() < 0)
-    {
-        return -1;
-    }
-
-    return 0;
-}
-
-/// @brief Attempt a soft recovery of the 4G module
-/// @param
-/// @return 0 on success, -1 on failure
-static int eth_4g_soft_recover(void)
-{
-    if (eth_4g_open_device() < 0)
-    {
-        return -1;
-    }
-
-    fprintf(stderr, "[4G] trying soft recovery\n");
-
-    if (eth_4g_at_expect("modem standby", "AT+CFUN=0", "OK") < 0)
-    {
-        return -1;
-    }
-
-    sleep(2);
-
-    return eth_4g_prepare_online();
-}
-
-/// @brief Attempt a hard recovery of the 4G module
-/// @param
-/// @return 0 on success, -1 on failure
-static int eth_4g_hard_recover(void)
-{
-    fprintf(stderr, "[4G] trying hard recovery\n");
-
-    io_set_output_level(DEV_4G_IO_RESET, 1);
-    sleep(1);
-    io_set_output_level(DEV_4G_IO_POWER, 0);
-    sleep(1);
-    io_set_output_level(DEV_4G_IO_POWER, 1);
-    sleep(1);
-    io_set_output_level(DEV_4G_IO_RESET, 0);
-    sleep(2);
-
-    eth_4g_close_device();
-    return eth_4g_prepare_online();
 }
 
 /// @brief Check if the 4G interface is in a healthy state
@@ -712,7 +599,6 @@ static int eth_4g_status_ok(void)
     // {
     //     return -1;
     // }
-
     // if (eth_4g_test_internet() < 0)
     // {
     //     return -1;
@@ -723,102 +609,80 @@ static int eth_4g_status_ok(void)
 
 int8_t eth_4g_power_on(void)
 {
-     if (io_set_output_level(DEV_4G_IO_RESET, 0) < 0)
-    {
-        perror("release 4G reset");
-        return -1;
-    }
-
-    if (io_set_output_level(DEV_4G_IO_POWER, 1) < 0)
-    {
-        perror("set 4G power high");
-        return -1;
-    }
-   
-    if (io_set_output_level(DEV_USB_IO_SW1, 1) < 0)
-    {
-        perror("set USB switch for 4G");
-        return -1;
-    }
-   
-   
-    sleep(2);
-    return 0;
-}
-
-/// @brief Enable the 4G interface
-/// @return 0 on success, -1 on failure
-int8_t eth_4g_enable()
-{
-    eth_4g_load_env();
-    eth_4g_ctrl.enabled = 1;
-
-    if (io_set_output_level(DEV_4G_IO_POWER, 1) < 0)
-    {
-        perror("set 4G power high");
-        return -1;
-    }
-
-    if (io_set_output_level(DEV_4G_IO_RESET, 1) < 0)
-    {
-        perror("assert 4G reset");
-        return -1;
-    }
-
-    sleep(1);
-
     if (io_set_output_level(DEV_4G_IO_RESET, 0) < 0)
     {
         perror("release 4G reset");
         return -1;
     }
-
-    sleep(2);
-
-    eth_4g_close_device();
-    if (eth_4g_prepare_online() < 0)
+    if (io_set_output_level(DEV_4G_IO_POWER, 1) < 0)
     {
-        fprintf(stderr, "[4G] initial online setup failed\n");
-        for (int attempt = 1; attempt < ETH_4G_STARTUP_RETRY_COUNT && !eth_4g_ctrl.enabled; ++attempt)
-        {
-            if (eth_4g_hard_recover() == 0)
-            {
-                return 0;
-            }
-            fprintf(stderr, "[4G] startup retry %d failed\n", attempt);
-        }
+        perror("set 4G power high");
         return -1;
     }
-
+    if (io_set_output_level(DEV_USB_IO_SW1, 1) < 0)
+    {
+        perror("set USB switch for 4G");
+        return -1;
+    }
+    sleep(2);
     return 0;
 }
 
 /// @brief Disable the 4G interface
 /// @return 0 on success, -1 on failure
-int8_t eth_4g_disable()
+int8_t eth_4g_power_off()
 {
-    eth_4g_ctrl.enabled = 0;
-
     eth_4g_close_device();
-
-    io_set_output_level(DEV_4G_IO_RESET, 0);
+    io_set_output_level(DEV_4G_IO_RESET, 1);
     io_set_output_level(DEV_4G_IO_POWER, 0);
-
+    io_set_output_level(DEV_USB_IO_SW1, 0);
     return 0;
 }
 
-void *eth_4g_online_thread_func(void *arg)
+/// @brief Attempt a soft recovery of the 4G module
+/// @param
+/// @return 0 on success, -1 on failure
+static int eth_4g_soft_recover(void)
 {
-    (void)arg;
-    if (eth_4g_ctrl.enabled == 0)
+    if (eth_4g_open_device() < 0)
+    {
+        return -1;
+    }
+    debug_info_4g("trying soft recovery");
+    if (eth_4g_at_expect("modem standby", "AT+CFUN=0", "OK") < 0)
+    {
+        return -1;
+    }
+    sleep(2);
+    eth_4g_ctrl.status = DEV_4G_AT_READY;
+    return 0;
+}
+
+/// @brief Attempt a hard recovery of the 4G module
+/// @param
+/// @return 0 on success, -1 on failure
+static int eth_4g_hard_recover(void)
+{
+    debug_info_4g("trying hard recovery");
+    if (eth_4g_power_off() < 0)
+    {
+        return -1;
+    }
+    sleep(2);
+    eth_4g_ctrl.status = DEV_4G_INIT;
+    return 0;
+}
+
+void eth_4g_online_func()
+{
+    if (eth_4g_ctrl.enabled == 0 && eth_4g_ctrl.status != DEV_4G_IDLE)
     {
         eth_4g_ctrl.status = DEV_4G_POWER_OFF;
     }
-    else if (eth_4g_ctrl.status == DEV_4G_IDLE)
+    else if (eth_4g_ctrl.enabled == 1 && eth_4g_ctrl.status == DEV_4G_IDLE)
     {
         eth_4g_ctrl.status = DEV_4G_INIT;
     }
-
     switch (eth_4g_ctrl.status)
     {
     case DEV_4G_IDLE:
@@ -833,7 +697,7 @@ void *eth_4g_online_thread_func(void *arg)
         }
         else
         {
-            fprintf(stderr, "[4G] power on failed\n");
+            debug_err_4g("power on failed");
         }
         break;
     case DEV_4G_POWER_ON:
@@ -841,21 +705,21 @@ void *eth_4g_online_thread_func(void *arg)
         if (eth_4g_at_expect("AT", "AT", "OK") >= 0 && eth_4g_at_expect("echo off", "ATE0", "OK") >= 0)
         {
             eth_4g_ctrl.status = DEV_4G_AT_READY;
-            printf("[4G] module is responsive\n");
+            debug_info_4g("module is responsive");
         }
         break;
     case DEV_4G_AT_READY:
         if (eth_4g_sim_ready() == 0)
         {
             eth_4g_ctrl.status = DEV_4G_SIM_READY;
-            printf("[4G] SIM is ready\n");
+            debug_info_4g("SIM is ready");
         }
         break;
     case DEV_4G_SIM_READY:
         if (eth_4g_signal_quality() == 0)
         {
             eth_4g_ctrl.status = DEV_4G_SIGNAL_OK;
-            printf("[4G] signal quality is OK\n");
+            debug_info_4g("signal quality is OK");
         }
         break;
     case DEV_4G_SIGNAL_OK:
@@ -863,21 +727,21 @@ void *eth_4g_online_thread_func(void *arg)
             eth_4g_at_expect("confirm functionality", "AT+CFUN?", "+CFUN: 1") >= 0)
         {
             eth_4g_ctrl.status = DEV_4G_CFUN_OK;
-                printf("[4G] module is in full functionality mode\n");
+            debug_info_4g("module is in full functionality mode");
         }
         break;
     case DEV_4G_CFUN_OK:
         if (eth_4g_registration_ok() == 0)
         {
             eth_4g_ctrl.status = DEV_4G_REGISTERED;
-            printf("[4G] module is registered on the network\n");
+            debug_info_4g("module is registered on the network");
         }
         break;
     case DEV_4G_REGISTERED:
         if (eth_4g_set_apn() == 0)
         {
             eth_4g_ctrl.status = DEV_4G_APN_OK;
-            printf("[4G] APN set to '%s'\n", eth_4g_ctrl.apn);
+            debug_info_4g("APN set to '%s'", eth_4g_ctrl.apn);
         }
         break;
     case DEV_4G_APN_OK:
@@ -885,28 +749,28 @@ void *eth_4g_online_thread_func(void *arg)
             eth_4g_packet_attached() == 0)
         {
             eth_4g_ctrl.status = DEV_4G_ATTACHED;
-            printf("[4G] packet service is attached\n");
+            debug_info_4g("packet service is attached");
         }
         break;
     case DEV_4G_ATTACHED:
         if (eth_4g_bring_iface_up() == 0)
         {
             eth_4g_ctrl.status = DEV_4G_IFACE_UP;
-            printf("[4G] network interface %s is up\n", eth_4g_ctrl.net_if);
+            debug_info_4g("network interface %s is up", eth_4g_ctrl.net_if);
         }
         break;
     case DEV_4G_IFACE_UP:
         if (eth_4g_wait_for_iface(10) == 0)
         {
             eth_4g_ctrl.status = DEV_4G_LINK_UP;
-            printf("[4G] network interface %s is ready\n", eth_4g_ctrl.net_if);
+            debug_info_4g("network interface %s is ready", eth_4g_ctrl.net_if);
         }
         break;
     case DEV_4G_LINK_UP:
         if (eth_4g_start_dhcp() >= 0)
         {
             eth_4g_ctrl.status = DEV_4G_DHCP_OK;
-            printf("[4G] DHCP started on %s\n", eth_4g_ctrl.net_if);
+            debug_info_4g("DHCP started on %s", eth_4g_ctrl.net_if);
         }
         break;
     case DEV_4G_DHCP_OK:
@@ -914,7 +778,7 @@ void *eth_4g_online_thread_func(void *arg)
         {
             eth_4g_show_status();
             eth_4g_ctrl.status = DEV_4G_ONLINE;
-            printf("[4G] module is online with IP address\n");
+            debug_info_4g("module is online with IP address");
         }
         break;
     case DEV_4G_IP_OK:
@@ -922,7 +786,7 @@ void *eth_4g_online_thread_func(void *arg)
         {
             eth_4g_show_status();
             eth_4g_ctrl.status = DEV_4G_ONLINE;
-            printf("[4G] module is online with IP address\n");
+            debug_info_4g("module is online with IP address");
         }
         break;
     case DEV_4G_ONLINE:
@@ -932,26 +796,18 @@ void *eth_4g_online_thread_func(void *arg)
         }
         if (eth_4g_status_ok() < 0)
         {
-            // fprintf(stderr, "[4G] status degraded, attempting recovery\n");
-            // if (eth_4g_soft_recover() < 0)
-            // {
-            //     fprintf(stderr, "[4G] soft recovery failed, trying hard recovery\n");
-            //     if (eth_4g_hard_recover() < 0)
-            //     {
-            //         fprintf(stderr, "[4G] hard recovery failed\n");
-            //     }
-            // }
+            debug_info_4g("status degraded, attempting recovery");
+            eth_4g_soft_recover();
         }
         break;
     case DEV_4G_POWER_OFF:
-        eth_4g_disable();
+        eth_4g_power_off();
         eth_4g_ctrl.status = DEV_4G_IDLE;
         break;
     default:
         break;
     }
-    usleep(1000);
-    return NULL;
+    usleep(1000);    
 }
 
 /// @brief Thread function for the 4G monitoring thread
@@ -961,34 +817,10 @@ void *eth_4g_thread_func(void *arg)
 {
     (void)arg;
     eth_4g_ctrl.enabled = 1;
-    // eth_4g_load_env();
-
-    // if (eth_4g_enable() < 0)
-    // {
-    //     fprintf(stderr, "[4G] module startup failed, entering recovery monitor\n");
-    // }
-
     while (1)
     {
-        // if (eth_4g_status_ok() < 0)
-        // {
-        //     fprintf(stderr, "[4G] status degraded, attempting recovery\n");
-        //     if (eth_4g_soft_recover() < 0)
-        //     {
-        //         fprintf(stderr, "[4G] soft recovery failed, trying hard recovery\n");
-        //         if (eth_4g_hard_recover() < 0)
-        //         {
-        //             fprintf(stderr, "[4G] hard recovery failed\n");
-        //         }
-        //     }
-        // }
-        // for (int i = 0; i < ETH_4G_MONITOR_INTERVAL_SEC && eth_4g_ctrl.enabled; ++i)
-        // {
-        //     sleep(1);
-        // }
-        eth_4g_online_thread_func(NULL);
+        eth_4g_online_func();
     }
-
-    eth_4g_disable();
+    eth_4g_power_off();
     return NULL;
 }
