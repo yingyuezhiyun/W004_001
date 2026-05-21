@@ -10,6 +10,11 @@ int main(int argc, char **argv)
     setvbuf(stdout, NULL, _IOLBF, 0);
 
     // cli_pre_init("config.conf", "/var/run/zebra_vty.pid", 2612);
+    for (size_t i = 0; i < argc; i++)
+    {
+        printf("arg[%zu]: %s\n", i, argv[i]);
+    }
+    
 
     printf("ok3506 demo started\n");
   

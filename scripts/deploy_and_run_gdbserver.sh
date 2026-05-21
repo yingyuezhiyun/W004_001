@@ -60,16 +60,11 @@ shell_quote() {
 REMOTE_COMMAND="chmod +x $(shell_quote "$TARGET_PATH") && exec gdbserver 0.0.0.0:$TARGET_PORT $(shell_quote "$TARGET_PATH")"
 
 TARGET_ARGS_TRIMMED=$(printf '%s' "$TARGET_ARGS" | sed 's/^[[:space:]]*//; s/[[:space:]]*$//')
-case "$TARGET_ARGS_TRIMMED" in
-    "") ;;
-    -f\ *)
-        REMOTE_ARG="-f${TARGET_ARGS_TRIMMED#-f }"
-        REMOTE_COMMAND="$REMOTE_COMMAND $(shell_quote "$REMOTE_ARG")"
-        ;;
-    *)
-        REMOTE_COMMAND="$REMOTE_COMMAND $(shell_quote "$TARGET_ARGS_TRIMMED")"
-        ;;
-esac
+if [ -n "$TARGET_ARGS_TRIMMED" ]; then
+    # Pass as a SINGLE argv entry even if it contains spaces.
+    # Example: "-f config.conf" -> argv[1] == "-f config.conf"
+    REMOTE_COMMAND="$REMOTE_COMMAND $(shell_quote "$TARGET_ARGS_TRIMMED")"
+fi
 
 if [ "${DEBUG_DEPLOY:-0}" != "0" ]; then
     printf 'DEBUG: TARGET_ARGS=<%s>\n' "$TARGET_ARGS" >&2
