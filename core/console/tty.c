@@ -49,6 +49,43 @@ struct vty_cfg_s
 
 struct vty_cfg_s *vty_cfg = NULL;
 
+DEFUN(gnss_type_on_cfg,
+      gnss_type_on_cfg_cmd,
+      "gnss (gpsephb|rmc|gga|gll|gsa|gst|gsv|vtg|zda) (onchange|on <1-10>)",
+      "gnss ctrl\n"
+      "Set gnss type on or off\n"
+      "on or off\n")
+{
+    if (strcmp(argv[1], "onchange") == 0)
+    {
+        vty_out(vty, "set gnss type %s to onchange", argv[0]);
+    }
+    else
+    {
+        int per_second = atoi(argv[2]);
+        vty_out(vty, "set gnss type %s to on %d/s", argv[0], per_second);
+    }
+    return CMD_SUCCESS;
+}
+
+DEFUN(gnss_type_off_cfg,
+      gnss_type_off_cfg_cmd,
+      "gnss (gpsephb|rmc|gga|gll|gsa|gst|gsv|vtg|zda|all) off",
+      "gnss ctrl\n"
+      "Set gnss type on or off\n"
+      "on or off\n")
+{
+    if (strcmp(argv[0], "all") == 0)
+    {
+        vty_out(vty, "set gnss all type to off");
+    }
+    else
+    {
+        vty_out(vty, "set gnss type %s to off", argv[0]);
+    }
+    return CMD_SUCCESS;
+}
+
 DEFUN(config_radio,
       config_radio_cmd,
       "configure radio",
@@ -93,6 +130,10 @@ void tty_init(void)
     install_node(&vty_node, config_write_vty);
     install_element(CONFIG_NODE, &config_radio_cmd);
    
+    install_element(ENABLE_NODE, &gnss_type_off_cfg_cmd);
+    install_element(RADIO_NODE, &gnss_type_off_cfg_cmd);
 
+    install_element(ENABLE_NODE, &gnss_type_on_cfg_cmd);
+    install_element(RADIO_NODE, &gnss_type_on_cfg_cmd);
 
 }

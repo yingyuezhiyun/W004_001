@@ -123,7 +123,7 @@ static struct thread_master *master;
 static const char *pid_file = CLI_DEFAULT_PID;
 
 /* Generated fallback config file in the current working directory. */
-static char generated_config_file[PATH_MAX];
+static char generated_config_file[128];
 static int generated_config_file_ready = 0;
 
 /* Help information display. */
@@ -297,13 +297,11 @@ static int ensure_default_config_file(void)
 	if (!file_exists_and_regular(generated_config_file))
 	{
 		FILE *fp = fopen(generated_config_file, "w");
-
 		if (!fp)
 		{
 			zlog_err("failed to create default config '%s': %s", generated_config_file, strerror(errno));
 			return -1;
 		}
-
 		fputs(default_config_template, fp);
 		fclose(fp);
 	}
@@ -331,11 +329,10 @@ int cli_init(int argc, char **argv)
 	int daemon_mode = 0;
 	int dryrun = 0;
 	char *progname;
-	const char *requested_config = argv[0];
+	const char *requested_config = NULL;
 
 	/* Set umask before anything for security */
 	umask(0027);
-
 	
 
 	/* Get program name. */

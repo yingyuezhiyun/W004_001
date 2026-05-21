@@ -14,240 +14,33 @@
 #include "src_tty.h"
 #include "src_io.h"
 #include "third_party/minmea.h"
+#include "gnss_func.h"
 
-static void print_coord(const char *label, const struct minmea_float *coord)
+typedef enum
 {
-    double value = minmea_tocoord(coord);
-    if (isnan(value))
-    {
-        printf("%s=nan", label);
-        return;
-    }
-    printf("%s=%.6f", label, value);
-}
+    GNSS_DATA_NMEA,
+    GNSS_DATA_RAW,
+} gnss_DataType_t;
 
-static void print_float_field(const char *label, const struct minmea_float *value)
+typedef struct
 {
-    double number = minmea_tofloat(value);
-    if (isnan(number))
-    {
-        printf("%s=nan", label);
-        return;
-    }
-    printf("%s=%.2f", label, number);
-}
+    int fd;
+    gnss_DataType_t data_type;
+    char Nmea_sentence[MINMEA_MAX_SENTENCE_LENGTH + 16];
+    uint16_t Nmea_len;
+    uint8_t data_raw[1024];
+    uint16_t data_raw_len;
+} gnss_ctrl_t;
 
-static void print_time_field(const struct minmea_time *time_)
-{
-    printf("%02d:%02d:%02d.%06d",
-           time_->hours,
-           time_->minutes,
-           time_->seconds,
-           time_->microseconds);
-}
-
-static void print_date_field(const struct minmea_date *date)
-{
-    printf("%02d-%02d-%04d", date->day, date->month, date->year);
-}
-
-static void handle_nmea_sentence(const char *sentence)
-{
-    if (!minmea_check(sentence, false))
-    {
-        return;
-    }
-
-    switch (minmea_sentence_id(sentence, false))
-    {
-    case MINMEA_SENTENCE_RMC:
-    {
-        struct minmea_sentence_rmc frame;
-        if (minmea_parse_rmc(&frame, sentence))
-        {
-            double speed_knots = minmea_tofloat(&frame.speed);
-            double speed_kph = speed_knots * 1.852;
-            printf("RMC %02d:%02d:%02d.%06d ",
-                   frame.time.hours,
-                   frame.time.minutes,
-                   frame.time.seconds,
-                   frame.time.microseconds);
-            print_coord("lat", &frame.latitude);
-            printf(" ");
-            print_coord("lon", &frame.longitude);
-            printf(" speed=%.2fkn(%.2fkm/h) course=%.2f valid=%c date=%02d-%02d-%04d\n",
-                   speed_knots,
-                   speed_kph,
-                   minmea_tofloat(&frame.course),
-                   frame.valid ? 'A' : 'V',
-                   frame.date.year,
-                   frame.date.month,
-                   frame.date.day);
-        }
-    }
-    break;
-    case MINMEA_SENTENCE_GGA:
-    {
-        struct minmea_sentence_gga frame;
-        if (minmea_parse_gga(&frame, sentence))
-        {
-            printf("GGA ");
-            print_time_field(&frame.time);
-            printf(" ");
-            print_coord("lat", &frame.latitude);
-            printf(" ");
-            print_coord("lon", &frame.longitude);
-            printf(" fix=%d sats=%d ",
-                   frame.fix_quality,
-                   frame.satellites_tracked);
-            print_float_field("hdop", &frame.hdop);
-            printf(" ");
-            print_float_field("alt", &frame.altitude);
-            printf("%c\n", frame.altitude_units);
-        }
-    }
-    break;
-    case MINMEA_SENTENCE_GLL:
-    {
-        struct minmea_sentence_gll frame;
-        if (minmea_parse_gll(&frame, sentence))
-        {
-            printf("GLL ");
-            print_coord("lat", &frame.latitude);
-            printf(" ");
-            print_coord("lon", &frame.longitude);
-            printf(" ");
-            print_time_field(&frame.time);
-            printf(" status=%c mode=%c\n", frame.status, frame.mode);
-        }
-    }
-    break;
-    case MINMEA_SENTENCE_GSA:
-    {
-        struct minmea_sentence_gsa frame;
-        if (minmea_parse_gsa(&frame, sentence))
-        {
-            printf("GSA mode=%c fix=%d sats=", frame.mode, frame.fix_type);
-            for (int i = 0; i < 12; i++)
-            {
-                if (frame.sats[i] > 0)
-                {
-                    printf("%s%d", (i == 0) ? "" : ",", frame.sats[i]);
-                }
-            }
-            printf(" ");
-            print_float_field("pdop", &frame.pdop);
-            printf(" ");
-            print_float_field("hdop", &frame.hdop);
-            printf(" ");
-            print_float_field("vdop", &frame.vdop);
-            printf("\n");
-        }
-    }
-    break;
-    case MINMEA_SENTENCE_GSV:
-    {
-        struct minmea_sentence_gsv frame;
-        if (minmea_parse_gsv(&frame, sentence))
-        {
-            printf("GSV msgs=%d/%d sats=%d",
-                   frame.msg_nr,
-                   frame.total_msgs,
-                   frame.total_sats);
-            for (int i = 0; i < 4; i++)
-            {
-                if (frame.sats[i].nr > 0)
-                {
-                    printf(" [prn=%d elev=%d az=%d ",
-                           frame.sats[i].nr,
-                           frame.sats[i].elevation,
-                           frame.sats[i].azimuth);
-                    print_float_field("snr", &frame.sats[i].snr);
-                    printf("]");
-                }
-            }
-            printf("\n");
-        }
-    }
-    break;
-    case MINMEA_SENTENCE_VTG:
-    {
-        struct minmea_sentence_vtg frame;
-        if (minmea_parse_vtg(&frame, sentence))
-        {
-            printf("VTG ");
-            print_float_field("true", &frame.true_track_degrees);
-            printf(" ");
-            print_float_field("mag", &frame.magnetic_track_degrees);
-            printf(" ");
-            print_float_field("knots", &frame.speed_knots);
-            printf(" ");
-            print_float_field("kph", &frame.speed_kph);
-            printf(" faa=%c\n", (char)frame.faa_mode);
-        }
-    }
-    break;
-    case MINMEA_SENTENCE_ZDA:
-    {
-        struct minmea_sentence_zda frame;
-        if (minmea_parse_zda(&frame, sentence))
-        {
-            printf("ZDA ");
-            print_time_field(&frame.time);
-            printf(" ");
-            print_date_field(&frame.date);
-            printf(" offset=%+03d:%02d\n", frame.hour_offset, frame.minute_offset);
-        }
-    }
-    break;
-    case MINMEA_SENTENCE_GBS:
-    {
-        struct minmea_sentence_gbs frame;
-        if (minmea_parse_gbs(&frame, sentence))
-        {
-            printf("GBS ");
-            print_time_field(&frame.time);
-            printf(" svid=%d ", frame.svid);
-            print_float_field("err_lat", &frame.err_latitude);
-            printf(" ");
-            print_float_field("err_lon", &frame.err_longitude);
-            printf(" ");
-            print_float_field("err_alt", &frame.err_altitude);
-            printf(" prob=%f bias=%f stddev=%f\n",
-                   minmea_tofloat(&frame.prob),
-                   minmea_tofloat(&frame.bias),
-                   minmea_tofloat(&frame.stddev));
-        }
-    }
-    break;
-    case MINMEA_SENTENCE_GST:
-    {
-        struct minmea_sentence_gst frame;
-        if (minmea_parse_gst(&frame, sentence))
-        {
-            printf("GST ");
-            print_time_field(&frame.time);
-            print_float_field(" rms_dev", &frame.rms_deviation);
-            printf(" ");
-            print_float_field("semi_major_dev", &frame.semi_major_deviation);
-            printf(" ");
-            print_float_field("semi_minor_dev", &frame.semi_minor_deviation);
-            printf(" ");
-            print_float_field("semi_major_orientation", &frame.semi_major_orientation);
-            printf(" ");
-            print_float_field("lat_error_dev", &frame.latitude_error_deviation);
-            printf(" ");
-            print_float_field("lon_error_dev", &frame.longitude_error_deviation);
-            printf(" ");
-            print_float_field("alt_error_dev", &frame.altitude_error_deviation);
-            printf("\n");
-        }
-    }
-    break;
-    default:
-        break;
-    }
-}
+gnss_ctrl_t gnss_ctrl = {
+    .fd = -1,
+    // .data_type = GNSS_DATA_NMEA,
+    .data_type = GNSS_DATA_RAW,
+    .Nmea_sentence = {0},
+    .Nmea_len = 0,
+    .data_raw = {0},
+    .data_raw_len = 0
+};
 
 int8_t gnss_bdd_enable()
 {
@@ -307,6 +100,34 @@ void gnss_cfg(int fd, char *type, uint8_t enable, uint8_t per_second)
     }
 }
 
+void gnss_cfg_eable_onchange(int fd, char *type)
+{
+    if (fd < 0)
+    {
+        fprintf(stderr, "Invalid file descriptor\n");
+        return;
+    }
+    char buff[128];
+    int result = 0;
+    snprintf(buff, sizeof(buff), "CSHG ONCHANGE COM3 %s ONCHANGED \r\n", type);
+    result = write(fd, buff, strlen(buff));
+    if (result < 0)
+    {
+        perror("write gnss device");
+    }
+    else
+    {
+        printf("GNSS: %s on change enabled\n", type);
+    }
+}
+
+void gnss_cfg_close_all(int fd)
+{
+    char buff[128];
+    snprintf(buff, sizeof(buff), "CSHG CLOSEALL COM3 \r\n");
+    int result = write(fd, buff, strlen(buff));
+}
+
 void *gnss_thread_func(void *arg)
 {
     (void)arg;
@@ -317,75 +138,82 @@ void *gnss_thread_func(void *arg)
         return NULL;
     }
     sleep(2); // Sleep for 2 seconds to allow the BDD to power up
-    int fd = open(DEV_GNSS, O_RDWR | O_NOCTTY | O_NDELAY);
-    if (fd < 0)
+    gnss_ctrl.fd = open(DEV_GNSS, O_RDWR | O_NOCTTY | O_NDELAY);
+    if (gnss_ctrl.fd < 0)
     {
         perror("open gnss device");
         return NULL;
     }
-    set_opt(fd, 115200, 8, 'N', 1);
+    set_opt(gnss_ctrl.fd, 115200, 8, 'N', 1);
     usleep(100000); // Sleep for 100 milliseconds to allow the device to initialize
-    gnss_cfg(fd, "RMC", 1, 1);
+    gnss_cfg_close_all(gnss_ctrl.fd);
     usleep(100000); // Sleep for 100 milliseconds
-    gnss_cfg(fd, "GGA", 1, 1);
-    usleep(100000); // Sleep for 100 milliseconds
-    gnss_cfg(fd, "GSA", 1, 1);
-    usleep(100000); // Sleep for 100 milliseconds
-    gnss_cfg(fd, "GST", 1, 1);
-    usleep(100000); // Sleep for 100 milliseconds
-    gnss_cfg(fd, "GBS", 0, 0);
-    usleep(100000); // Sleep for 100 milliseconds
-    gnss_cfg(fd, "GSV", 0, 0);
-    usleep(100000); // Sleep for 100 milliseconds
-    gnss_cfg(fd, "VTG", 0, 0);
-    usleep(100000); // Sleep for 100 milliseconds
-    gnss_cfg(fd, "ZDA", 0, 0);
-    usleep(100000); // Sleep for 100 milliseconds
-    gnss_cfg(fd, "HDT", 0, 0);
-    usleep(100000); // Sleep for 100 milliseconds
-    gnss_cfg(fd, "NTR", 0, 0);
-    usleep(100000); // Sleep for 100 milliseconds
-    gnss_cfg(fd, "ORI", 0, 0);
-    usleep(100000); // Sleep for 100 milliseconds
-    gnss_cfg(fd, "ROT", 0, 0);
-    usleep(100000); // Sleep for 100 milliseconds
-    gnss_cfg(fd, "TRA", 0, 0);
-    usleep(100000); // Sleep for 100 milliseconds
-    gnss_cfg(fd, "DTM", 0, 0);
-    usleep(100000); // Sleep for 100 milliseconds
+    // gnss_cfg(gnss_ctrl.fd, "RMC", 1, 1);
+    // usleep(100000); // Sleep for 100 milliseconds
+    // gnss_cfg(gnss_ctrl.fd, "GGA", 1, 1);
+    // usleep(100000); // Sleep for 100 milliseconds
+    // gnss_cfg(gnss_ctrl.fd, "GSA", 1, 1);
+    // usleep(100000); // Sleep for 100 milliseconds
+    // gnss_cfg(gnss_ctrl.fd, "GST", 1, 1);
+
+    // gnss_cfg_eable_onchange(gnss_ctrl.fd, "GPSEPHB");
+    gnss_cfg(gnss_ctrl.fd, "GPSEPHB", 1, 1);
 
     char buf[256];
-    char sentence[MINMEA_MAX_SENTENCE_LENGTH + 16];
-    size_t sentence_len = 0;
+
     while (1)
     {
-        int n = read(fd, buf, sizeof(buf) - 1);
+        int n = read(gnss_ctrl.fd, buf, sizeof(buf) - 1);
         if (n > 0)
         {
-            for (int i = 0; i < n; i++)
+            if (gnss_ctrl.data_type == GNSS_DATA_NMEA)
             {
-                char c = buf[i];
-                if (c == '\r')
+                for (int i = 0; i < n; i++)
                 {
-                    continue;
-                }
-                if (c == '\n')
-                {
-                    if (sentence_len > 0)
+                    char c = buf[i];
+                    if (c == '\r')
                     {
-                        sentence[sentence_len] = '\0';
-                        handle_nmea_sentence(sentence);
-                        sentence_len = 0;
+                        continue;
                     }
-                    continue;
+                    if (c == '\n')
+                    {
+                        if (gnss_ctrl.Nmea_len > 0)
+                        {
+                            gnss_ctrl.Nmea_sentence[gnss_ctrl.Nmea_len] = '\0';
+                            handle_gnss_nmea(gnss_ctrl.Nmea_sentence);
+                            gnss_ctrl.Nmea_len = 0;
+                        }
+                        continue;
+                    }
+                    if (gnss_ctrl.Nmea_len < sizeof(gnss_ctrl.Nmea_sentence) - 1)
+                    {
+                        gnss_ctrl.Nmea_sentence[gnss_ctrl.Nmea_len++] = c;
+                    }
+                    else
+                    {
+                        gnss_ctrl.Nmea_len = 0;
+                    }
                 }
-                if (sentence_len < sizeof(sentence) - 1)
+            }
+            else
+            {
+                if (sizeof(gnss_ctrl.data_raw) == gnss_ctrl.data_raw_len )
                 {
-                    sentence[sentence_len++] = c;
+                    fprintf(stderr, "GNSS raw data buffer overflow, dropping data\n");
+                    gnss_ctrl.data_raw_len = 0;
                 }
-                else
+                
+                int copy_len = (n < sizeof(gnss_ctrl.data_raw) - gnss_ctrl.data_raw_len) ? n : (sizeof(gnss_ctrl.data_raw) - gnss_ctrl.data_raw_len);
+                memcpy(gnss_ctrl.data_raw + gnss_ctrl.data_raw_len, buf, copy_len);
+                gnss_ctrl.data_raw_len += copy_len;
+                uint16_t handle_len = handle_gnss_raw(gnss_ctrl.data_raw, gnss_ctrl.data_raw_len);
+                if (handle_len > 0)
                 {
-                    sentence_len = 0;
+                    if (handle_len < gnss_ctrl.data_raw_len)
+                    {
+                        memmove(gnss_ctrl.data_raw, gnss_ctrl.data_raw + handle_len, gnss_ctrl.data_raw_len - handle_len);
+                    }
+                    gnss_ctrl.data_raw_len -= handle_len;
                 }
             }
         }
@@ -399,7 +227,7 @@ void *gnss_thread_func(void *arg)
         // nanosleep(&sleep_time, NULL);
     }
 
-    close(fd);
+    close(gnss_ctrl.fd);
 
     return NULL;
 }
