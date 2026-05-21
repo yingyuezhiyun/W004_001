@@ -3,5 +3,8 @@
   "ok3506.targetUser": "root",
   "ok3506.targetPort": "1234",
   "ok3506.targetPath": "/root/ok3506_demo",
-  "ok3506.gdbMultiarch": "/usr/bin/gdb-multiarch"
+  "ok3506.gdbMultiarch": "/usr/bin/gdb-multiarch",
+  "ok3506.deployLabel": "demo",
+  "ok3506.deployDelay": "0",
+  "ok3506.targetArgs": "-f config.conf"
 }

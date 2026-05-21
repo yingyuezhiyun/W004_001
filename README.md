@@ -32,6 +32,8 @@ chmod +x /tmp/ok3506_demo
 # gdbserver 0.0.0.0:1234 /tmp/ok3506_demo demo 5
 ```
 
+如果要在 VS Code 调试时固定传参，可以在 `.vscode/settings.json` 里设置 `ok3506.targetArgs`，例如 `demo 5`。调试任务会把它原样传给目标板上的 `gdbserver`。
+
 ## 宿主机远程调试
 
 宿主机上连接目标板的网口：
@@ -42,21 +44,15 @@ chmod +x /tmp/ok3506_demo
 
 如果你的宿主机装的是 `gdb-multiarch`，脚本会优先使用它；否则回退到 `gdb`。
 
-## 只编译验证
+## 调试参数
 
-如果你刚改完代码，只想先确认本地交叉编译能否通过，可以在 VS Code 里选择：
+如果你想修改调试时传给程序的参数，直接改 [`.vscode/settings.json`](.vscode/settings.json) 里的这几个键：
 
-```text
-OK3506 Build Only
-```
+- `ok3506.deployLabel`
+- `ok3506.deployDelay`
+- `ok3506.deployConfigSource`
 
-这个入口只会先执行 `build ok3506 demo`，然后在宿主机上做一个无害的退出动作，不会连接目标板，也不会启动调试会话。等你确认多次改动都能编译通过后，再切换到 `OK3506 Debug with Deploy` 做一次性远程调试。
-
-## 一键部署并调试
-
-如果希望每次开始调试时，都先把本地最新产物复制到目标板的 `/root/`，再自动启动 `gdbserver`，可以直接在 VS Code 里选择：
-
-```text
+然后继续使用现有的 `OK3506 Debug with Deploy` 即可。默认会复制工作区根目录下的 [config.conf](config.conf) 到目标板，并作为 `cli_init` 的配置文件。
 OK3506 Debug with Deploy
 ```
 
@@ -71,6 +67,22 @@ OK3506 Debug with Deploy
 ```sh
 TARGET_HOST=192.168.0.232 TARGET_USER=root TARGET_PORT=1234 ./scripts/deploy_and_run_gdbserver.sh
 ```
+
+## 调试参数
+
+如果你想在 VS Code 里顺手传入程序参数和配置文件，直接选择：
+
+```text
+OK3506 Debug with Deploy Args
+```
+
+它会在启动前提示你填写：
+
+- `label`，传给 `main()` 的第一个参数
+- `delay`，传给 `main()` 的第二个参数
+- `config`，要复制到目标板并传给 `cli_init` 的配置文件源路径
+
+默认会使用工作区根目录下的 [config.conf](config.conf)。如果这个文件不存在，程序仍会在目标板当前目录生成一份默认配置。
 
 ## 说明
 

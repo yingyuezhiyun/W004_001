@@ -27,7 +27,8 @@
           "TARGET_HOST": "${config:ok3506.targetHost}",
           "TARGET_USER": "${config:ok3506.targetUser}",
           "TARGET_PORT": "${config:ok3506.targetPort}",
-          "TARGET_PATH": "${config:ok3506.targetPath}"
+          "TARGET_PATH": "${config:ok3506.targetPath}",
+          "TARGET_ARGS": "${config:ok3506.targetArgs}",        
         }
       },
       "isBackground": true,

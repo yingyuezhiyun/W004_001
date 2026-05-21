@@ -9,6 +9,7 @@ TARGET_HOST=${TARGET_HOST:-192.168.0.232}
 TARGET_USER=${TARGET_USER:-root}
 TARGET_PORT=${TARGET_PORT:-1234}
 TARGET_PATH=${TARGET_PATH:-/root/ok3506_demo}
+TARGET_ARGS=${TARGET_ARGS:-}
 SSH_PORT=${SSH_PORT:-22}
 SSH_OPTS=${SSH_OPTS:--o BatchMode=yes -o StrictHostKeyChecking=accept-new}
 SSH_AUTO_UPDATE_KNOWN_HOSTS=${SSH_AUTO_UPDATE_KNOWN_HOSTS:-1}
@@ -52,13 +53,35 @@ fi
 
 printf 'Starting gdbserver on %s:%s\n' "$TARGET_HOST" "$TARGET_PORT"
 printf 'Program output will appear in this VS Code task terminal.\n'
-if ! ssh -p "$SSH_PORT" $SSH_OPTS "$TARGET_USER@$TARGET_HOST" \
-  "chmod +x '$TARGET_PATH' && exec gdbserver 0.0.0.0:$TARGET_PORT '$TARGET_PATH'"; then
+shell_quote() {
+    printf "'%s'" "$(printf '%s' "$1" | sed "s/'/'\\''/g")"
+}
+
+REMOTE_COMMAND="chmod +x $(shell_quote "$TARGET_PATH") && exec gdbserver 0.0.0.0:$TARGET_PORT $(shell_quote "$TARGET_PATH")"
+
+TARGET_ARGS_TRIMMED=$(printf '%s' "$TARGET_ARGS" | sed 's/^[[:space:]]*//; s/[[:space:]]*$//')
+case "$TARGET_ARGS_TRIMMED" in
+    "") ;;
+    -f\ *)
+        REMOTE_ARG="-f${TARGET_ARGS_TRIMMED#-f }"
+        REMOTE_COMMAND="$REMOTE_COMMAND $(shell_quote "$REMOTE_ARG")"
+        ;;
+    *)
+        REMOTE_COMMAND="$REMOTE_COMMAND $(shell_quote "$TARGET_ARGS_TRIMMED")"
+        ;;
+esac
+
+if [ "${DEBUG_DEPLOY:-0}" != "0" ]; then
+    printf 'DEBUG: TARGET_ARGS=<%s>\n' "$TARGET_ARGS" >&2
+    printf 'DEBUG: REMOTE_COMMAND=<%s>\n' "$REMOTE_COMMAND" >&2
+fi
+
+if ! ssh -p "$SSH_PORT" $SSH_OPTS "$TARGET_USER@$TARGET_HOST" "$REMOTE_COMMAND"; then
     if [ "$SSH_AUTO_UPDATE_KNOWN_HOSTS" = "1" ]; then
         echo "Retrying after removing stale SSH host key for $TARGET_HOST" >&2
         cleanup_known_host
         exec ssh -p "$SSH_PORT" $SSH_OPTS "$TARGET_USER@$TARGET_HOST" \
-          "chmod +x '$TARGET_PATH' && exec gdbserver 0.0.0.0:$TARGET_PORT '$TARGET_PATH'"
+                    "$REMOTE_COMMAND"
     fi
     exit 1
 fi

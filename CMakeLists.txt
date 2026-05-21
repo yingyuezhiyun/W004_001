@@ -18,9 +18,17 @@ target_include_directories(ok3506_demo PRIVATE
     "${CMAKE_CURRENT_SOURCE_DIR}/core"
     "${CMAKE_CURRENT_SOURCE_DIR}/core/inc"
     "${CMAKE_CURRENT_SOURCE_DIR}/core/third_party"
+    "${CMAKE_CURRENT_SOURCE_DIR}/core/lib"
+    "${CMAKE_CURRENT_SOURCE_DIR}/core/lib/quagga"
 )
 
-target_link_libraries(ok3506_demo PRIVATE m pthread)
+target_link_libraries(ok3506_demo PRIVATE
+    "${CMAKE_CURRENT_SOURCE_DIR}/core/lib/libzebra.a"
+    m
+    pthread
+    crypt
+    cap
+)
 
 target_compile_options(ok3506_demo PRIVATE
     -Wall
