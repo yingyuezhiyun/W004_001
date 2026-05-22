@@ -673,6 +673,8 @@ void decode_bd3cnav1ephb(const uint8_t *payload, size_t payload_len, BD3CNAV1EPH
     out->crc24 = read_bits_be(payload, bit, 24);
 }
 
+
+
 void decode_prangeb(const uint8_t *payload, size_t payload_len, PRANGEB_Decoded_t *out)
 {
     size_t bit = 0;
@@ -702,110 +704,45 @@ void decode_prangeb(const uint8_t *payload, size_t payload_len, PRANGEB_Decoded_
     /* skip reserved 7 bits */
     bit += 7;
 
-    for (i = 0; i < out->sat_count /* && (bit + 122) <= available_bits */ && i < PRANGEB_MAX_SATS; ++i)
+    for (size_t i = 0; i < out->sat_count; i++)
     {
-        out->sat_id[i] = (uint8_t)read_bits_be(payload, bit, 6);
+        out->sat_info[i].sat_id = (uint8_t)read_bits_be(payload, bit, 6);
         bit += 6;
-        out->signal_count[i] = (uint8_t)read_bits_be(payload, bit, 4);
+        out->sat_info[i].signal_count = (uint8_t)read_bits_be(payload, bit, 4);
         bit += 4;
-        out->int_ms[i] = (uint8_t)read_bits_be(payload, bit, 8);
+        uint16_t int_ms = (uint16_t)read_bits_be(payload, bit, 8);
         bit += 8;
-        out->frac_ms[i] = (uint16_t)read_bits_be(payload, bit, 10);
+        uint16_t frac_ms = (uint16_t)read_bits_be(payload, bit, 10);
+        out->sat_info[i].apd_ms= int_ms + scale_pow2(frac_ms, -10);
         bit += 10;
-        out->approx_phase_rate[i] = (int16_t)read_signed_bits_be(payload, bit, 14);
+        out->sat_info[i].approx_phase_rate = (int16_t)read_signed_bits_be(payload, bit, 14);
         bit += 14;
-
         /* reserved 6 bits (ID13) */
         bit += 6;
-
-        out->signal_id[i] = (uint8_t)read_bits_be(payload, bit, 6);
-        bit += 6;
-        out->phase_lock_flag[i] = (uint8_t)read_bits_be(payload, bit, 4);
-        bit += 4;
-        out->precise_pr[i] = (int16_t)read_signed_bits_be(payload, bit, 15);
-        bit += 15;
-        out->precise_phase[i] = (int32_t)read_signed_bits_be(payload, bit, 22);
-        bit += 22;
-        out->precise_phase_rate[i] = (int16_t)read_signed_bits_be(payload, bit, 15);
-        bit += 15;
-        out->cn0[i] = (uint16_t)read_bits_be(payload, bit, 13);
-        bit += 13;
-        out->half_cycle[i] = (uint8_t)read_bits_be(payload, bit, 1);
-        bit += 1;
-        out->reserved[i] = (uint8_t)read_bits_be(payload, bit, 4);
-        bit += 4;
+        for (size_t j = 0; j < out->sat_info[i].signal_count; j++)
+        {
+            out->sat_info[i].signal_info[j].signal_id = (uint8_t)read_bits_be(payload, bit, 6);
+            bit += 6;
+            out->sat_info[i].signal_info[j].phase_lock_flag = (uint8_t)read_bits_be(payload, bit, 4);
+            bit += 4;
+            out->sat_info[i].signal_info[j].precise_pr = scale_pow2((int16_t)read_signed_bits_be(payload, bit, 15), -24);
+            bit += 15;
+            out->sat_info[i].signal_info[j].precise_phase = scale_pow2((int32_t)read_signed_bits_be(payload, bit, 22), -29);
+            bit += 22;
+            out->sat_info[i].signal_info[j].precise_phase_rate = scale_pow2((int16_t)read_signed_bits_be(payload, bit, 15), -4);
+            bit += 15;
+            out->sat_info[i].signal_info[j].cn0 = scale_pow2_u((uint16_t)read_bits_be(payload, bit, 13), -2);
+            bit += 13;
+            out->sat_info[i].signal_info[j].half_cycle = (uint8_t)read_bits_be(payload, bit, 1);
+            bit += 1;
+            /* reserved 4 bits (ID21) */
+            bit += 4;
+        }
     }
-
-    /* embedded CRC24 is stored in last 3 bytes of payload */
-    out->crc24 = read_u24_be(payload + payload_len - 3);
+    out->crc24 = read_bits_be(payload, bit, 24);
 }
 
-void decode_prange2b(const uint8_t *payload, size_t payload_len, PRANGE2B_Decoded_t *out)
-{
-    size_t bit = 0;
-    size_t i;
-    const size_t available_bits = (payload_len > 3) ? (payload_len - 3) * 8 : 0;
 
-    memset(out, 0, sizeof(*out));
-    if (payload_len < 3)
-        return;
-
-    memcpy(out->head, payload, sizeof(out->head));
-    bit += 64;
-
-    out->gps_week_count = (uint16_t)read_bits_be(payload, bit, 12);
-    bit += 12;
-    out->gps_tow_s = read_bits_be(payload, bit, 20);
-    bit += 20;
-    out->ms_count = (uint8_t)read_bits_be(payload, bit, 7);
-    bit += 7;
-    out->sync_flag = (uint8_t)read_bits_be(payload, bit, 1);
-    bit += 1;
-    out->system_id = (uint8_t)read_bits_be(payload, bit, 3);
-    bit += 3;
-    out->sat_count = (uint8_t)read_bits_be(payload, bit, 6);
-    bit += 6;
-
-    /* skip reserved 7 bits */
-    bit += 7;
-
-    for (i = 0; i < out->sat_count && (bit + 122) <= available_bits && i < PRANGEB_MAX_SATS; ++i)
-    {
-        out->sat_id[i] = (uint8_t)read_bits_be(payload, bit, 6);
-        bit += 6;
-        out->signal_count[i] = (uint8_t)read_bits_be(payload, bit, 4);
-        bit += 4;
-        out->int_ms[i] = (uint8_t)read_bits_be(payload, bit, 8);
-        bit += 8;
-        out->frac_ms[i] = (uint16_t)read_bits_be(payload, bit, 10);
-        bit += 10;
-        out->approx_phase_rate[i] = (int16_t)read_signed_bits_be(payload, bit, 14);
-        bit += 14;
-
-        /* PRANGE2B-specific ext flag */
-        out->ext_flag[i] = (uint8_t)read_bits_be(payload, bit, 2);
-        bit += 2;
-
-        out->signal_id[i] = (uint8_t)read_bits_be(payload, bit, 6);
-        bit += 6;
-        out->phase_lock_flag[i] = (uint8_t)read_bits_be(payload, bit, 4);
-        bit += 4;
-        out->precise_pr[i] = (int16_t)read_signed_bits_be(payload, bit, 15);
-        bit += 15;
-        out->precise_phase[i] = (int32_t)read_signed_bits_be(payload, bit, 22);
-        bit += 22;
-        out->precise_phase_rate[i] = (int16_t)read_signed_bits_be(payload, bit, 15);
-        bit += 15;
-        out->cn0[i] = (uint16_t)read_bits_be(payload, bit, 13);
-        bit += 13;
-        out->half_cycle[i] = (uint8_t)read_bits_be(payload, bit, 1);
-        bit += 1;
-        out->reserved[i] = (uint8_t)read_bits_be(payload, bit, 4);
-        bit += 4;
-    }
-
-    out->crc24 = read_u24_be(payload + payload_len - 3);
-}
 
 void decode_gpsephb(const uint8_t *payload, size_t payload_len, GPSEPHB_Decoded_t *out)
 {

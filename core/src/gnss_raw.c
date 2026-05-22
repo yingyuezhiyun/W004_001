@@ -404,6 +404,7 @@ static void print_bd3cnav2ephb(const BD3CNAV2EPHB_Decoded_t *eph, uint32_t paylo
            (eph->crc24 == payload_crc_calc) ? "OK" : "BAD");
 }
 
+
 static void print_prangeb(const PRANGEB_Decoded_t *d, uint32_t payload_crc_calc)
 {
     printf("PRANGEB decoded frame:\n");
@@ -418,62 +419,33 @@ static void print_prangeb(const PRANGEB_Decoded_t *d, uint32_t payload_crc_calc)
     printf("  system_id     : %u\n", d->system_id);
     printf("  sat_count     : %u\n", d->sat_count);
 
-    for (size_t i = 0; i < d->sat_count && i < PRANGEB_MAX_SATS; ++i)
+    for (size_t i = 0; i < d->sat_count; i++)
     {
         printf("  --- sat %zu ---\n", i);
-        printf("    sat_id          : %u\n", d->sat_id[i]);
-        printf("    signal_count    : %u\n", d->signal_count[i]);
-        printf("    int_ms          : %u\n", d->int_ms[i]);
-        printf("    frac_ms         : %u (2^-10 ms units)\n", d->frac_ms[i]);
-        printf("    approx_phase_rate: %d (Sint14 raw)\n", d->approx_phase_rate[i]);
-        printf("    signal_id       : %u\n", d->signal_id[i]);
-        printf("    phase_lock_flag : %u\n", d->phase_lock_flag[i]);
-        printf("    precise_pr      : %d (Sint15 raw, scale 2^-24 ms)\n", d->precise_pr[i]);
-        printf("    precise_phase   : %d (Sint22 raw, scale 2^-29 ms)\n", d->precise_phase[i]);
-        printf("    precise_phase_rate: %d (Sint15 raw, scale 1e-4 m/s)\n", d->precise_phase_rate[i]);
-        printf("    cn0             : %u (scale 1e-2 dB)\n", d->cn0[i]);
-        printf("    half_cycle      : %u\n", d->half_cycle[i]);
+        printf("    sat_id          : %u\n", d->sat_info[i].sat_id);
+        printf("    signal_count    : %u\n", d->sat_info[i].signal_count);
+        printf("    apd_ms          : % .12e ms\n", d->sat_info[i].apd_ms);
+        printf("    approx_phase_rate: %d (Sint14 raw)\n", d->sat_info[i].approx_phase_rate);
+        for (size_t j = 0; j < d->sat_info[i].signal_count; j++)
+        {
+            printf("      --- signal %zu ---\n", j);
+            printf("        signal_id       : %u\n", d->sat_info[i].signal_info[j].signal_id);
+            printf("        phase_lock_flag : %u\n", d->sat_info[i].signal_info[j].phase_lock_flag);
+            printf("        precise_pr      : % .12e ms\n", d->sat_info[i].signal_info[j].precise_pr);
+            printf("        precise_phase   : % .12e ms\n", d->sat_info[i].signal_info[j].precise_phase);
+            printf("        precise_phase_rate: % .12e m/s\n", d->sat_info[i].signal_info[j].precise_phase_rate);
+            printf("        cn0             : % .12e dB\n", d->sat_info[i].signal_info[j].cn0);
+            printf("        half_cycle      : %u\n", d->sat_info[i].signal_info[j].half_cycle);
+        }
+        
+       
     }
-
+    
+    
     printf("  embedded_crc24  : %06X calc=%06X [%s]\n",
            d->crc24, payload_crc_calc, (d->crc24 == payload_crc_calc) ? "OK" : "BAD");
 }
 
-static void print_prange2b(const PRANGE2B_Decoded_t *d, uint32_t payload_crc_calc)
-{
-    printf("PRANGE2B decoded frame:\n");
-    printf("  head: ");
-    for (size_t i = 0; i < sizeof(d->head); ++i)
-        printf("%02X%s", d->head[i], (i + 1 == sizeof(d->head)) ? "" : " ");
-    printf("\n");
-    printf("  gps_week_count: %u\n", d->gps_week_count);
-    printf("  gps_tow_s     : %u s\n", d->gps_tow_s);
-    printf("  ms_count      : %u\n", d->ms_count);
-    printf("  sync_flag     : %u\n", d->sync_flag);
-    printf("  system_id     : %u\n", d->system_id);
-    printf("  sat_count     : %u\n", d->sat_count);
-
-    for (size_t i = 0; i < d->sat_count && i < PRANGEB_MAX_SATS; ++i)
-    {
-        printf("  --- sat %zu ---\n", i);
-        printf("    sat_id          : %u\n", d->sat_id[i]);
-        printf("    signal_count    : %u\n", d->signal_count[i]);
-        printf("    int_ms          : %u\n", d->int_ms[i]);
-        printf("    frac_ms         : %u (2^-10 ms units)\n", d->frac_ms[i]);
-        printf("    approx_phase_rate: %d (Sint14 raw)\n", d->approx_phase_rate[i]);
-        printf("    ext_flag        : %u\n", d->ext_flag[i]);
-        printf("    signal_id       : %u\n", d->signal_id[i]);
-        printf("    phase_lock_flag : %u\n", d->phase_lock_flag[i]);
-        printf("    precise_pr      : %d (Sint15 raw, scale 2^-24 ms)\n", d->precise_pr[i]);
-        printf("    precise_phase   : %d (Sint22 raw, scale 2^-29 ms)\n", d->precise_phase[i]);
-        printf("    precise_phase_rate: %d (Sint15 raw, scale 1e-4 m/s)\n", d->precise_phase_rate[i]);
-        printf("    cn0             : %u (scale 1e-2 dB)\n", d->cn0[i]);
-        printf("    half_cycle      : %u\n", d->half_cycle[i]);
-    }
-
-    printf("  embedded_crc24  : %06X calc=%06X [%s]\n",
-           d->crc24, payload_crc_calc, (d->crc24 == payload_crc_calc) ? "OK" : "BAD");
-}
 
 static void print_bd3cnav3ephb(const BD3CNAV3EPHB_Decoded_t *eph, uint32_t payload_crc_calc)
 {
@@ -663,6 +635,7 @@ int handle_gnss_raw(const uint8_t *data, size_t len)
                 }
                 break;
                 case RAW_PRANGEB:
+                case RAW_PRANGE2B:
                 {
                     PRANGEB_Decoded_t p;
                     if (packet->length > 0)
@@ -670,18 +643,9 @@ int handle_gnss_raw(const uint8_t *data, size_t len)
                         decode_prangeb((uint8_t *)packet, packet->length, &p);                       
                         print_prangeb(&p, crc_calculated);
                     }
+                    
                 }
-                break;
-                case RAW_PRANGE2B:
-                {
-                    PRANGE2B_Decoded_t p2;
-                    if (packet->length > 0)
-                    {
-                        decode_prange2b((uint8_t *)packet, packet->length, &p2);                       
-                        print_prange2b(&p2, crc_calculated);
-                    }
-                }
-                break;
+                break;                
                 case RAW_BD2EPHB:
                 {
                     BD2EPHB_Decoded_t eph;
@@ -692,7 +656,7 @@ int handle_gnss_raw(const uint8_t *data, size_t len)
                     }
                 }
                 break;
-                case RAW_GPSEPHB:
+                case RAW_GPSEPHB:               
                 {
                     GPSEPHB_Decoded_t eph;
                     decode_gpsephb((uint8_t *)packet, packet->length, &eph);
