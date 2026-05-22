@@ -32,7 +32,7 @@
 
 #define RADIO_NODE RIP_NODE
 
-#define GNSS_TYPE "gpsephb|rmc|gga|gll|gsa|gst|gsv|vtg|zda"
+#define GNSS_TYPE "gpsephb|bd3ephb|gloephb|galephb|prangeb|prange2b|rmc|gga|gll|gsa|gst|gsv|vtg|zda"
 
 /*  node structure. */
 static struct cmd_node vty_node =

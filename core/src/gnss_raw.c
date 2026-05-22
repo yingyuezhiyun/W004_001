@@ -17,6 +17,8 @@
 #define M_PI 3.14159265358979323846
 #endif
 
+#define TEST_GPSEPHB_FILE_PATH "/root/gps_ephe.csv"
+
 // #define Header (0x43534847)
 #define Header (0x47485343) //
 
@@ -541,13 +543,83 @@ static void print_gpsephb(const GPSEPHB_Decoded_t *eph, uint32_t payload_crc_cal
            (eph->crc24 == payload_crc_calc) ? "OK" : "BAD");
 }
 
+
+void gpsephb_file_header()
+{
+    FILE *f = fopen(TEST_GPSEPHB_FILE_PATH, "w");
+    if (f)
+    {
+        fprintf(f, "gps_satid,gps_sv_accuracy,gps_sv_health,gps_week,gps_toe,gps_toc,"
+                   "gps_af0,gps_af1,gps_af2,"
+                   "gps_iode,gps_iodc,"
+                   "gps_idot,gps_crs,gps_crc,gps_cus,gps_cuc,gps_cis,gps_cic,gps_delta_n,"
+                   "gps_m0,gps_ecc,gps_a_half,gps_omega0,gps_i0,gps_omega,gps_omegadot,gps_tgd,"
+                   "gps_code_on_l2,gps_l2p_data_flag,gps_fit\n");
+    }
+    fclose(f);
+}
+
+void gpsephb_file_header2()
+{
+    FILE *f = fopen(TEST_GPSEPHB_FILE_PATH, "w");
+    if (f)
+    {
+        fprintf(f, "卫星号,用户等效距离精度(m),星自主健康标识,时间周计数,卫星星历参考时间(s),卫星钟参考时刻(s),"
+                   "卫星钟钟差改正参数(s),卫星钟钟速改正参数(s/s),卫星钟钟漂改正参数(s/s^2),"
+                   "卫星星历数据期号,卫星钟参数期卷号,"
+                   "卫星轨道倾角变化率(π/s),卫星轨道半径正弦调和改正项的振幅(m),卫星轨道半径余弦调和改正项的振幅(m),"
+                   "卫星纬度幅角正弦调和改正项的振幅(rad),卫星纬度幅角余弦调和改正项的振幅(rad),"
+                   "卫星轨道倾角正弦调和改正项的振幅(rad),卫星轨道倾角余弦调和改正项的振幅(rad),"
+                   "卫星平均运动速率与计算值之差(π/s),"
+                   "卫星参考时间的平近点角(π),卫星轨道偏心率,卫星轨道长半轴的平方根(m^1/2),卫星按参考时间计算的升交点赤经(π),卫星参考时间的轨道倾角(π),卫星近地点幅角(π),卫星升交点赤经变化率(π/s),卫星L1和L2信号频率的群延迟差(s),"
+                   "L2测距码标志,L2P码导航电文可用状态,曲线拟合标志\n");
+    }
+    fclose(f);
+}
+
+
+
+void gpsephb_to_save(const GPSEPHB_Decoded_t *eph)
+{
+    FILE *f = fopen(TEST_GPSEPHB_FILE_PATH, "a+");
+    if (f)
+    {
+        char buffer[2048];
+        snprintf(buffer, sizeof(buffer), "%u,%u,%u,%u,%u,%u,"
+                                         "% .12e,% .12e,% .12e,"
+                                         "%u,%u,"
+                                         "% .12e,% .12e,% .12e,% .12e,% .12e,% .12e,% .12e,% .12e,"
+                                         "% .12e,% .12e,% .12e,% .12e,% .12e,% .12e,% .12e,% .12e,"
+                                         "%u,%u,%u\n",
+                 eph->gps_satid, eph->gps_sv_accuracy, eph->gps_sv_health, eph->gps_week, eph->gps_toe, eph->gps_toc,
+                 eph->gps_af0, eph->gps_af1, eph->gps_af2,
+                 eph->gps_iode, eph->gps_iodc,
+                 eph->gps_idot, eph->gps_crs, eph->gps_crc, eph->gps_cus, eph->gps_cuc, eph->gps_cis, eph->gps_cic, eph->gps_delta_n,
+                 eph->gps_m0, eph->gps_ecc, eph->gps_a_half, eph->gps_omega0, eph->gps_i0, eph->gps_omega, eph->gps_omegadot, eph->gps_tgd,
+                 eph->gps_code_on_l2, eph->gps_l2p_data_flag, eph->gps_fit);
+        fputs(buffer, f);
+    }
+    fclose(f);
+}
+
 static void print_gpsephb_simple(const GPSEPHB_Decoded_t *eph)
 {
-    printf("%d % .12e % .12e % .12e % .12e % .12e % .12e\n",
+    // printf("%d % .12e % .12e % .12e % .12e % .12e % .12e\n",
+    //        eph->gps_satid, eph->gps_i0, eph->gps_omega0, eph->gps_ecc, eph->gps_omega, eph->gps_m0, eph->gps_delta_n);
+    // printf("%d %u %u % .12e % .12e % .12e % .12e % .12e % .12e\n\n",
+    //        eph->gps_satid, eph->gps_toe, eph->gps_toc, eph->gps_cuc, eph->gps_cus, eph->gps_crc, eph->gps_crs, eph->gps_omegadot);
+
+    printf("%d %u %u % .12e % .12e % .12e % .12e % .12e % .12e % .12e % .12e %u % .12e \n",
+           eph->gps_satid, eph->gps_toe, eph->gps_toc, eph->gps_af0, eph->gps_af1, eph->gps_cuc,
+           eph->gps_cus, eph->gps_crc, eph->gps_crs, eph->gps_cic, eph->gps_cis, eph->gps_iodc, eph->gps_omegadot);
+    printf("%d % .12e % .12e % .12e % .12e % .12e % .12e\n\n",
            eph->gps_satid, eph->gps_i0, eph->gps_omega0, eph->gps_ecc, eph->gps_omega, eph->gps_m0, eph->gps_delta_n);
-    printf("%d %u %u % .12e % .12e % .12e % .12e % .12e % .12e\n\n",
-           eph->gps_satid, eph->gps_toe, eph->gps_toc, eph->gps_cuc, eph->gps_cus, eph->gps_crc, eph->gps_crs, eph->gps_omegadot);
 }
+
+
+
+
+
 
 int handle_gnss_raw(const uint8_t *data, size_t len)
 {
@@ -662,6 +734,7 @@ int handle_gnss_raw(const uint8_t *data, size_t len)
                     decode_gpsephb((uint8_t *)packet, packet->length, &eph);
                     // print_gpsephb(&eph, crc_calculated);
                     print_gpsephb_simple(&eph);
+                    // gpsephb_to_save(&eph);
                 }
                 break;
                 default:

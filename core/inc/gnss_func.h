@@ -25,39 +25,39 @@ extern "C"
     typedef struct
     {
         uint8_t head[8];
-        uint16_t gps_week_count;   // 占位12；
-        uint32_t gps_tow_s;        // 占位20；
-        uint8_t gps_satid;         // 占位6； 卫星号
-        uint8_t gps_sv_accuracy;   // 占位4； 用户等效距离精度 m
-        uint8_t gps_sv_health;     // 占位6； 卫星自主健康标识
-        uint16_t gps_week;         // 占位10； GPS 时间周计数，0~1023
-        uint16_t gps_toe;          // 占位16； GPS 卫星星历参考时间 s
-        uint16_t gps_toc;          // 占位16； GPS 卫星钟参考时刻  s
-        double gps_af0;            // 占位22； GPS 卫星钟钟差改正参数 s
-        double gps_af1;            // 占位16； GPS 卫星钟钟速改正参数 s/s
-        double gps_af2;            // 占位8； GPS 卫星钟钟漂改正参数 s/s^2
-        uint8_t gps_iode;          // 占位8； GPS 卫星星历数据期号
-        uint16_t gps_iodc;         // 占位10； GPS 卫星钟参数期卷号
-        double gps_idot;           // 占位14； GPS 卫星轨道倾角变化率  π/s
-        double gps_crs;            // 占位16； GPS 卫星轨道半径的正弦调和改正项的振幅  m
-        double gps_crc;            // 占位16； GPS 卫星轨道半径的余弦调和改正项的振幅 m
-        double gps_cus;            // 占位16； GPS 卫星纬度幅角的正弦调和改正项的振幅 rad
-        double gps_cuc;            // 占位16； GPS 卫星纬度幅角的余弦调和改正项的振幅 rad
-        double gps_cis;            // 占位16； GPS 卫星轨道倾角的正弦调和改正项的振幅 rad
-        double gps_cic;            // 占位16； GPS 卫星轨道倾角的余弦调和改正项的振幅 rad
-        double gps_delta_n;        // 占位14； GPS 卫星平均运动速率与计算值之差 π/s
-        double gps_m0;             // 占位22； GPS 卫星参考时间的平近点角 π
-        double gps_ecc;            // 占位33； GPS 卫星轨道偏心率
-        double gps_a_half;         // 占位32； GPS 卫星轨道长半轴的平方根 m1/2
-        double gps_omega0;         // 占位32； GPS 卫星按参考时间计算的升交点赤经 π
-        double gps_i0;             // 占位32； GPS 卫星参考时间的轨道倾角  π
-        double gps_omega;          // 占位32； GPS 卫星近地点幅角  π
-        double gps_omegadot;       // 占位24； GPS 卫星升交点赤经变化率 π/s
-        double gps_tgd;            // 占位8； GPS 卫星L1 和L2 信号频率的群延迟差 s
-        uint8_t gps_code_on_l2;    // 占位2； GPS L2测距码标志：00 = 保留；01 = P码；10 = C/A码；11 = L2C码
-        uint8_t gps_l2p_data_flag; // 占位1； 0=L2 P码导航电文可用；1=L2 P码导航电文不可用
-        uint8_t gps_fit;           // 占位1； 0=曲线拟合间隔为4小时；1=曲线拟合间隔大于4小时
-        uint8_t reserved;          // 占位4； 保留
+        uint16_t gps_week_count;   // 占位12；输出数据时刻，GPS 时间，周计数为实际值；-
+        uint32_t gps_tow_s;        // 占位20；GPS 周内秒；-
+        uint8_t gps_satid;         // 占位6；按卫星号从小到大顺序输出；-
+        uint8_t gps_sv_accuracy;   // 占位4；用户等效距离精度；m
+        uint8_t gps_sv_health;     // 占位6；卫星自主健康标识；-
+        uint16_t gps_week;         // 占位10；GPS 时间周计数，0~1023；-
+        uint16_t gps_toe;          // 占位16；GPS 卫星星历参考时间；s
+        uint16_t gps_toc;          // 占位16；GPS 卫星钟参考时刻；s
+        double gps_af0;            // 占位22；GPS 卫星钟钟差改正参数；s
+        double gps_af1;            // 占位16；GPS 卫星钟钟速改正参数；s/s
+        double gps_af2;            // 占位8；GPS 卫星钟钟漂改正参数；s/s^2
+        uint8_t gps_iode;          // 占位8；GPS 卫星星历数据期号；-
+        uint16_t gps_iodc;         // 占位10；GPS 卫星钟参数期卷号；-
+        double gps_idot;           // 占位14；GPS 卫星轨道倾角变化率；π/s
+        double gps_crs;            // 占位16；GPS 卫星轨道半径的正弦调和改正项的振幅；m
+        double gps_crc;            // 占位16；GPS 卫星轨道半径的余弦调和改正项的振幅；m
+        double gps_cus;            // 占位16；GPS 卫星纬度幅角的正弦调和改正项的振幅；rad
+        double gps_cuc;            // 占位16；GPS 卫星纬度幅角的余弦调和改正项的振幅；rad
+        double gps_cis;            // 占位16；GPS 卫星轨道倾角的正弦调和改正项的振幅；rad
+        double gps_cic;            // 占位16；GPS 卫星轨道倾角的余弦调和改正项的振幅；rad
+        double gps_delta_n;        // 占位14；GPS 卫星平均运动速率与计算值之差；π/s
+        double gps_m0;             // 占位22；GPS 卫星参考时间的平近点角；π
+        double gps_ecc;            // 占位33；GPS 卫星轨道偏心率；-
+        double gps_a_half;         // 占位32；GPS 卫星轨道长半轴的平方根；m1/2
+        double gps_omega0;         // 占位32；GPS 卫星按参考时间计算的升交点赤经；π
+        double gps_i0;             // 占位32；GPS 卫星参考时间的轨道倾角；π
+        double gps_omega;          // 占位32；GPS 卫星近地点幅角；π
+        double gps_omegadot;       // 占位24；GPS 卫星升交点赤经变化率；π/s
+        double gps_tgd;            // 占位8；GPS 卫星 L1 和 L2 信号频率的群延迟差；s
+        uint8_t gps_code_on_l2;    // 占位2；GPS L2 测距码标志：00 = 保留；01 = P 码；10 = C/A 码；11 = L2C 码；-
+        uint8_t gps_l2p_data_flag; // 占位1；0=L2 P 码导航电文可用；1=L2 P 码导航电文不可用；-
+        uint8_t gps_fit;           // 占位1；0=曲线拟合间隔为 4 小时；1=曲线拟合间隔大于 4 小时；-
+        uint8_t reserved;          // 占位4；保留；-
         uint32_t crc24;
     } GPSEPHB_Decoded_t;
 
@@ -101,222 +101,285 @@ extern "C"
     typedef struct
     {
         uint8_t head[8];
-        uint16_t gps_week_count; // GPS 周计数：用于区分数据包的时间标识（12 位原始字段）
-        uint32_t gps_tow_s;      // GPS 周内秒：接收机时间戳（20 位原始字段）
-        uint8_t bd3_satid;       // 卫星号：卫星 PRN/编号（6 位）
-        uint8_t bd3_sattype;     // 卫星类型：GEO/MEO/IGSO 等（3 位，按截图定义）
-        uint16_t bd3_week;       // BDS 周计数：北斗周（13 位原始字段，直接输出）
-        uint32_t bd3_toe;        // 星历参考时刻 Toe：星历参考时间（11 位原始字段，单位在协议中需乘 300s）
-        uint32_t bd3_toc;        // 钟参考时刻 Toc：卫星钟参考时间（11 位原始字段，单位在协议中需乘 300s）
-        double bd3_af0;          // 卫星钟差 af0：以秒为单位的钟差修正（25 位有符号，需按 -34 指数缩放）
-        double bd3_af1;          // 卫星钟速 af1：秒/秒（22 位有符号，需按 -50 指数缩放）
-        double bd3_af2;          // 卫星钟漂 af2：秒/秒^2（11 位有符号，需按 -66 指数缩放）
-        uint8_t bd3_iode;        // 星历数据期号 IODE（8 位）
-        uint16_t bd3_iodc;       // 钟参数期卷号 IODC（16 位）
-        double bd3_idot;         // 轨道倾角变化率 idot：单位为 rad/s（15 位有符号，按 -44 π/2^exp 缩放）
-        double bd3_crs;          // Crs：轨道半径正弦调和改正项振幅，单位 m（24 位有符号，按 -8 缩放）
-        double bd3_crc;          // Crc：轨道半径余弦调和改正项振幅，单位 m（24 位有符号，按 -8 缩放）
-        double bd3_cus;          // Cus：纬度幅角正弦调和改正项振幅，单位 rad（21 位有符号，按 -30 缩放）
-        double bd3_cuc;          // Cuc：纬度幅角余弦调和改正项振幅，单位 rad（21 位有符号，按 -30 缩放）
-        double bd3_cis;          // Cis：轨道倾角正弦调和改正项振幅，单位 rad（16 位有符号，按 -30 缩放）
-        double bd3_cic;          // Cic：轨道倾角余弦调和改正项振幅，单位 rad（16 位有符号，按 -30 缩放）
-        double bd3_delta_n0;     // 平均运动修正 Δn0：单位 rad/s（17 位有符号，按 -44 π/2^exp 缩放）
-        double bd3_delta_n0_dot; // Δn0 的一阶导数：单位 rad/s^2（23 位有符号，按 -57 缩放）
-        double bd3_m0;           // 平近点角 M0：单位 rad（33 位无符号/有符号按截图处理，按 -32 π/2^exp 缩放）
-        double bd3_ecc;          // 偏心率 e（33 位无符号，按 -34 缩放）
-        double bd3_deltaA;       // 轨道长半轴修正 ΔA：单位 m（26 位无符号/按截图缩放 -9）
-        double bd3_adot;         // ADOT：单位 m/s（25 位有符号，按 -21 缩放）
-        double bd3_omega0;       // 升交点赤经 Ω0：单位 rad（33 位，按 -32 π/2^exp 缩放）
-        double bd3_i0;           // 轨道倾角 i0：单位 rad（33 位，按 -32 π/2^exp 缩放）
-        double bd3_omega;        // 近地点幅角 ω：单位 rad（33 位，按 -32 π/2^exp 缩放）
-        double bd3_omegadot;     // 升交点赤经变化率 Ωdot：单位 rad/s（19 位有符号，按 -44 缩放）
-        double bd3_tgdb1cp;      // TGDB1Cp：B1C 频段的群延迟差，单位 s（12 位有符号，按 -34 缩放）
-        double bd3_tgdb2ap;      // TGDB2Ap：B2A 频段的群延迟差，单位 s（12 位有符号，按 -34 缩放）
-        double bd3_iscb1cd;      // ISCB1Cd：卫星常数/干扰校正项，单位 s（12 位有符号，按 -34 缩放）
-        uint8_t bd3_reserved;    // 保留位（2 位）
-        uint32_t crc24;          // 嵌入的 CRC24（24 位）
+        uint16_t gps_week_count; // 占位12；输出数据时刻，GPS 时间，周计数为实际值；-
+        uint32_t gps_tow_s;      // 占位20；GPS 周内秒；-
+        uint8_t bd3_satid;       // 占位6；按卫星号从小到大顺序输出；-
+        uint8_t bd3_sattype;     // 占位3；1-GEO 2-MEO 4-IGSO；-
+        uint16_t bd3_week;       // 占位13；BDS 时间周计数；-
+        uint32_t bd3_toe;        // 占位11；BDS 卫星星历数据参考时刻；s
+        uint32_t bd3_toc;        // 占位11；BDS 卫星钟数据参考时刻；s
+        double bd3_af0;          // 占位25；BDS 卫星钟钟差改正参数；s
+        double bd3_af1;          // 占位22；BDS 卫星钟钟速改正参数；s/s
+        double bd3_af2;          // 占位11；BDS 卫星钟钟漂改正参数；s/s2
+        uint8_t bd3_iode;        // 占位8；BDS 卫星星历数据龄期,注意转 RINEX 时转为 AODE；-
+        uint16_t bd3_iodc;       // 占位16；BDS 卫星时钟数据龄期；-
+        double bd3_idot;         // 占位15；BDS 卫星轨道倾角变化率；π/s
+        double bd3_crs;          // 占位24；BDS 卫星轨道半径正弦调和改正项的振幅；m
+        double bd3_crc;          // 占位24；BDS 卫星轨道半径的余弦调和改正项的振幅；m
+        double bd3_cus;          // 占位21；BDS 卫星纬度幅角的正弦调和改正项的振幅；rad
+        double bd3_cuc;          // 占位21；BDS 卫星纬度幅角的余弦调和改正项的振幅；rad
+        double bd3_cis;          // 占位16；BDS 卫星轨道倾角的正弦调和改正项的振幅；rad
+        double bd3_cic;          // 占位16；BDS 卫星轨道倾角的余弦调和改正项的振幅；rad
+        double bd3_delta_n0;     // 占位17；BDS 卫星平均运动速率与计算值之差；π/s
+        double bd3_delta_n0_dot; // 占位23；RINEX 中没有，需放在保留字段处；π/s2
+        double bd3_m0;           // 占位33；BDS 卫星参考时间的平近点角；π
+        double bd3_ecc;          // 占位33；BDS 卫星轨道偏心率；-
+        double bd3_deltaA;       // 占位26；与 SatType 共同计算得到(A)1/2；m
+        double bd3_adot;         // 占位25；BDS ADOT；m/s
+        double bd3_omega0;       // 占位33；BDS 卫星按参考时间计算的升交点赤经；π
+        double bd3_i0;           // 占位33；BDS 卫星参考时间的轨道倾角；π
+        double bd3_omega;        // 占位33；BDS 卫星近地点幅角；π
+        double bd3_omegadot;     // 占位19；BDS 卫星升交点赤经变化率；π/s
+        double bd3_tgdb1cp;      // 占位12；B1C 导频分量试时延差；s
+        double bd3_tgdb2ap;      // 占位12；B2A 导频分量试时延差；s
+        double bd3_iscb1cd;      // 占位12；B1C 数据分量相对于 B1C 导频分量的时延修正项；s
+        uint8_t bd3_reserved;    // 占位2；保留；-
+        uint32_t crc24;          // 占位24；校验范围从帧头至有效数据；-
     } BD3EPHB_Decoded_t;
 
     typedef struct
     {
         uint8_t head[8];
-        uint16_t gps_week_count; // GPS 周计数（12 位原始字段）
-        uint32_t gps_tow_s;      // GPS 周内秒（20 位原始字段）
-        uint8_t glo_satid;       // GLONASS 卫星号（6 位）
-        uint8_t glo_freq;        // 频率通道号（5 位）
-        uint8_t glo_bn_msb;      // Bn 字的 MSB（1 位，健康标志）
-        uint8_t glo_n4;          // GLO-M N4（5 位，4 年周期计数）
-        uint16_t glo_nt;         // GLO-M NT（11 位，年内天数）
-        uint16_t glo_tk;         // GLO tk（12 位，含小时/分钟/30s 标志）
-        uint8_t glo_tb;          // GLO tb（7 位，参考时间，单位见说明）
-        double glo_gamma;        // 预测的载波频率偏差 γn(tb)（11 位有符号，按 2^-40 缩放）
-        double glo_tau;          // 卫星时间改正 τn(tb)（22 位有符号，按 2^-30 缩放，单位 s）
-        double glo_x;            // X 坐标（Int27，按 2^-11 缩放，单位 km）
-        double glo_x_dot;        // X 一阶导数（Int24，按 2^-20 缩放，单位 km/s）
-        double glo_x_ddot;       // X 二阶导数（Int5，按 2^-30 缩放，单位 km/s^2）
-        double glo_y;            // Y 坐标（Int27，按 2^-11 缩放，单位 km）
-        double glo_y_dot;        // Y 一阶导数（Int24，按 2^-20 缩放，单位 km/s）
-        double glo_y_ddot;       // Y 二阶导数（Int5，按 2^-30 缩放，单位 km/s^2）
-        double glo_z;            // Z 坐标（Int27，按 2^-11 缩放，单位 km）
-        double glo_z_dot;        // Z 一阶导数（Int24，按 2^-20 缩放，单位 km/s）
-        double glo_z_ddot;       // Z 二阶导数（Int5，按 2^-30 缩放，单位 km/s^2）
-        uint32_t crc24;          // 嵌入 CRC24（24 位）
+        uint16_t gps_week_count; // 占位12；输出数据时刻，GPS 时间，周计数为实际值；-
+        uint32_t gps_tow_s;      // 占位20；GPS 周内秒；-
+        uint8_t glo_satid;       // 占位6；按卫星号从小到大顺序输出；-
+        uint8_t glo_freq;        // 占位5；GLONASS 卫星的频率通道号：0=-07；1=-06；..；19=+12；20=+13；-
+        uint8_t glo_bn_msb;      // 占位1；星历健康状况标志；-
+        uint8_t glo_n4;          // 占位5；从 1996 年开始的，以 4 年为周期的周期数；year
+        uint16_t glo_nt;         // 占位11；以四年为间隔，从闰年的一月一日开始的日历天数；day
+        uint16_t glo_tk;         // 占位12；当天 GLONASS 子帧的起点为零点的时间。（最高有 5 位）MSB5 为小时数（整数），之后的 6 位为分钟数（整数），最低有效位（LSB）为 30 秒的采样间隔数；-
+        uint8_t glo_tb;          // 占位7；GLONASS 导航数据的参考时间；min
+        double glo_gamma;        // 占位11；预计的 GLONASS 卫星载波频率导数（相对于名义值）；-
+        double glo_tau;          // 占位22；相对 GLONASS 系统时间的卫星时间改正值；s
+        double glo_x;            // 占位27；用于组成 PZ-90 坐标系下 GLONASS 卫星速度矢量的 X 分量；km
+        double glo_x_dot;        // 占位24；用于组成 PZ-90 坐标系下 GLONASS 卫星速度矢量的 X 分量；km/s
+        double glo_x_ddot;       // 占位5；用于组成 PZ-90 坐标系下 GLONASS 卫星速度矢量的 X 分量；km/s2
+        double glo_y;            // 占位27；用于组成 PZ-90 坐标系下 GLONASS 卫星速度矢量的 Y 分量；km
+        double glo_y_dot;        // 占位24；用于组成 PZ-90 坐标系下 GLONASS 卫星速度矢量的 Y 分量；km/s
+        double glo_y_ddot;       // 占位5；用于组成 PZ-90 坐标系下 GLONASS 卫星速度矢量的 Y 分量；km/s2
+        double glo_z;            // 占位27；用于组成 PZ-90 坐标系下 GLONASS 卫星速度矢量的 Z 分量；km
+        double glo_z_dot;        // 占位24；用于组成 PZ-90 坐标系下 GLONASS 卫星速度矢量的 Z 分量；km/s
+        double glo_z_ddot;       // 占位5；用于组成 PZ-90 坐标系下 GLONASS 卫星速度矢量的 Z 分量；km/s2
+        uint32_t crc24;          // 占位24；校验范围从帧头至有效数据；-
     } GLOEPHB_Decoded_t;
 
     typedef struct
     {
         uint8_t head[8];
-        uint16_t gps_week_count;   // GPS 周计数（12 位）
-        uint32_t gps_tow_s;        // GPS 周内秒（20 位）
-        uint8_t gal_satid;         // GAL 卫星号（6 位）
-        uint8_t gal_sisa;          // GAL SISA Index (Uint8)
-        uint8_t gal_e5b_sv_health; // E5b SV Health (2 bits)
-        uint8_t gal_e5b_valid;     // E5b Data Validity (1 bit)
-        uint8_t gal_e1b_health;    // E1-B SV Health (2 bits)
-        uint8_t gal_e1b_valid;     // E1-B Data Validity (1 bit)
-        uint16_t gal_week;         // GAL Week (12 bits)
-        uint32_t gal_toe;          // GAL toe (14 bits) in s (scale *60)
-        uint32_t gal_toc;          // GAL toc (14 bits) in s (scale *60)
-        double gal_af0;            // Int31, scale 2^-34 s
-        double gal_af1;            // Int21, scale 2^-46 s/s
-        double gal_af2;            // Int6,  scale 2^-59 s/s^2
-        uint16_t gal_iodnav;       // Uint10
-        double gal_idot;           // Int14, scale 2^-43 π/s
-        double gal_crs;            // Int16, scale 2^-5 m
-        double gal_crc;            // Int16, scale 2^-5 m
-        double gal_cus;            // Int16, scale 2^-29 rad
-        double gal_cuc;            // Int16, scale 2^-29 rad
-        double gal_cis;            // Int16, scale 2^-29 rad
-        double gal_cic;            // Int16, scale 2^-29 rad
-        double gal_delta_n;        // Int16, scale 2^-43 π/s
-        double gal_m0;             // Int32, scale 2^-31 π
-        double gal_ecc;            // Uint32, scale 2^-33
-        double gal_a_half;         // Uint32, scale 2^-19 m^1/2
-        double gal_omega0;         // Int32, scale 2^-31 π
-        double gal_i0;             // Int32, scale 2^-31 π
-        double gal_omega;          // Int32, scale 2^-31 π
-        double gal_omegadot;       // Int24, scale 2^-43 π/s
-        double gal_bgd_e5a_e1;     // Int10, scale 2^-32 s
-        double gal_bgd_e5b_e1;     // Int10, scale 2^-32 s
-        uint8_t gal_navtype;       // Uint2
-        uint8_t gal_reserved;      // Uint4
-        uint32_t crc24;            // Uint24
+        uint16_t gps_week_count;   // 占位12；输出数据时刻，GPS 时间，周计数为实际值；-
+        uint32_t gps_tow_s;        // 占位20；GPS 周内秒；-
+        uint8_t gal_satid;         // 占位6；按卫星号从小到大顺序输出；-
+        uint8_t gal_sisa;          // 占位8；空间信号精度：0~49 = 0cm~49cm；-
+        uint8_t gal_e5b_sv_health; // 占位2；0 = 信号正常；1 = 信号停止服务；2 = 信号将停止服务；3 = 信号处于测试状态；-
+        uint8_t gal_e5b_valid;     // 占位1；E5b 导航数据有效状态标志；-
+        uint8_t gal_e1b_health;    // 占位2；0 = 信号正常；1 = 信号停止服务；2 = 信号将停止服务；3 = 信号处于测试状态；-
+        uint8_t gal_e1b_valid;     // 占位1；E1-B 导航数据有效状态标志；-
+        uint16_t gal_week;         // 占位12；Galileo 系统时间周计数；week
+        uint32_t gal_toe;          // 占位14；GAL 卫星星历参考时间；s
+        uint32_t gal_toc;          // 占位14；GAL 卫星钟参考时刻；s
+        double gal_af0;            // 占位31；GAL 卫星钟钟差改正参数；s
+        double gal_af1;            // 占位21；GAL 卫星钟钟速改正参数；s/s
+        double gal_af2;            // 占位6；GAL 卫星钟钟漂改正参数；s/s2
+        uint16_t gal_iodnav;       // 占位10；GAL 导航数据的期卷号；-
+        double gal_idot;           // 占位14；GAL 卫星轨道倾角变化率；π/s
+        double gal_crs;            // 占位16；GAL 卫星轨道半径的正弦调和改正项的振幅；m
+        double gal_crc;            // 占位16；GAL 卫星轨道半径的余弦调和改正项的振幅；m
+        double gal_cus;            // 占位16；GAL 卫星纬度幅角的正弦调和改正项的振幅；rad
+        double gal_cuc;            // 占位16；GAL 卫星纬度幅角的余弦调和改正项的振幅；rad
+        double gal_cis;            // 占位16；GAL 卫星轨道倾角的正弦调和改正项的振幅；rad
+        double gal_cic;            // 占位16；GAL 卫星轨道倾角的余弦调和改正项的振幅；rad
+        double gal_delta_n;        // 占位16；GAL 卫星平均运动速率与计算值之差；π/s
+        double gal_m0;             // 占位32；GAL 卫星参考时间的平近点角；π
+        double gal_ecc;            // 占位32；GAL 卫星轨道偏心率；-
+        double gal_a_half;         // 占位32；GAL 卫星轨道长半轴的平方根；m1/2
+        double gal_omega0;         // 占位32；GAL 卫星按参考时间计算的升交点赤经；π
+        double gal_i0;             // 占位32；GAL 卫星参考时间的轨道倾角；π
+        double gal_omega;          // 占位32；GAL 卫星近地点幅角；π
+        double gal_omegadot;       // 占位24；GAL 卫星升交点赤经变化率；π/s
+        double gal_bgd_e5a_e1;     // 占位10；GAL E1/E5a 的群延迟；s
+        double gal_bgd_e5b_e1;     // 占位10；GAL E1/E5b 的群延迟；s
+        uint8_t gal_navtype;       // 占位2；星历类型标志：1-E1 星历；2-E5b 星历；3-E1+E5b 星历；-
+        uint8_t gal_reserved;      // 占位4；保留位；-
+        uint32_t crc24;            // 占位24；校验范围从帧头至有效数据；-
     } GALEPHB_Decoded_t;
 
     typedef struct
     {
         uint8_t head[8];
-        uint16_t gps_week_count; // GPS 周计数（12 位）
-        uint32_t gps_tow_s;      // GPS 周内秒（20 位）
-        uint8_t bds_satid;       // BDS 卫星号（6 位）
-        uint8_t bds_sattype;     // BDS SatType（3 位，1=GEO 2=MEO 4=IGSO）
-        uint16_t bds_week;       // BDS 周计数（13 位）
-        uint32_t bds_toe;        // BDS Toe（11 位，单位需乘 300s）
-        uint32_t bds_toc;        // BDS Toc（11 位，单位需乘 300s）
-        double bds_af0;          // Int25, scale 2^-34 s
-        double bds_af1;          // Int22, scale 2^-50 s/s
-        double bds_af2;          // Int11, scale 2^-66 s/s^2
-        uint8_t bds_iode;        // Uint8
-        uint16_t bds_iodc;       // Uint16
-        double bds_idot;         // Int15, scale 2^-44 π/s
-        double bds_crs;          // Int24, scale 2^-8 m
-        double bds_crc;          // Int24, scale 2^-8 m
-        double bds_cus;          // Int21, scale 2^-30 rad
-        double bds_cuc;          // Int21, scale 2^-30 rad
-        double bds_cis;          // Int16, scale 2^-30 rad
-        double bds_cic;          // Int16, scale 2^-30 rad
-        double bds_delta_n0;     // Int17, scale 2^-44 π/s
-        double bds_delta_n0_dot; // Int23, scale 2^-57 π/s^2 (保留或备用)
-        double bds_m0;           // Int33, scale 2^-32 π
-        double bds_ecc;          // Uint33, scale 2^-34
-        double bds_deltaA;       // Int26, scale 2^-9 m
-        double bds_adot;         // Int25, scale 2^-21 m/s
-        double bds_omega0;       // Int33, scale 2^-32 π
-        double bds_i0;           // Int33, scale 2^-32 π
-        double bds_omega;        // Int33, scale 2^-32 π
-        double bds_omegadot;     // Int19, scale 2^-44 π/s
-        double bds_tgdb2bI;      // Int12, scale 2^-34 s
-        uint32_t bds_reserved;   // Reserved (26 bits)
-        uint32_t crc24;          // Uint24
+        uint16_t gps_week_count; // 占位12；输出数据时刻，GPS 时间，周计数为实际值；-
+        uint32_t gps_tow_s;      // 占位20；GPS 周内秒；-
+        uint8_t bds_satid;       // 占位6；按卫星号从小到大顺序输出；-
+        uint8_t bds_sattype;     // 占位3；1-GEO 2-MEO 4-IGSO；-
+        uint16_t bds_week;       // 占位13；BDS 时间周计数；-
+        uint32_t bds_toe;        // 占位11；BDS 卫星星历数据参考时刻；s
+        uint32_t bds_toc;        // 占位11；BDS 卫星钟数据参考时刻；s
+        double bds_af0;          // 占位25；BDS 卫星钟钟差改正参数；s
+        double bds_af1;          // 占位22；BDS 卫星钟钟速改正参数；s/s
+        double bds_af2;          // 占位11；BDS 卫星钟钟漂改正参数；s/s2
+        uint8_t bds_iode;        // 占位8；BDS 卫星星历数据龄期,注意转 RINEX 时转为 AODE；-
+        uint16_t bds_iodc;       // 占位16；BDS 卫星时钟数据龄期；-
+        double bds_idot;         // 占位15；BDS 卫星轨道倾角变化率；π/s
+        double bds_crs;          // 占位24；BDS 卫星轨道半径正弦调和改正项的振幅；m
+        double bds_crc;          // 占位24；BDS 卫星轨道半径的余弦调和改正项的振幅；m
+        double bds_cus;          // 占位21；BDS 卫星纬度幅角的正弦调和改正项的振幅；rad
+        double bds_cuc;          // 占位21；BDS 卫星纬度幅角的余弦调和改正项的振幅；rad
+        double bds_cis;          // 占位16；BDS 卫星轨道倾角的正弦调和改正项的振幅；rad
+        double bds_cic;          // 占位16；BDS 卫星轨道倾角的余弦调和改正项的振幅；rad
+        double bds_delta_n0;     // 占位17；BDS 卫星平均运动速率与计算值之差；π/s
+        double bds_delta_n0_dot; // 占位23；RINEX 中没有，需放在保留字段处；π/s2
+        double bds_m0;           // 占位33；BDS 卫星参考时间的平近点角；π
+        double bds_ecc;          // 占位33；BDS 卫星轨道偏心率；-
+        double bds_deltaA;       // 占位26；与 SatType 共同计算得到(A)1/2；m
+        double bds_adot;         // 占位25；BDS ADOT；m/s
+        double bds_omega0;       // 占位33；BDS 卫星按参考时间计算的升交点赤经；π
+        double bds_i0;           // 占位33；BDS 卫星参考时间的轨道倾角；π
+        double bds_omega;        // 占位33；BDS 卫星近地点幅角；π
+        double bds_omegadot;     // 占位19；BDS 卫星升交点赤经变化率；π/s
+        double bds_tgdb2bI;      // 占位12；B2b I 支路时延差；s
+        uint32_t bds_reserved;   // 占位26；保留；-
+        uint32_t crc24;          // 占位24；校验范围从帧头至有效数据；-
     } BD3CNAV3EPHB_Decoded_t;
 
     typedef struct
     {
         uint8_t head[8];
-        uint16_t gps_week_count; // GPS 周计数（12 位）
-        uint32_t gps_tow_s;      // GPS 周内秒（20 位）
-        uint8_t bds_satid;       // BDS 卫星号（6 位）
-        uint8_t bds_sattype;     // SatType（3 位）
-        uint16_t bds_week;       // BDS 周计数（13 位）
-        uint32_t bds_toe;        // BDS Toe（11 位，*300s）
-        uint32_t bds_toc;        // BDS Toc（11 位，*300s）
-        double bds_af0;          // Int25, scale 2^-34 s
-        double bds_af1;          // Int22, scale 2^-50 s/s
-        double bds_af2;          // Int11, scale 2^-66 s/s^2
-        uint8_t bds_iode;        // Uint8
-        uint16_t bds_iodc;       // Uint16
-        double bds_idot;         // Int15, scale 2^-44 π/s
-        double bds_crs;          // Int24, scale 2^-8 m
-        double bds_crc;          // Int24, scale 2^-8 m
-        double bds_cus;          // Int21, scale 2^-30 rad
-        double bds_cuc;          // Int21, scale 2^-30 rad
-        double bds_cis;          // Int16, scale 2^-30 rad
-        double bds_cic;          // Int16, scale 2^-30 rad
-        double bds_delta_n0;     // Int17, scale 2^-44 π/s
-        double bds_delta_n0_dot; // Int23, scale 2^-57 (保留)
-        double bds_m0;           // Int33, scale 2^-32 π
-        double bds_ecc;          // Uint33, scale 2^-34
-        double bds_deltaA;       // Int26, scale 2^-9 m
-        double bds_adot;         // Int25, scale 2^-21 m/s
-        double bds_omega0;       // Int33, scale 2^-32 π
-        double bds_i0;           // Int33, scale 2^-32 π
-        double bds_omega;        // Int33, scale 2^-32 π
-        double bds_omegadot;     // Int19, scale 2^-44 π/s
-        double bds_tgdb1cp;      // Int12, scale 2^-34 s
-        double bds_tgdb2ap;      // Int12, scale 2^-34 s
-        double bds_iscb1cd;      // Int12, scale 2^-34 s
-        uint8_t bds_reserved2;   // Reserved (2 bits)
-        uint32_t crc24;          // Uint24
+        uint16_t gps_week_count; // 占位12；输出数据时刻，GPS 时间，周计数为实际值；-
+        uint32_t gps_tow_s;      // 占位20；GPS 周内秒；-
+        uint8_t bds_satid;       // 占位6；按卫星号从小到大顺序输出；-
+        uint8_t bds_sattype;     // 占位3；1-GEO 2-MEO 4-IGSO；-
+        uint16_t bds_week;       // 占位13；BDS 时间周计数；-
+        uint32_t bds_toe;        // 占位11；BDS 卫星星历数据参考时刻；s
+        uint32_t bds_toc;        // 占位11；BDS 卫星钟数据参考时刻；s
+        double bds_af0;          // 占位25；BDS 卫星钟钟差改正参数；s
+        double bds_af1;          // 占位22；BDS 卫星钟钟速改正参数；s/s
+        double bds_af2;          // 占位11；BDS 卫星钟钟漂改正参数；s/s2
+        uint8_t bds_iode;        // 占位8；BDS 卫星星历数据龄期,注意转 RINEX 时转为 AODE；-
+        uint16_t bds_iodc;       // 占位16；BDS 卫星时钟数据龄期；-
+        double bds_idot;         // 占位15；BDS 卫星轨道倾角变化率；π/s
+        double bds_crs;          // 占位24；BDS 卫星轨道半径正弦调和改正项的振幅；m
+        double bds_crc;          // 占位24；BDS 卫星轨道半径的余弦调和改正项的振幅；m
+        double bds_cus;          // 占位21；BDS 卫星纬度幅角的正弦调和改正项的振幅；rad
+        double bds_cuc;          // 占位21；BDS 卫星纬度幅角的余弦调和改正项的振幅；rad
+        double bds_cis;          // 占位16；BDS 卫星轨道倾角的正弦调和改正项的振幅；rad
+        double bds_cic;          // 占位16；BDS 卫星轨道倾角的余弦调和改正项的振幅；rad
+        double bds_delta_n0;     // 占位17；BDS 卫星平均运动速率与计算值之差；π/s
+        double bds_delta_n0_dot; // 占位23；RINEX 中没有，需放在保留字段处；π/s2
+        double bds_m0;           // 占位33；BDS 卫星参考时间的平近点角；π
+        double bds_ecc;          // 占位33；BDS 卫星轨道偏心率；-
+        double bds_deltaA;       // 占位26；与 SatType 共同计算得到(A)1/2；m
+        double bds_adot;         // 占位25；BDS ADOT；m/s
+        double bds_omega0;       // 占位33；BDS 卫星按参考时间计算的升交点赤经；π
+        double bds_i0;           // 占位33；BDS 卫星参考时间的轨道倾角；π
+        double bds_omega;        // 占位33；BDS 卫星近地点幅角；π
+        double bds_omegadot;     // 占位19；BDS 卫星升交点赤经变化率；π/s
+        double bds_tgdb1cp;      // 占位12；B1C 导频分量试时延差；s
+        double bds_tgdb2ap;      // 占位12；B2A 导频分量试时延差；s
+        double bds_iscb1cd;      // 占位12；B1C 数据分量相对于 B1C 导频分量的时延修正项；s
+        uint8_t bds_reserved2;   // 占位2；保留；-
+        uint32_t crc24;          // 占位24；校验范围从帧头至有效数据；-
     } BD3CNAV1EPHB_Decoded_t;
 
     typedef struct
     {
         uint8_t head[8];
-        uint16_t gps_week_count; // GPS 周计数（12 位）
-        uint32_t gps_tow_s;      // GPS 周内秒（20 位）
-        uint8_t bds_satid;       // BDS 卫星号（6 位）
-        uint8_t bds_sattype;     // SatType（3 位）
-        uint16_t bds_week;       // BDS 周计数（13 位）
-        uint32_t bds_toe;        // BDS Toe（11 位，*300s）
-        uint32_t bds_toc;        // BDS Toc（11 位，*300s）
-        double bds_af0;          // Int25, scale 2^-34 s
-        double bds_af1;          // Int22, scale 2^-50 s/s
-        double bds_af2;          // Int11, scale 2^-66 s/s^2
-        uint8_t bds_iode;        // Uint8
-        uint16_t bds_iodc;       // Uint16
-        double bds_idot;         // Int15, scale 2^-44 π/s
-        double bds_crs;          // Int24, scale 2^-8 m
-        double bds_crc;          // Int24, scale 2^-8 m
-        double bds_cus;          // Int21, scale 2^-30 rad
-        double bds_cuc;          // Int21, scale 2^-30 rad
-        double bds_cis;          // Int16, scale 2^-30 rad
-        double bds_cic;          // Int16, scale 2^-30 rad
-        double bds_delta_n0;     // Int17, scale 2^-44 π/s
-        double bds_delta_n0_dot; // Int23, scale 2^-57 (保留)
-        double bds_m0;           // Int33, scale 2^-32 π
-        double bds_ecc;          // Uint33, scale 2^-34
-        double bds_AA;           // Int26, scale 2^-9 m (A)
-        double bds_adot;         // Int25, scale 2^-21 m/s
-        double bds_omega0;       // Int33, scale 2^-32 π
-        double bds_i0;           // Int33, scale 2^-32 π
-        double bds_omega;        // Int33, scale 2^-32 π
-        double bds_omegadot;     // Int19, scale 2^-44 π/s
-        double bds_tgdb1cp;      // Int12, scale 2^-34 s
-        double bds_tgdb2ap;      // Int12, scale 2^-34 s
-        double bds_iscb2ad;      // Int12, scale 2^-34 s
-        uint8_t bds_reserved;    // Uint2
-        uint32_t crc24;          // Uint24
+        uint16_t gps_week_count; // 占位12；输出数据时刻，GPS 时间，周计数为实际值；-
+        uint32_t gps_tow_s;      // 占位20；GPS 周内秒；-
+        uint8_t bds_satid;       // 占位6；按卫星号从小到大顺序输出；-
+        uint8_t bds_sattype;     // 占位3；1-GEO 2-MEO 4-IGSO；-
+        uint16_t bds_week;       // 占位13；BDS 时间周计数；-
+        uint32_t bds_toe;        // 占位11；BDS 卫星星历数据参考时刻；s
+        uint32_t bds_toc;        // 占位11；BDS 卫星钟数据参考时刻；s
+        double bds_af0;          // 占位25；BDS 卫星钟钟差改正参数；s
+        double bds_af1;          // 占位22；BDS 卫星钟钟速改正参数；s/s
+        double bds_af2;          // 占位11；BDS 卫星钟钟漂改正参数；s/s2
+        uint8_t bds_iode;        // 占位8；BDS 卫星星历数据龄期,注意转 RINEX 时转为 AODE；-
+        uint16_t bds_iodc;       // 占位16；BDS 卫星时钟数据龄期；-
+        double bds_idot;         // 占位15；BDS 卫星轨道倾角变化率；π/s
+        double bds_crs;          // 占位24；BDS 卫星轨道半径正弦调和改正项的振幅；m
+        double bds_crc;          // 占位24；BDS 卫星轨道半径的余弦调和改正项的振幅；m
+        double bds_cus;          // 占位21；BDS 卫星纬度幅角的正弦调和改正项的振幅；rad
+        double bds_cuc;          // 占位21；BDS 卫星纬度幅角的余弦调和改正项的振幅；rad
+        double bds_cis;          // 占位16；BDS 卫星轨道倾角的正弦调和改正项的振幅；rad
+        double bds_cic;          // 占位16；BDS 卫星轨道倾角的余弦调和改正项的振幅；rad
+        double bds_delta_n0;     // 占位17；BDS 卫星平均运动速率与计算值之差；π/s
+        double bds_delta_n0_dot; // 占位23；RINEX 中没有，需放在保留字段处；π/s2
+        double bds_m0;           // 占位33；BDS 卫星参考时间的平近点角；π
+        double bds_ecc;          // 占位33；BDS 卫星轨道偏心率；-
+        double bds_AA;           // 占位26；与 SatType 共同计算得到(A)1/2；m
+        double bds_adot;         // 占位25；BDS ADOT；m/s
+        double bds_omega0;       // 占位33；BDS 卫星按参考时间计算的升交点赤经；π
+        double bds_i0;           // 占位33；BDS 卫星参考时间的轨道倾角；π
+        double bds_omega;        // 占位33；BDS 卫星近地点幅角；π
+        double bds_omegadot;     // 占位19；BDS 卫星升交点赤经变化率；π/s
+        double bds_tgdb1cp;      // 占位12；B1C 导频分量试时延差；s
+        double bds_tgdb2ap;      // 占位12；B2A 导频分量试时延差；s
+        double bds_iscb2ad;      // 占位12；B2A 数据分量相对于 B2A 导频分量的时延修正项；s
+        uint8_t bds_reserved;    // 占位2；保留；-
+        uint32_t crc24;          // 占位24；校验范围从帧头至有效数据；-
     } BD3CNAV2EPHB_Decoded_t;
+
+    typedef struct
+    {
+        uint8_t head[12];
+        uint8_t time_system;  // 占位3；0-无效系统，1-BDS，2-GPS，3-GAL，4-GLO，5~7-保留；-
+        uint16_t week_num;    // 占位13；ID4=1 时为 BDS 周计数，ID4=2 时为 GPS 周计数，无效时为 0x1FFF；-
+        uint32_t sec_in_week; // 占位32；ID4=1 时为 BDS 周内秒，ID4=2 时为 GPS 周内秒，无效时为 0xFFFFFFFF；s
+        int8_t leap_second;   // 占位8；对应时间系统与 UTC 时间差，高位 1 表示负，无效时为 0x80；s
+        double accel_x;       // 占位17；加速度计 X 轴，高位 1 表示负，无效时取 0x10000；m/s^2
+        double accel_y;       // 占位17；加速度计 Y 轴，高位 1 表示负，无效时取 0x10000；m/s^2
+        double accel_z;       // 占位17；加速度计 Z 轴，高位 1 表示负，无效时取 0x10000；m/s^2
+        double gyro_x;        // 占位20；陀螺仪 X 轴，高位 1 表示负，无效时取 0x80000；°/s
+        double gyro_y;        // 占位20；陀螺仪 Y 轴，高位 1 表示负，无效时取 0x80000；°/s
+        double gyro_z;        // 占位20；陀螺仪 Z 轴，高位 1 表示负，无效时取 0x80000；°/s
+        double mag_x;         // 占位19；磁力计 X 轴，高位 1 表示负，无效时取 0x40000；gauss
+        double mag_y;         // 占位19；磁力计 Y 轴，高位 1 表示负，无效时取 0x40000；gauss
+        double mag_z;         // 占位19；磁力计 Z 轴，高位 1 表示负，无效时取 0x40000；gauss
+        uint32_t reserved0;   // 占位32；保留位，无效时为 0xFFFFFFFF；-
+        uint32_t reserved1;   // 占位32；保留位，无效时为 0xFFFFFFFF；-
+        uint32_t crc24;       // 占位24；CRC24 校验，校验范围从帧头至有效数据；-
+    } IMUDATAB_Decoded_t;
+
+    typedef struct
+    {
+        uint8_t head[12];
+        uint8_t time_system;    // 占位3；0-无效系统，1-BDS，2-GPS，3-GAL，4-GLO，5~7-保留；-
+        uint16_t week_num;      // 占位13；ID4=1 时为 BDS 周计数，ID4=2 时为 GPS 周计数，无效时为 0x1FFF；-
+        uint32_t sec_in_week;   // 占位32；ID4=1 时为 BDS 周内秒，ID4=2 时为 GPS 周内秒，无效时为 0xFFFFFFFF；s
+        int8_t leap_second;     // 占位8；对应时间系统与 UTC 时间差，高位 1 表示负，无效时为 0x80；s
+        uint8_t sys_status;     // 占位4；0：未定位 1：纯卫导 2：组合导航 3：纯惯导 4~15：保留；-
+        uint8_t pos_type;       // 占位6；0 = 无效解 1 = 单点解 2 = 伪距差分 3 = PPS 4 = 固定解 5 = 浮点解 6 = 航位推算 7 = 用户输入 8 = PPP 9~63:保留；-
+        uint8_t azi_type;       // 占位6；0 = 无效解 1 = 单点解 2 = 伪距差分 3 = PPS 4 = 固定解 5 = 浮点解 6 = 航位推算 7 = 用户输入 8 = PPP 9~63:保留；-
+        double latitude;        // 占位36；纬度，单位：度，北纬为正，南纬为负；度
+        double longitude;       // 占位36；经度，单位：度，东经为正，西经为负；度
+        double altitude;        // 占位30；大地高，单位：m；m
+        double east_velocity;   // 占位16；ENU 下东向速度，单位：m/s；m/s
+        double north_velocity;  // 占位16；ENU 下北向速度，单位：m/s；m/s
+        double up_velocity;     // 占位16；ENU 下对天速度，单位：m/s；m/s
+        double pitch;           // 占位16；俯仰角，单位：度，仰角为正，俯角为负，范围[-90,+90]；度
+        double roll;            // 占位16；横滚角，单位：度，右倾为正，左倾为负，范围[-180,+180]；度
+        double azimuth;         // 占位16；航向角，单位：度，范围[0,360]；度
+        double lat_sigma;       // 占位18；纬度标准差，单位：m；m
+        double lon_sigma;       // 占位18；经度标准差，单位：m；m
+        double altitude_sigma;  // 占位18；高程标准差，单位：m；m
+        double east_vel_sigma;  // 占位12；东向速度标准差，单位：m/s；m/s
+        double north_vel_sigma; // 占位12；北向速度标准差，单位：m/s；m/s
+        double up_vel_sigma;    // 占位12；天向速度标准差，单位：m/s；m/s
+        double pitch_sigma;     // 占位12；俯仰角标准差，单位：度；度
+        double roll_sigma;      // 占位12；横滚角标准差，单位：度；度
+        double azimuth_sigma;   // 占位12；航向角标准差，单位：度；度
+        uint8_t gnss_sat_m;     // 占位8；主天线卫星数，单位：颗，无效时为 0xFF；-
+        uint8_t gnss_sat_s;     // 占位8；从天线卫星数，单位：颗，无效时为 0xFF；-
+        double diff_age;        // 占位16；差分龄期，单位：s，无效时为 0xFFFF；s
+        uint8_t odo_flag;       // 占位1；1-里程计速度有效 0-里程计速度无效；-
+        uint8_t gear;           // 占位3；1-N；1-D；2-R；3-P；4~6-备用，无效时取 7；-
+        double fl_wheel_speed;  // 占位16；前左轮速，单位：m/s；m/s
+        double fr_wheel_speed;  // 占位16；前右轮速，单位：m/s；m/s
+        double rl_wheel_speed;  // 占位16；后左轮速，单位：m/s；m/s
+        double rr_wheel_speed;  // 占位16；后右轮速，单位：m/s；m/s
+        uint32_t reserved0;     // 占位32；保留位，无效时为 0xFFFFFFFF；-
+        uint32_t reserved1;     // 占位32；保留位，无效时为 0xFFFFFFFF；-
+        uint32_t crc24;         // 占位24；CRC24 校验，校验范围从帧头至有效数据；-
+    } POSDATAB_Decoded_t;
 
 /* PRANGEB: 每卫星伪距/载相/载噪比等观测/粗略信息报文解析结构 */
 #define PRANGEB_MAX_SATS 64
@@ -324,36 +387,34 @@ extern "C"
     typedef struct
     {
         uint8_t head[8];
-        uint16_t gps_week_count; // 占位12； GPS周计数
-        uint32_t gps_tow_s;      // 占位20； GPS周内秒 ；单位s
-        uint8_t ms_count;        // 占位7；  毫秒计数 （1 表示 10 ms）；单位ms
-        uint8_t sync_flag;       // 占位1； 同步标志 1-非最后一条0-当前时刻最后一条
-        uint8_t system_id;       // 占位3；系统ID 0-BDS 1-GPS 2-GLO 3-GAL
-        uint8_t sat_count;       // 占位6；卫星个数
+        uint16_t gps_week_count; // 占位12；当前 GPS 周计数；week
+        uint32_t gps_tow_s;      // 占位20；当前 GPS 周内秒；s
+        uint8_t ms_count;        // 占位7；1 表示 10 ms；ms
+        uint8_t sync_flag;       // 占位1；1-非最后一条 0-当前时刻最后一条；-
+        uint8_t system_id;       // 占位3；0-BDS 1-GPS 2-GLO 3-GAL；-
+        uint8_t sat_count;       // 占位6；该条语句包含卫星总数；-
         // 保留7bit
         struct
         {
-            uint8_t sat_id;            // 占位6；卫星号
-            uint8_t signal_count;      // 占位4；信号数量 该卫星跟踪频点数量
-            double apd_ms;             // 占位18；概略距离的毫秒数；单位ms
-            int16_t approx_phase_rate; // 占位14； Sint14 概略相位距离变化率；单位 m/s
+            uint8_t sat_id;            // 占位6；按从小到大顺序输出；-
+            uint8_t signal_count;      // 占位4；该卫星跟踪频点数量；-
+            double apd_ms;             // 占位18；概略距离使用时间表示，占 18 位，分为整毫秒数和毫秒余数，时间*光速恢复完整的概略距离。；ms
+            int16_t approx_phase_rate; // 占位14；完整的相位距离变化率观测值可通过概略相位距离变化率（对卫星而言取值唯一）与精确相位距离变化率（对卫星信号而言取值唯一）相加得到。；m/s
             // Rsv 保留6bit
             struct
             {
-                uint8_t signal_id;         // 占位6；信号ID 该频点的信号ID
-                uint8_t phase_lock_flag;   // 占位4；相位锁定时间标志
-                double precise_pr;         // 占位15； 精确伪距Sint15, scale 2^-24 ms 精确伪距；
-                double precise_phase;      // 占位22； 精确相位Sint22, scale 2^-29 ms 精确相位
-                double precise_phase_rate; // 占位15；精确相位距离变化率 Sint15, scale 10^-4 m/s 精确相位变化率
-                double cn0;                // 占位13；载噪比Sint13, scale 10^-2 dB 载噪比
-                uint8_t half_cycle;        // 占位1；半周期标志 0=没有半周模糊度 1=半周模糊度
+                uint8_t signal_id;         // 占位6；频点标志，参见表 3-6；-
+                uint8_t phase_lock_flag;   // 占位4；相位锁定时间标志与相位锁定时间对应关系参见表 3-7；-
+                double precise_pr;         // 占位15；伪距的精确值；ms
+                double precise_phase;      // 占位22；相位距离的精确值；ms
+                double precise_phase_rate; // 占位15；精确相位距离变化率；m/s
+                double cn0;                // 占位13；例：值 4295 表示载噪比为 42.95；dB
+                uint8_t half_cycle;        // 占位1；表示是否使用的半周模糊度：0=没有半周模糊度 1=半周模糊度；-
                                            // Rsv 保留4bit
             } signal_info[PRANGEB_MAX_SATS];
         } sat_info[PRANGEB_MAX_SATS];
-        uint32_t crc24; // 嵌入的 CRC24（位于 payload 最末 3 字节）
+        uint32_t crc24; // 占位24；校验范围从帧头至有效数据；-
     } PRANGEB_Decoded_t;
-
-
 
     void decode_gpsephb(const uint8_t *payload, size_t payload_len, GPSEPHB_Decoded_t *out);
     void decode_bd2ephb(const uint8_t *payload, size_t payload_len, BD2EPHB_Decoded_t *out);
@@ -364,7 +425,6 @@ extern "C"
     void decode_bd3cnav2ephb(const uint8_t *payload, size_t payload_len, BD3CNAV2EPHB_Decoded_t *out);
     void decode_bd3cnav3ephb(const uint8_t *payload, size_t payload_len, BD3CNAV3EPHB_Decoded_t *out);
     void decode_prangeb(const uint8_t *payload, size_t payload_len, PRANGEB_Decoded_t *out);
-
 
     extern gnss_ctrl_t gnss_ctrl;
 
