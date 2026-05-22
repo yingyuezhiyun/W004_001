@@ -144,7 +144,15 @@ void *gnss_thread_func(void *arg)
     // gnss_cfg(gnss_ctrl.fd, "GST", 1, 1);
 
     // gnss_cfg_eable_onchange(gnss_ctrl.fd, "GPSEPHB");
-    gnss_cfg(gnss_ctrl.fd, "GPSEPHB", 1, 1);
+    // gnss_cfg(gnss_ctrl.fd, "GPSEPHB", 1, 1);
+    // gnss_cfg(gnss_ctrl.fd, "BD3EPHB", 1, 1);
+    // gnss_cfg(gnss_ctrl.fd, "GLOEPHB", 1, 1);//todo 无数据
+    // gnss_cfg(gnss_ctrl.fd, "GALEPHB", 1, 1);
+    // gnss_cfg(gnss_ctrl.fd, "BD3CANV1EPHB", 1, 1); // todo 无数据
+    // gnss_cfg(gnss_ctrl.fd, "BD3CANV2EPHB", 1, 1);//todo 无数据
+    // gnss_cfg(gnss_ctrl.fd, "BD3CNAV3EPHB", 1, 1);//todo 无数据 解析错误
+    gnss_cfg(gnss_ctrl.fd, "PRANGEB", 1, 1);//todo 解析错误
+    // gnss_cfg(gnss_ctrl.fd, "PRANGE2B", 1, 1); // todo 无数据
 
     char buf[256];
 
