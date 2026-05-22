@@ -16,22 +16,6 @@
 #include "third_party/minmea.h"
 #include "gnss_func.h"
 
-typedef enum
-{
-    GNSS_DATA_NMEA,
-    GNSS_DATA_RAW,
-} gnss_DataType_t;
-
-typedef struct
-{
-    int fd;
-    gnss_DataType_t data_type;
-    char Nmea_sentence[MINMEA_MAX_SENTENCE_LENGTH + 16];
-    uint16_t Nmea_len;
-    uint8_t data_raw[1024];
-    uint16_t data_raw_len;
-} gnss_ctrl_t;
-
 gnss_ctrl_t gnss_ctrl = {
     .fd = -1,
     // .data_type = GNSS_DATA_NMEA,
@@ -39,8 +23,7 @@ gnss_ctrl_t gnss_ctrl = {
     .Nmea_sentence = {0},
     .Nmea_len = 0,
     .data_raw = {0},
-    .data_raw_len = 0
-};
+    .data_raw_len = 0};
 
 int8_t gnss_bdd_enable()
 {
@@ -131,7 +114,8 @@ void gnss_cfg_close_all(int fd)
 void *gnss_thread_func(void *arg)
 {
     (void)arg;
-
+    gnss_bdd_disable();
+    sleep(1);
     if (gnss_bdd_enable() < 0)
     {
         fprintf(stderr, "Failed to enable GNSS BDD\n");
@@ -148,6 +132,9 @@ void *gnss_thread_func(void *arg)
     usleep(100000); // Sleep for 100 milliseconds to allow the device to initialize
     gnss_cfg_close_all(gnss_ctrl.fd);
     usleep(100000); // Sleep for 100 milliseconds
+
+    // gnss_ctrl.data_type = GNSS_DATA_NMEA;
+
     // gnss_cfg(gnss_ctrl.fd, "RMC", 1, 1);
     // usleep(100000); // Sleep for 100 milliseconds
     // gnss_cfg(gnss_ctrl.fd, "GGA", 1, 1);
@@ -197,12 +184,12 @@ void *gnss_thread_func(void *arg)
             }
             else
             {
-                if (sizeof(gnss_ctrl.data_raw) == gnss_ctrl.data_raw_len )
+                if (sizeof(gnss_ctrl.data_raw) == gnss_ctrl.data_raw_len)
                 {
                     fprintf(stderr, "GNSS raw data buffer overflow, dropping data\n");
                     gnss_ctrl.data_raw_len = 0;
                 }
-                
+
                 int copy_len = (n < sizeof(gnss_ctrl.data_raw) - gnss_ctrl.data_raw_len) ? n : (sizeof(gnss_ctrl.data_raw) - gnss_ctrl.data_raw_len);
                 memcpy(gnss_ctrl.data_raw + gnss_ctrl.data_raw_len, buf, copy_len);
                 gnss_ctrl.data_raw_len += copy_len;
