@@ -18,7 +18,7 @@
 #endif
 
 // #define Header (0x43534847)
-#define Header (0x47485343) // 
+#define Header (0x47485343) //
 
 #define RAW_PACKET_HEADER_LEN 8
 #define RAW_PACKET_CRC_LEN 3
@@ -29,41 +29,41 @@ typedef struct
     uint8_t head[8];
     uint16_t gps_week_count;
     uint32_t gps_tow_s;
-    uint8_t gps_satid;
-    uint8_t gps_sv_accuracy;
-    uint8_t gps_sv_health;
-    uint16_t gps_week;
-    uint16_t gps_toe;
-    uint16_t gps_toc;
-    int32_t gps_af0;
-    int32_t gps_af1;
-    int32_t gps_af2;
-    uint8_t gps_iode;
-    uint16_t gps_iodc;
-    int32_t gps_idot;
-    int32_t gps_crs;
-    int32_t gps_crc;
-    int32_t gps_cus;
-    int32_t gps_cuc;
-    int32_t gps_cis;
-    int32_t gps_cic;
-    int32_t gps_delta_n;
-    int32_t gps_m0;
-    uint32_t gps_ecc;
-    uint32_t gps_a_half;
-    int32_t gps_omega0;
-    int32_t gps_i0;
-    int32_t gps_omega;
-    int32_t gps_omegadot;
-    int32_t gps_tgd;
-    uint8_t gps_code_on_l2;
-    uint8_t gps_l2p_data_flag;
-    uint8_t gps_fit;
-    uint8_t reserved;
+    uint8_t gps_satid;         // 卫星号
+    uint8_t gps_sv_accuracy;   // 用户等效距离精度 m
+    uint8_t gps_sv_health;     // 卫星自主健康标识
+    uint16_t gps_week;         // GPS 时间周计数，0~1023
+    uint16_t gps_toe;          // GPS 卫星星历参考时间 s
+    uint16_t gps_toc;          // GPS 卫星钟参考时刻  s
+    double gps_af0;            // GPS 卫星钟钟差改正参数 s
+    double gps_af1;            // GPS 卫星钟钟速改正参数 s/s
+    double gps_af2;            // GPS 卫星钟钟漂改正参数 s/s^2
+    uint8_t gps_iode;          // GPS 卫星星历数据期号
+    uint16_t gps_iodc;         // GPS 卫星钟参数期卷号
+    double gps_idot;           // GPS 卫星轨道倾角变化率  π/s
+    double gps_crs;            // GPS 卫星轨道半径的正弦调和改正项的振幅  m
+    double gps_crc;            // GPS 卫星轨道半径的余弦调和改正项的振幅 m
+    double gps_cus;            // GPS 卫星纬度幅角的正弦调和改正项的振幅 rad
+    double gps_cuc;            // GPS 卫星纬度幅角的余弦调和改正项的振幅 rad
+    double gps_cis;            // GPS 卫星轨道倾角的正弦调和改正项的振幅 rad
+    double gps_cic;            // GPS 卫星轨道倾角的余弦调和改正项的振幅 rad
+    double gps_delta_n;        // GPS 卫星平均运动速率与计算值之差 π/s
+    double gps_m0;             // GPS 卫星参考时间的平近点角 π
+    double gps_ecc;            // GPS 卫星轨道偏心率
+    double gps_a_half;         // GPS 卫星轨道长半轴的平方根 m1/2
+    double gps_omega0;         // GPS 卫星按参考时间计算的升交点赤经 π
+    double gps_i0;             // GPS 卫星参考时间的轨道倾角  π
+    double gps_omega;          // GPS 卫星近地点幅角  π
+    double gps_omegadot;       // GPS 卫星升交点赤经变化率 π/s
+    double gps_tgd;            // GPS 卫星L1 和L2 信号频率的群延迟差 s
+    uint8_t gps_code_on_l2;    // GPS L2测距码标志：00 = 保留；01 = P码；10 = C/A码；11 = L2C码
+    uint8_t gps_l2p_data_flag; // 0=L2 P码导航电文可用；1=L2 P码导航电文不可用
+    uint8_t gps_fit;           // 0=曲线拟合间隔为4小时；1=曲线拟合间隔大于4小时
+    uint8_t reserved;          // 保留
     uint32_t crc24;
 } GPSEPHB_Decoded_t;
 
-//type类型和length字节长度采用小端在前输出方式，其他参数采用大端在前输出方式 
+// type类型和length字节长度采用小端在前输出方式，其他参数采用大端在前输出方式
 #pragma pack(push, 1)
 typedef struct
 {
@@ -280,47 +280,47 @@ static void decode_gpsephb(const uint8_t *payload, size_t payload_len, GPSEPHB_D
     bit += 16;
     out->gps_toc = (uint16_t)read_bits_be(payload, bit, 16);
     bit += 16;
-    out->gps_af0 = read_signed_bits_be(payload, bit, 22);
+    out->gps_af0 = scale_pow2(read_signed_bits_be(payload, bit, 22), -31);
     bit += 22;
-    out->gps_af1 = read_signed_bits_be(payload, bit, 16);
+    out->gps_af1 = scale_pow2(read_signed_bits_be(payload, bit, 16), -43);
     bit += 16;
-    out->gps_af2 = read_signed_bits_be(payload, bit, 8);
+    out->gps_af2 = scale_pow2(read_signed_bits_be(payload, bit, 8), -55);
     bit += 8;
     out->gps_iode = (uint8_t)read_bits_be(payload, bit, 8);
     bit += 8;
     out->gps_iodc = (uint16_t)read_bits_be(payload, bit, 10);
     bit += 10;
-    out->gps_idot = read_signed_bits_be(payload, bit, 14);
+    out->gps_idot = scale_pow2(read_signed_bits_be(payload, bit, 14), -43);
     bit += 14;
-    out->gps_crs = read_signed_bits_be(payload, bit, 16);
+    out->gps_crs = scale_pow2(read_signed_bits_be(payload, bit, 16), -5);
     bit += 16;
-    out->gps_crc = read_signed_bits_be(payload, bit, 16);
+    out->gps_crc = scale_pow2(read_signed_bits_be(payload, bit, 16), -5);
     bit += 16;
-    out->gps_cus = read_signed_bits_be(payload, bit, 16);
+    out->gps_cus = scale_pow2(read_signed_bits_be(payload, bit, 16), -29);
     bit += 16;
-    out->gps_cuc = read_signed_bits_be(payload, bit, 16);
+    out->gps_cuc = scale_pow2(read_signed_bits_be(payload, bit, 16), -29);
     bit += 16;
-    out->gps_cis = read_signed_bits_be(payload, bit, 16);
+    out->gps_cis = scale_pow2(read_signed_bits_be(payload, bit, 16), -29);
     bit += 16;
-    out->gps_cic = read_signed_bits_be(payload, bit, 16);
+    out->gps_cic = scale_pow2(read_signed_bits_be(payload, bit, 16), -29);
     bit += 16;
-    out->gps_delta_n = read_signed_bits_be(payload, bit, 16);
+    out->gps_delta_n = scale_pow2(read_signed_bits_be(payload, bit, 16), -43);
     bit += 16;
-    out->gps_m0 = read_signed_bits_be(payload, bit, 32);
+    out->gps_m0 = scale_pow2(read_signed_bits_be(payload, bit, 22), -31);
     bit += 32;
-    out->gps_ecc = read_bits_be(payload, bit, 32);
+    out->gps_ecc = scale_pow2_u(read_bits_be(payload, bit, 32), -33);
     bit += 32;
-    out->gps_a_half = read_bits_be(payload, bit, 32);
+    out->gps_a_half = scale_pow2_u(read_bits_be(payload, bit, 32), -19);
     bit += 32;
-    out->gps_omega0 = read_signed_bits_be(payload, bit, 32);
+    out->gps_omega0 = scale_pow2(read_signed_bits_be(payload, bit, 32), -31);
     bit += 32;
-    out->gps_i0 = read_signed_bits_be(payload, bit, 32);
+    out->gps_i0 = scale_pow2(read_signed_bits_be(payload, bit, 32), -31);
     bit += 32;
-    out->gps_omega = read_signed_bits_be(payload, bit, 32);
+    out->gps_omega = scale_pow2(read_signed_bits_be(payload, bit, 32), -31);
     bit += 32;
-    out->gps_omegadot = read_signed_bits_be(payload, bit, 24);
+    out->gps_omegadot = scale_pow2(read_signed_bits_be(payload, bit, 24), -43);
     bit += 24;
-    out->gps_tgd = read_signed_bits_be(payload, bit, 8);
+    out->gps_tgd = scale_pow2(read_signed_bits_be(payload, bit, 8), -31);
     bit += 8;
     out->gps_code_on_l2 = (uint8_t)read_bits_be(payload, bit, 2);
     bit += 2;
@@ -353,27 +353,27 @@ static void print_gpsephb(const GPSEPHB_Decoded_t *eph, uint32_t payload_crc_cal
     printf("  gps_week         : raw=%u\n", eph->gps_week);
     printf("  gps_toe          : raw=%u s\n", eph->gps_toe);
     printf("  gps_toc          : raw=%u s\n", eph->gps_toc);
-    printf("  gps_af0          : raw=%d  scaled=% .12e s\n", eph->gps_af0, scale_pow2(eph->gps_af0, -31));
-    printf("  gps_af1          : raw=%d  scaled=% .12e s/s\n", eph->gps_af1, scale_pow2(eph->gps_af1, -43));
-    printf("  gps_af2          : raw=%d  scaled=% .12e s/s^2\n", eph->gps_af2, scale_pow2(eph->gps_af2, -55));
+    printf("  gps_af0          : =% .12e s\n", eph->gps_af0);
+    printf("  gps_af1          : =% .12e s/s\n", eph->gps_af1);
+    printf("  gps_af2          : =% .12e s/s^2\n", eph->gps_af2);
     printf("  gps_iode         : raw=%u\n", eph->gps_iode);
     printf("  gps_iodc         : raw=%u\n", eph->gps_iodc);
-    printf("  gps_idot         : raw=%d  scaled=% .12e rad/s\n", eph->gps_idot, scale_pi_pow2(eph->gps_idot, -43));
-    printf("  gps_crs          : raw=%d  scaled=% .12e m\n", eph->gps_crs, scale_pow2(eph->gps_crs, -5));
-    printf("  gps_crc          : raw=%d  scaled=% .12e m\n", eph->gps_crc, scale_pow2(eph->gps_crc, -5));
-    printf("  gps_cus          : raw=%d  scaled=% .12e rad\n", eph->gps_cus, scale_pi_pow2(eph->gps_cus, -29));
-    printf("  gps_cuc          : raw=%d  scaled=% .12e rad\n", eph->gps_cuc, scale_pi_pow2(eph->gps_cuc, -29));
-    printf("  gps_cis          : raw=%d  scaled=% .12e rad\n", eph->gps_cis, scale_pi_pow2(eph->gps_cis, -29));
-    printf("  gps_cic          : raw=%d  scaled=% .12e rad\n", eph->gps_cic, scale_pi_pow2(eph->gps_cic, -29));
-    printf("  gps_delta_n      : raw=%d  scaled=% .12e rad/s\n", eph->gps_delta_n, scale_pi_pow2(eph->gps_delta_n, -43));
-    printf("  gps_m0           : raw=%d  scaled=% .12e rad\n", eph->gps_m0, scale_pi_pow2(eph->gps_m0, -31));
-    printf("  gps_ecc          : raw=%u  scaled=% .12e\n", eph->gps_ecc, scale_pow2_u(eph->gps_ecc, -33));
-    printf("  gps_a_half       : raw=%u  scaled=% .12e m^1/2\n", eph->gps_a_half, scale_pow2_u(eph->gps_a_half, -19));
-    printf("  gps_omega0       : raw=%d  scaled=% .12e rad\n", eph->gps_omega0, scale_pi_pow2(eph->gps_omega0, -31));
-    printf("  gps_i0           : raw=%d  scaled=% .12e rad\n", eph->gps_i0, scale_pi_pow2(eph->gps_i0, -31));
-    printf("  gps_omega        : raw=%d  scaled=% .12e rad\n", eph->gps_omega, scale_pi_pow2(eph->gps_omega, -31));
-    printf("  gps_omegadot     : raw=%d  scaled=% .12e rad/s\n", eph->gps_omegadot, scale_pi_pow2(eph->gps_omegadot, -43));
-    printf("  gps_tgd          : raw=%d  scaled=% .12e s\n", eph->gps_tgd, scale_pow2(eph->gps_tgd, -31));
+    printf("  gps_idot         : =% .12e rad/s\n", eph->gps_idot);
+    printf("  gps_crs          : =% .12e m\n", eph->gps_crs);
+    printf("  gps_crc          : =% .12e m\n", eph->gps_crc);
+    printf("  gps_cus          : =% .12e rad\n", eph->gps_cus);
+    printf("  gps_cuc          : =% .12e rad\n", eph->gps_cuc);
+    printf("  gps_cis          : =% .12e rad\n", eph->gps_cis);
+    printf("  gps_cic          : =% .12e rad\n", eph->gps_cic);
+    printf("  gps_delta_n      : =% .12e rad/s\n", eph->gps_delta_n);
+    printf("  gps_m0           : =% .12e rad\n", eph->gps_m0);
+    printf("  gps_ecc          : =% .12e\n", eph->gps_ecc);
+    printf("  gps_a_half       : =% .12e m^1/2\n", eph->gps_a_half);
+    printf("  gps_omega0       : =% .12e rad\n", eph->gps_omega0);
+    printf("  gps_i0           : =% .12e rad\n", eph->gps_i0);
+    printf("  gps_omega        : =% .12e rad\n", eph->gps_omega);
+    printf("  gps_omegadot     : =% .12e rad/s\n", eph->gps_omegadot);
+    printf("  gps_tgd          : =% .12e s\n", eph->gps_tgd);
     printf("  gps_code_on_l2   : raw=%u (%s)\n", eph->gps_code_on_l2, gps_l2_code_desc(eph->gps_code_on_l2));
     printf("  gps_l2p_data_flag: raw=%u\n", eph->gps_l2p_data_flag);
     printf("  gps_fit          : raw=%u (%s)\n", eph->gps_fit, gps_fit_desc(eph->gps_fit));
@@ -384,6 +384,14 @@ static void print_gpsephb(const GPSEPHB_Decoded_t *eph, uint32_t payload_crc_cal
            (eph->crc24 == payload_crc_calc) ? "OK" : "BAD");
 }
 
+static void print_gpsephb_simple(const GPSEPHB_Decoded_t *eph)
+{
+    printf("%d % .12e % .12e % .12e % .12e % .12e % .12e\n",
+           eph->gps_satid, eph->gps_i0, eph->gps_omega0, eph->gps_ecc, eph->gps_omega, eph->gps_m0, eph->gps_delta_n);
+    printf("%d %u %u % .12e % .12e % .12e % .12e % .12e % .12e\n\n",
+           eph->gps_satid, eph->gps_toe, eph->gps_toc, eph->gps_cuc, eph->gps_cus, eph->gps_crc, eph->gps_crs, eph->gps_omegadot);
+}
+
 int handle_gnss_raw(const uint8_t *data, size_t len)
 {
     int handle_cnt = 0;
@@ -392,7 +400,7 @@ int handle_gnss_raw(const uint8_t *data, size_t len)
         gns_raw_data_packet_t *packet = (gns_raw_data_packet_t *)(data + i);
         if (packet->header == Header)
         {
-            printf("Packet header found at offset %zu\n", i);
+            // printf("Packet header found at offset %zu\n", i);
             if (packet->length > len - i - sizeof(gns_raw_data_packet_t))
             {
                 continue;
@@ -400,10 +408,10 @@ int handle_gnss_raw(const uint8_t *data, size_t len)
             uint32_t crc_calculated = rtk_crc24q((const uint8_t *)packet, packet->length + 8);
             uint32_t crc_received = data[i + sizeof(gns_raw_data_packet_t) + packet->length - 3] << 16 |
                                     data[i + sizeof(gns_raw_data_packet_t) + packet->length - 2] << 8 |
-                                    data[i + sizeof(gns_raw_data_packet_t) + packet->length - 1];         
+                                    data[i + sizeof(gns_raw_data_packet_t) + packet->length - 1];
             if (crc_calculated == crc_received)
             {
-                printf("Valid packet found at offset %zu: type=%u length=%u\n", i, packet->type, packet->length);
+                // printf("Valid packet found at offset %zu: type=%u length=%u\n", i, packet->type, packet->length);
                 // 这里可以根据 packet->type 进一步
                 // 解析 packet->payload 数据
                 // const uint8_t *payload = (uint8_t *)packet + RAW_PACKET_HEADER_LEN;
@@ -413,7 +421,8 @@ int handle_gnss_raw(const uint8_t *data, size_t len)
                 {
                     GPSEPHB_Decoded_t eph;
                     decode_gpsephb((uint8_t *)packet, packet->length, &eph);
-                    print_gpsephb(&eph, crc_calculated);
+                    // print_gpsephb(&eph, crc_calculated);
+                    print_gpsephb_simple(&eph);
                 }
                 break;
                 default:
