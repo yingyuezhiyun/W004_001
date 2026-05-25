@@ -6,5 +6,5 @@
   "ok3506.gdbMultiarch": "/usr/bin/gdb-multiarch",
   "ok3506.deployLabel": "demo",
   "ok3506.deployDelay": "0",
-  "ok3506.targetArgs": "-f /run/config1.conf"
+  "ok3506.targetArgs": "-f /root/config1.conf"
 }

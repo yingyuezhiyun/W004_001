@@ -290,7 +290,6 @@ static int ensure_default_config_file(void)
 			zlog_err("default config path is too long");
 			return -1;
 		}
-
 		generated_config_file_ready = 1;
 	}
 
@@ -408,17 +407,17 @@ int cli_init(int argc, char **argv)
 			break;
 		}
 	}
-
-	if (ensure_default_config_file() != 0)
-		exit(1);
-
+	ensure_default_config_file();
 	if (requested_config && file_exists_and_regular(requested_config))
+	{
 		config_file = (char *)requested_config;
+	}
 	else
-		config_file = generated_config_file;
-
-	if (requested_config && !file_exists_and_regular(requested_config))
-		zlog_warn("config file '%s' is missing or invalid, using default '%s'", requested_config, config_file);
+	{
+		config_file = config_default;
+		if (requested_config)
+			zlog_warn("config file '%s' is missing or invalid, using default '%s'", requested_config, config_file);
+	}
 
 	/* Prepare master thread. */
 	master = thread_master_create();

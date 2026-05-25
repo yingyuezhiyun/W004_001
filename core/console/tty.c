@@ -32,7 +32,7 @@
 
 #define RADIO_NODE RIP_NODE
 
-#define GNSS_TYPE "gpsephb|bd3ephb|gloephb|galephb|prangeb|prange2b|rmc|gga|gll|gsa|gst|gsv|vtg|zda"
+#define GNSS_TYPE "posdatab|gpsephb|bd2ephb|bd3ephb|gloephb|galephb|prangeb|prange2b|rmc|gga|gll|gsa|gst|gsv|vtg|zda"
 
 /*  node structure. */
 static struct cmd_node vty_node =
@@ -48,14 +48,35 @@ struct vty_cfg_s
 
 struct vty_cfg_s *vty_cfg = NULL;
 
+
+DEFUN(gnss_data_type_cfg,
+      gnss_data_type_cfg_cmd,
+      "gnss data type (nmea|raw)",
+      "gnss ctrl\n"
+      "Set gnss data type\n"
+      "nmea or raw\n")
+{
+    if (strcmp(argv[0], "nmea") == 0)
+    {
+        gnss_ctrl.data_type = GNSS_DATA_NMEA;
+        vty_out(vty, "set gnss data type to nmea%s", VTY_NEWLINE);
+    }
+    else if (strcmp(argv[0], "raw") == 0)
+    {
+        gnss_ctrl.data_type = GNSS_DATA_RAW;
+        vty_out(vty, "set gnss data type to raw%s", VTY_NEWLINE);
+    }   
+    return CMD_SUCCESS;
+}
+
 DEFUN(gnss_type_on_change_cfg,
       gnss_type_on_change_cfg_cmd,
       "gnss (" GNSS_TYPE ") onchange",
       "gnss ctrl\n"
-      "Set gnss type on or off\n"
+      "Set gnss <type> on or off\n"
       "on or off\n")
 {
-    gnss_cfg_eable_onchange(gnss_ctrl.fd, argv[0]);
+    gnss_cfg_enable_onchange(gnss_ctrl.fd, argv[0]);
     vty_out(vty, "set gnss type %s to onchange%s", argv[0], VTY_NEWLINE);
     return CMD_SUCCESS;
 }
@@ -64,7 +85,7 @@ DEFUN(gnss_type_on_cfg,
       gnss_type_on_cfg_cmd,
       "gnss (" GNSS_TYPE ") on <1-10>",
       "gnss ctrl\n"
-      "Set gnss type on or off\n"
+      "Set gnss <type> on or off\n"
       "on or off\n")
 {
 
@@ -79,7 +100,7 @@ DEFUN(gnss_type_off_cfg,
       gnss_type_off_cfg_cmd,
       "gnss (" GNSS_TYPE "|all) off",
       "gnss ctrl\n"
-      "Set gnss type on or off\n"
+      "Set gnss <type> on or off\n"
       "on or off\n")
 {
     if (strcmp(argv[0], "all") == 0)
@@ -171,4 +192,9 @@ void tty_init(void)
     install_element(RADIO_NODE, &gnss_type_on_change_cfg_cmd);
 
     install_element(ENABLE_NODE, &gnss_gps_test_cmd);
+    install_element(RADIO_NODE, &gnss_gps_test_cmd);
+
+    install_element(ENABLE_NODE, &gnss_data_type_cfg_cmd);
+    install_element(RADIO_NODE, &gnss_data_type_cfg_cmd);
+
 }

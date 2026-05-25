@@ -19,15 +19,18 @@
 
 #define TEST_GPSEPHB_FILE_PATH "/root/gps_ephe.csv"
 
-// #define Header (0x43534847)
-#define Header (0x47485343) //
+// #define Header1 (0x43534847)
+#define Header1 (0x47485343) //
 
-#define RAW_PACKET_HEADER_LEN 8
-#define RAW_PACKET_CRC_LEN 3
-#define GPSEPHB_PAYLOAD_LEN 64
-#define BD2EPHB_PAYLOAD_LEN 67
+// #define Header2 (0x2448455844415441)
+#define Header2 (0x4154414458454824)
 
-#define BD3CNAV3EPHB_PAYLOAD_LEN 76
+#define GPSEPHB_PAYLOAD_LEN (64)
+#define BD2EPHB_PAYLOAD_LEN (67)
+#define BD3CNAV3EPHB_PAYLOAD_LEN (76)
+#define POSDATAB_PAYLOAD_LEN (70)
+#define BD3EPHB_PAYLOAD_LEN (76)
+#define GALEPHB_PAYLOAD_LEN (66)
 
 // type类型和length字节长度采用小端在前输出方式，其他参数采用大端在前输出方式
 #pragma pack(push, 1)
@@ -41,16 +44,24 @@ typedef struct
 
 enum
 {
-    RAW_BD2EPHB = 01, // BDS BD2 星历
-    RAW_BD3EPHB = 03, // BDS BD3 星历
-    RAW_GPSEPHB = 11, // GPS 星历
-    RAW_GLOEPHB = 21, // GLONASS 星历
-    RAW_GALEPHB = 32, // Galileo 星历
-    RAW_BD3CNAV1EPHB = 23,
-    RAW_BD3CNAV2EPHB = 24,
-    RAW_BD3CNAV3EPHB = 25,
-    RAW_PRANGEB = 61,
-    RAW_PRANGE2B = 62,
+    RAW_BD2EPHB = 01,      // BDS BD2 星历
+    RAW_BD2IonoB = 205,    // BDS BD2 电离层参数
+    RAW_BD3EPHB = 02,      // BDS BD3 星历
+    RAW_BD3CNAV1EPHB = 02, // BDS BD3 CNAV1 星历
+    RAW_BD3CNAV2EPHB = 03, // BDS BD3 CNAV2 星历
+    RAW_BD3CNAV3EPHB = 04, // BDS BD3 CNAV3 星历
+    RAW_BD3IonoB = 206,    // BDS BD3 电离层参数
+    RAW_GPSEPHB = 11,      // GPS 星历 / GPS LNAV 星历
+    RAW_GPSCNAV = 12,      // GPS CNAV 星历
+    RAW_GPSCNAV2 = 13,     // GPS CNAV2 星历
+    RAW_GPSIonoB = 214,    // GPS 电离层参数
+    RAW_GLOEPHB = 21,      // GLONASS 星历
+    RAW_GALEPHB = 31,      // Galileo 星历 / GAL FNAV星历
+    RAW_GALINAV = 32,      // GAL INAV星历
+    RAW_QZSS = 51,         // QZSS 星历
+    RAW_PRANGEB = 61,      // 主天线观测量
+    RAW_PRANGE2B = 62,     // 副天线观测量
+    RAW_POSDATAB = 0xF090, // 最优定位信息
 };
 #pragma pack(push, 1)
 typedef struct
@@ -59,8 +70,19 @@ typedef struct
     uint16_t type;
     uint16_t length;
     // uint8_t payload[0];
-    uint8_t checksum[3];
-} gns_raw_data_packet_t;
+    uint8_t crc[3];
+} gns_raw_data1_packet_t;
+#pragma pack(pop)
+
+#pragma pack(push, 1)
+typedef struct
+{
+    uint64_t header;
+    uint16_t type;
+    uint16_t length;
+    // uint8_t payload[0];
+    uint8_t crc[3];
+} gns_raw_data2_packet_t;
 #pragma pack(pop)
 
 const uint32_t tbl_CRC24Q[] = {
@@ -127,6 +149,84 @@ static const char *gps_l2_code_desc(uint8_t code)
 static const char *gps_fit_desc(uint8_t fit)
 {
     return fit ? "curve fit interval > 4 h" : "curve fit interval = 4 h";
+}
+
+static const char *pos_time_system_desc(uint8_t time_system)
+{
+    switch (time_system)
+    {
+    case 0:
+        return "invalid";
+    case 1:
+        return "BDS";
+    case 2:
+        return "GPS";
+    case 3:
+        return "GAL";
+    case 4:
+        return "GLO";
+    default:
+        return "reserved";
+    }
+}
+
+static const char *pos_sys_status_desc(uint8_t sys_status)
+{
+    switch (sys_status)
+    {
+    case 0:
+        return "not positioned";
+    case 1:
+        return "GNSS only";
+    case 2:
+        return "combined nav";
+    case 3:
+        return "INS only";
+    default:
+        return "reserved";
+    }
+}
+
+static const char *pos_fix_type_desc(uint8_t type)
+{
+    switch (type)
+    {
+    case 0:
+        return "invalid";
+    case 1:
+        return "single point";
+    case 2:
+        return "differential";
+    case 3:
+        return "PPS";
+    case 4:
+        return "fixed";
+    case 5:
+        return "float";
+    case 6:
+        return "dead reckoning";
+    case 7:
+        return "user input";
+    case 8:
+        return "PPP";
+    default:
+        return "reserved";
+    }
+}
+
+static const char *pos_gear_desc(uint8_t gear)
+{
+    switch (gear)
+    {
+    case 1:
+        return "N/D";
+    case 2:
+        return "R";
+    case 3:
+        return "P";
+    default:
+        return "reserved";
+    }
 }
 
 static void print_bd2ephb(const BD2EPHB_Decoded_t *eph, uint32_t payload_crc_calc)
@@ -225,6 +325,217 @@ static void print_bd3ephb(const BD3EPHB_Decoded_t *eph, uint32_t payload_crc_cal
            (eph->crc24 == payload_crc_calc) ? "OK" : "BAD");
 }
 
+static void print_bd3cnav2ephb(const BD3CNAV2EPHB_Decoded_t *eph, uint32_t payload_crc_calc)
+{
+    printf("BD3CNAV2EPHB decoded frame:\n");
+    printf("  head: ");
+    for (size_t i = 0; i < sizeof(eph->head); ++i)
+        printf("%02X%s", eph->head[i], (i + 1 == sizeof(eph->head)) ? "" : " ");
+    printf("\n");
+
+    printf("  gps_week_count : raw=%u\n", eph->gps_week_count);
+    printf("  gps_tow_s      : raw=%u s\n", eph->gps_tow_s);
+    printf("  bds_satid      : raw=%u\n", eph->bds_satid);
+    printf("  bds_sattype    : raw=%u\n", eph->bds_sattype);
+    printf("  bds_week       : raw=%u\n", eph->bds_week);
+    printf("  bds_toe        : raw=%u s \n", eph->bds_toe);
+    printf("  bds_toc        : raw=%u s \n", eph->bds_toc);
+    printf("  bds_af0        : =% .12e s\n", eph->bds_af0);
+    printf("  bds_af1        : =% .12e s/s\n", eph->bds_af1);
+    printf("  bds_af2        : =% .12e s/s^2\n", eph->bds_af2);
+    printf("  bds_iode       : raw=%u\n", eph->bds_iode);
+    printf("  bds_iodc       : raw=%u\n", eph->bds_iodc);
+    printf("  bds_idot       : =% .12e rad/s\n", eph->bds_idot);
+    printf("  bds_crs        : =% .12e m\n", eph->bds_crs);
+    printf("  bds_crc        : =% .12e m\n", eph->bds_crc);
+    printf("  bds_cus        : =% .12e rad\n", eph->bds_cus);
+    printf("  bds_cuc        : =% .12e rad\n", eph->bds_cuc);
+    printf("  bds_cis        : =% .12e rad\n", eph->bds_cis);
+    printf("  bds_cic        : =% .12e rad\n", eph->bds_cic);
+    printf("  bds_delta_n0   : =% .12e rad/s\n", eph->bds_delta_n0);
+    printf("  bds_delta_n0_dot: =% .12e\n", eph->bds_delta_n0_dot);
+    printf("  bds_m0         : =% .12e rad\n", eph->bds_m0);
+    printf("  bds_ecc        : =% .12e\n", eph->bds_ecc);
+    printf("  bds_AA         : =% .12e m\n", eph->bds_AA);
+    printf("  bds_adot       : =% .12e m/s\n", eph->bds_adot);
+    printf("  bds_omega0     : =% .12e rad\n", eph->bds_omega0);
+    printf("  bds_i0         : =% .12e rad\n", eph->bds_i0);
+    printf("  bds_omega      : =% .12e rad\n", eph->bds_omega);
+    printf("  bds_omegadot   : =% .12e rad/s\n", eph->bds_omegadot);
+    printf("  bds_tgdb1cp    : =% .12e s\n", eph->bds_tgdb1cp);
+    printf("  bds_tgdb2ap    : =% .12e s\n", eph->bds_tgdb2ap);
+    printf("  bds_iscb2ad    : =% .12e s\n", eph->bds_iscb2ad);
+    printf("  bds_reserved   : raw=%u\n", eph->bds_reserved);
+    printf("  payload_crc24  : raw=%06X calc=%06X [%s]\n",
+           eph->crc24,
+           payload_crc_calc,
+           (eph->crc24 == payload_crc_calc) ? "OK" : "BAD");
+}
+
+static void print_bd3cnav3ephb(const BD3CNAV3EPHB_Decoded_t *eph, uint32_t payload_crc_calc)
+{
+    printf("BD3CNAV3EPHB decoded frame:\n");
+    printf("  head: ");
+    for (size_t i = 0; i < sizeof(eph->head); ++i)
+        printf("%02X%s", eph->head[i], (i + 1 == sizeof(eph->head)) ? "" : " ");
+    printf("\n");
+
+    printf("  gps_week_count : raw=%u\n", eph->gps_week_count);
+    printf("  gps_tow_s      : raw=%u s\n", eph->gps_tow_s);
+    printf("  bds_satid      : raw=%u\n", eph->bds_satid);
+    printf("  bds_sattype    : raw=%u\n", eph->bds_sattype);
+    printf("  bds_week       : raw=%u\n", eph->bds_week);
+    printf("  bds_toe        : raw=%u s \n", eph->bds_toe);
+    printf("  bds_toc        : raw=%u s \n", eph->bds_toc);
+    printf("  bds_af0        : =% .12e s\n", eph->bds_af0);
+    printf("  bds_af1        : =% .12e s/s\n", eph->bds_af1);
+    printf("  bds_af2        : =% .12e s/s^2\n", eph->bds_af2);
+    printf("  bds_iode       : raw=%u\n", eph->bds_iode);
+    printf("  bds_iodc       : raw=%u\n", eph->bds_iodc);
+    printf("  bds_idot       : =% .12e rad/s\n", eph->bds_idot);
+    printf("  bds_crs        : =% .12e m\n", eph->bds_crs);
+    printf("  bds_crc        : =% .12e m\n", eph->bds_crc);
+    printf("  bds_cus        : =% .12e rad\n", eph->bds_cus);
+    printf("  bds_cuc        : =% .12e rad\n", eph->bds_cuc);
+    printf("  bds_cis        : =% .12e rad\n", eph->bds_cis);
+    printf("  bds_cic        : =% .12e rad\n", eph->bds_cic);
+    printf("  bds_delta_n0   : =% .12e rad/s\n", eph->bds_delta_n0);
+    printf("  bds_delta_n0_dot: =% .12e\n", eph->bds_delta_n0_dot);
+    printf("  bds_m0         : =% .12e rad\n", eph->bds_m0);
+    printf("  bds_ecc        : =% .12e\n", eph->bds_ecc);
+    printf("  bds_deltaA     : =% .12e m\n", eph->bds_deltaA);
+    printf("  bds_adot       : =% .12e m/s\n", eph->bds_adot);
+    printf("  bds_omega0     : =% .12e rad\n", eph->bds_omega0);
+    printf("  bds_i0         : =% .12e rad\n", eph->bds_i0);
+    printf("  bds_omega      : =% .12e rad\n", eph->bds_omega);
+    printf("  bds_omegadot   : =% .12e rad/s\n", eph->bds_omegadot);
+    printf("  bds_tgdb2bI    : =% .12e s\n", eph->bds_tgdb2bI);
+    printf("  bds_reserved   : raw=%u\n", eph->bds_reserved);
+    printf("  payload_crc24  : raw=%06X calc=%06X [%s]\n",
+           eph->crc24,
+           payload_crc_calc,
+           (eph->crc24 == payload_crc_calc) ? "OK" : "BAD");
+}
+
+static void print_gpsephb(const GPSEPHB_Decoded_t *eph, uint32_t payload_crc_calc)
+{
+    printf("GPSEPHB decoded frame:\n");
+    printf("  head: ");
+    for (size_t i = 0; i < sizeof(eph->head); ++i)
+    {
+        printf("%02X%s", eph->head[i], (i + 1 == sizeof(eph->head)) ? "" : " ");
+    }
+    printf("\n");
+
+    printf("  gps_week_count   : raw=%u\n", eph->gps_week_count);
+    printf("  gps_tow_s        : raw=%u s\n", eph->gps_tow_s);
+    printf("  gps_satid        : raw=%u\n", eph->gps_satid);
+    printf("  gps_sv_accuracy   : raw=%u m\n", eph->gps_sv_accuracy);
+    printf("  gps_sv_health    : raw=%u\n", eph->gps_sv_health);
+    printf("  gps_week         : raw=%u\n", eph->gps_week);
+    printf("  gps_toe          : raw=%u s\n", eph->gps_toe);
+    printf("  gps_toc          : raw=%u s\n", eph->gps_toc);
+    printf("  gps_af0          : =% .12e s\n", eph->gps_af0);
+    printf("  gps_af1          : =% .12e s/s\n", eph->gps_af1);
+    printf("  gps_af2          : =% .12e s/s^2\n", eph->gps_af2);
+    printf("  gps_iode         : raw=%u\n", eph->gps_iode);
+    printf("  gps_iodc         : raw=%u\n", eph->gps_iodc);
+    printf("  gps_idot         : =% .12e rad/s\n", eph->gps_idot);
+    printf("  gps_crs          : =% .12e m\n", eph->gps_crs);
+    printf("  gps_crc          : =% .12e m\n", eph->gps_crc);
+    printf("  gps_cus          : =% .12e rad\n", eph->gps_cus);
+    printf("  gps_cuc          : =% .12e rad\n", eph->gps_cuc);
+    printf("  gps_cis          : =% .12e rad\n", eph->gps_cis);
+    printf("  gps_cic          : =% .12e rad\n", eph->gps_cic);
+    printf("  gps_delta_n      : =% .12e rad/s\n", eph->gps_delta_n);
+    printf("  gps_m0           : =% .12e rad\n", eph->gps_m0);
+    printf("  gps_ecc          : =% .12e\n", eph->gps_ecc);
+    printf("  gps_a_half       : =% .12e m^1/2\n", eph->gps_a_half);
+    printf("  gps_omega0       : =% .12e rad\n", eph->gps_omega0);
+    printf("  gps_i0           : =% .12e rad\n", eph->gps_i0);
+    printf("  gps_omega        : =% .12e rad\n", eph->gps_omega);
+    printf("  gps_omegadot     : =% .12e rad/s\n", eph->gps_omegadot);
+    printf("  gps_tgd          : =% .12e s\n", eph->gps_tgd);
+    printf("  gps_code_on_l2   : raw=%u (%s)\n", eph->gps_code_on_l2, gps_l2_code_desc(eph->gps_code_on_l2));
+    printf("  gps_l2p_data_flag: raw=%u\n", eph->gps_l2p_data_flag);
+    printf("  gps_fit          : raw=%u (%s)\n", eph->gps_fit, gps_fit_desc(eph->gps_fit));
+    printf("  reserved         : raw=%u\n", eph->reserved);
+    printf("  payload_crc24    : raw=%06X calc=%06X [%s]\n",
+           eph->crc24,
+           payload_crc_calc,
+           (eph->crc24 == payload_crc_calc) ? "OK" : "BAD");
+}
+
+void gpsephb_file_header()
+{
+    FILE *f = fopen(TEST_GPSEPHB_FILE_PATH, "w");
+    if (f)
+    {
+        fprintf(f, "gps_satid,gps_sv_accuracy,gps_sv_health,gps_week,gps_toe,gps_toc,"
+                   "gps_af0,gps_af1,gps_af2,"
+                   "gps_iode,gps_iodc,"
+                   "gps_idot,gps_crs,gps_crc,gps_cus,gps_cuc,gps_cis,gps_cic,gps_delta_n,"
+                   "gps_m0,gps_ecc,gps_a_half,gps_omega0,gps_i0,gps_omega,gps_omegadot,gps_tgd,"
+                   "gps_code_on_l2,gps_l2p_data_flag,gps_fit\n");
+    }
+    fclose(f);
+}
+
+void gpsephb_file_header2()
+{
+    FILE *f = fopen(TEST_GPSEPHB_FILE_PATH, "w");
+    if (f)
+    {
+        fprintf(f, "卫星号,用户等效距离精度(m),星自主健康标识,时间周计数,卫星星历参考时间(s),卫星钟参考时刻(s),"
+                   "卫星钟钟差改正参数(s),卫星钟钟速改正参数(s/s),卫星钟钟漂改正参数(s/s^2),"
+                   "卫星星历数据期号,卫星钟参数期卷号,"
+                   "卫星轨道倾角变化率(π/s),卫星轨道半径正弦调和改正项的振幅(m),卫星轨道半径余弦调和改正项的振幅(m),"
+                   "卫星纬度幅角正弦调和改正项的振幅(rad),卫星纬度幅角余弦调和改正项的振幅(rad),"
+                   "卫星轨道倾角正弦调和改正项的振幅(rad),卫星轨道倾角余弦调和改正项的振幅(rad),"
+                   "卫星平均运动速率与计算值之差(π/s),"
+                   "卫星参考时间的平近点角(π),卫星轨道偏心率,卫星轨道长半轴的平方根(m^1/2),卫星按参考时间计算的升交点赤经(π),卫星参考时间的轨道倾角(π),卫星近地点幅角(π),卫星升交点赤经变化率(π/s),卫星L1和L2信号频率的群延迟差(s),"
+                   "L2测距码标志,L2P码导航电文可用状态,曲线拟合标志\n");
+    }
+    fclose(f);
+}
+
+void gpsephb_to_save(const GPSEPHB_Decoded_t *eph)
+{
+    FILE *f = fopen(TEST_GPSEPHB_FILE_PATH, "a+");
+    if (f)
+    {
+        char buffer[2048];
+        snprintf(buffer, sizeof(buffer), "%u,%u,%u,%u,%u,%u,"
+                                         "% .12e,% .12e,% .12e,"
+                                         "%u,%u,"
+                                         "% .12e,% .12e,% .12e,% .12e,% .12e,% .12e,% .12e,% .12e,"
+                                         "% .12e,% .12e,% .12e,% .12e,% .12e,% .12e,% .12e,% .12e,"
+                                         "%u,%u,%u\n",
+                 eph->gps_satid, eph->gps_sv_accuracy, eph->gps_sv_health, eph->gps_week, eph->gps_toe, eph->gps_toc,
+                 eph->gps_af0, eph->gps_af1, eph->gps_af2,
+                 eph->gps_iode, eph->gps_iodc,
+                 eph->gps_idot, eph->gps_crs, eph->gps_crc, eph->gps_cus, eph->gps_cuc, eph->gps_cis, eph->gps_cic, eph->gps_delta_n,
+                 eph->gps_m0, eph->gps_ecc, eph->gps_a_half, eph->gps_omega0, eph->gps_i0, eph->gps_omega, eph->gps_omegadot, eph->gps_tgd,
+                 eph->gps_code_on_l2, eph->gps_l2p_data_flag, eph->gps_fit);
+        fputs(buffer, f);
+    }
+    fclose(f);
+}
+
+static void print_gpsephb_simple(const GPSEPHB_Decoded_t *eph)
+{
+    // printf("%d % .12e % .12e % .12e % .12e % .12e % .12e\n",
+    //        eph->gps_satid, eph->gps_i0, eph->gps_omega0, eph->gps_ecc, eph->gps_omega, eph->gps_m0, eph->gps_delta_n);
+    // printf("%d %u %u % .12e % .12e % .12e % .12e % .12e % .12e\n\n",
+    //        eph->gps_satid, eph->gps_toe, eph->gps_toc, eph->gps_cuc, eph->gps_cus, eph->gps_crc, eph->gps_crs, eph->gps_omegadot);
+
+    printf("%d %u %u % .12e % .12e % .12e % .12e % .12e % .12e % .12e % .12e %u % .12e \n",
+           eph->gps_satid, eph->gps_toe, eph->gps_toc, eph->gps_af0, eph->gps_af1, eph->gps_cuc,
+           eph->gps_cus, eph->gps_crc, eph->gps_crs, eph->gps_cic, eph->gps_cis, eph->gps_iodc, eph->gps_omegadot);
+    printf("%d % .12e % .12e % .12e % .12e % .12e % .12e\n\n",
+           eph->gps_satid, eph->gps_i0, eph->gps_omega0, eph->gps_ecc, eph->gps_omega, eph->gps_m0, eph->gps_delta_n);
+}
+
 static void print_gloephb(const GLOEPHB_Decoded_t *eph, uint32_t payload_crc_calc)
 {
     printf("GLOEPHB decoded frame:\n");
@@ -312,101 +623,6 @@ static void print_galephb(const GALEPHB_Decoded_t *eph, uint32_t payload_crc_cal
            (eph->crc24 == payload_crc_calc) ? "OK" : "BAD");
 }
 
-static void print_bd3cnav1ephb(const BD3CNAV1EPHB_Decoded_t *eph, uint32_t payload_crc_calc)
-{
-    printf("BD3CNAV1EPHB decoded frame:\n");
-    printf("  head: ");
-    for (size_t i = 0; i < sizeof(eph->head); ++i)
-        printf("%02X%s", eph->head[i], (i + 1 == sizeof(eph->head)) ? "" : " ");
-    printf("\n");
-
-    printf("  gps_week_count : raw=%u\n", eph->gps_week_count);
-    printf("  gps_tow_s      : raw=%u s\n", eph->gps_tow_s);
-    printf("  bds_satid      : raw=%u\n", eph->bds_satid);
-    printf("  bds_sattype    : raw=%u\n", eph->bds_sattype);
-    printf("  bds_week       : raw=%u\n", eph->bds_week);
-    printf("  bds_toe        : raw=%u s (需乘300s)\n", eph->bds_toe);
-    printf("  bds_toc        : raw=%u s (需乘300s)\n", eph->bds_toc);
-    printf("  bds_af0        : =% .12e s\n", eph->bds_af0);
-    printf("  bds_af1        : =% .12e s/s\n", eph->bds_af1);
-    printf("  bds_af2        : =% .12e s/s^2\n", eph->bds_af2);
-    printf("  bds_iode       : raw=%u\n", eph->bds_iode);
-    printf("  bds_iodc       : raw=%u\n", eph->bds_iodc);
-    printf("  bds_idot       : =% .12e rad/s\n", eph->bds_idot);
-    printf("  bds_crs        : =% .12e m\n", eph->bds_crs);
-    printf("  bds_crc        : =% .12e m\n", eph->bds_crc);
-    printf("  bds_cus        : =% .12e rad\n", eph->bds_cus);
-    printf("  bds_cuc        : =% .12e rad\n", eph->bds_cuc);
-    printf("  bds_cis        : =% .12e rad\n", eph->bds_cis);
-    printf("  bds_cic        : =% .12e rad\n", eph->bds_cic);
-    printf("  bds_delta_n0   : =% .12e rad/s\n", eph->bds_delta_n0);
-    printf("  bds_delta_n0_dot: =% .12e\n", eph->bds_delta_n0_dot);
-    printf("  bds_m0         : =% .12e rad\n", eph->bds_m0);
-    printf("  bds_ecc        : =% .12e\n", eph->bds_ecc);
-    printf("  bds_deltaA     : =% .12e m\n", eph->bds_deltaA);
-    printf("  bds_adot       : =% .12e m/s\n", eph->bds_adot);
-    printf("  bds_omega0     : =% .12e rad\n", eph->bds_omega0);
-    printf("  bds_i0         : =% .12e rad\n", eph->bds_i0);
-    printf("  bds_omega      : =% .12e rad\n", eph->bds_omega);
-    printf("  bds_omegadot   : =% .12e rad/s\n", eph->bds_omegadot);
-    printf("  bds_tgdb1cp    : =% .12e s\n", eph->bds_tgdb1cp);
-    printf("  bds_tgdb2ap    : =% .12e s\n", eph->bds_tgdb2ap);
-    printf("  bds_iscb1cd    : =% .12e s\n", eph->bds_iscb1cd);
-    printf("  bds_reserved2  : raw=%u\n", eph->bds_reserved2);
-    printf("  payload_crc24  : raw=%06X calc=%06X [%s]\n",
-           eph->crc24,
-           payload_crc_calc,
-           (eph->crc24 == payload_crc_calc) ? "OK" : "BAD");
-}
-
-static void print_bd3cnav2ephb(const BD3CNAV2EPHB_Decoded_t *eph, uint32_t payload_crc_calc)
-{
-    printf("BD3CNAV2EPHB decoded frame:\n");
-    printf("  head: ");
-    for (size_t i = 0; i < sizeof(eph->head); ++i)
-        printf("%02X%s", eph->head[i], (i + 1 == sizeof(eph->head)) ? "" : " ");
-    printf("\n");
-
-    printf("  gps_week_count : raw=%u\n", eph->gps_week_count);
-    printf("  gps_tow_s      : raw=%u s\n", eph->gps_tow_s);
-    printf("  bds_satid      : raw=%u\n", eph->bds_satid);
-    printf("  bds_sattype    : raw=%u\n", eph->bds_sattype);
-    printf("  bds_week       : raw=%u\n", eph->bds_week);
-    printf("  bds_toe        : raw=%u s (需乘300s)\n", eph->bds_toe);
-    printf("  bds_toc        : raw=%u s (需乘300s)\n", eph->bds_toc);
-    printf("  bds_af0        : =% .12e s\n", eph->bds_af0);
-    printf("  bds_af1        : =% .12e s/s\n", eph->bds_af1);
-    printf("  bds_af2        : =% .12e s/s^2\n", eph->bds_af2);
-    printf("  bds_iode       : raw=%u\n", eph->bds_iode);
-    printf("  bds_iodc       : raw=%u\n", eph->bds_iodc);
-    printf("  bds_idot       : =% .12e rad/s\n", eph->bds_idot);
-    printf("  bds_crs        : =% .12e m\n", eph->bds_crs);
-    printf("  bds_crc        : =% .12e m\n", eph->bds_crc);
-    printf("  bds_cus        : =% .12e rad\n", eph->bds_cus);
-    printf("  bds_cuc        : =% .12e rad\n", eph->bds_cuc);
-    printf("  bds_cis        : =% .12e rad\n", eph->bds_cis);
-    printf("  bds_cic        : =% .12e rad\n", eph->bds_cic);
-    printf("  bds_delta_n0   : =% .12e rad/s\n", eph->bds_delta_n0);
-    printf("  bds_delta_n0_dot: =% .12e\n", eph->bds_delta_n0_dot);
-    printf("  bds_m0         : =% .12e rad\n", eph->bds_m0);
-    printf("  bds_ecc        : =% .12e\n", eph->bds_ecc);
-    printf("  bds_AA         : =% .12e m\n", eph->bds_AA);
-    printf("  bds_adot       : =% .12e m/s\n", eph->bds_adot);
-    printf("  bds_omega0     : =% .12e rad\n", eph->bds_omega0);
-    printf("  bds_i0         : =% .12e rad\n", eph->bds_i0);
-    printf("  bds_omega      : =% .12e rad\n", eph->bds_omega);
-    printf("  bds_omegadot   : =% .12e rad/s\n", eph->bds_omegadot);
-    printf("  bds_tgdb1cp    : =% .12e s\n", eph->bds_tgdb1cp);
-    printf("  bds_tgdb2ap    : =% .12e s\n", eph->bds_tgdb2ap);
-    printf("  bds_iscb2ad    : =% .12e s\n", eph->bds_iscb2ad);
-    printf("  bds_reserved   : raw=%u\n", eph->bds_reserved);
-    printf("  payload_crc24  : raw=%06X calc=%06X [%s]\n",
-           eph->crc24,
-           payload_crc_calc,
-           (eph->crc24 == payload_crc_calc) ? "OK" : "BAD");
-}
-
-
 static void print_prangeb(const PRANGEB_Decoded_t *d, uint32_t payload_crc_calc)
 {
     printf("PRANGEB decoded frame:\n");
@@ -439,220 +655,134 @@ static void print_prangeb(const PRANGEB_Decoded_t *d, uint32_t payload_crc_calc)
             printf("        cn0             : % .12e dB\n", d->sat_info[i].signal_info[j].cn0);
             printf("        half_cycle      : %u\n", d->sat_info[i].signal_info[j].half_cycle);
         }
-        
-       
     }
-    
-    
+
     printf("  embedded_crc24  : %06X calc=%06X [%s]\n",
            d->crc24, payload_crc_calc, (d->crc24 == payload_crc_calc) ? "OK" : "BAD");
 }
 
-
-static void print_bd3cnav3ephb(const BD3CNAV3EPHB_Decoded_t *eph, uint32_t payload_crc_calc)
+static void print_posdatab(const POSDATAB_Decoded_t *pos, uint32_t payload_crc_calc)
 {
-    printf("BD3CNAV3EPHB decoded frame:\n");
+    printf("POSDATAB decoded frame:\n");
     printf("  head: ");
-    for (size_t i = 0; i < sizeof(eph->head); ++i)
-        printf("%02X%s", eph->head[i], (i + 1 == sizeof(eph->head)) ? "" : " ");
+    for (size_t i = 0; i < sizeof(pos->head); ++i)
+        printf("%02X%s", pos->head[i], (i + 1 == sizeof(pos->head)) ? "" : " ");
     printf("\n");
 
-    printf("  gps_week_count : raw=%u\n", eph->gps_week_count);
-    printf("  gps_tow_s      : raw=%u s\n", eph->gps_tow_s);
-    printf("  bds_satid      : raw=%u\n", eph->bds_satid);
-    printf("  bds_sattype    : raw=%u\n", eph->bds_sattype);
-    printf("  bds_week       : raw=%u\n", eph->bds_week);
-    printf("  bds_toe        : raw=%u s (需乘300s)\n", eph->bds_toe);
-    printf("  bds_toc        : raw=%u s (需乘300s)\n", eph->bds_toc);
-    printf("  bds_af0        : =% .12e s\n", eph->bds_af0);
-    printf("  bds_af1        : =% .12e s/s\n", eph->bds_af1);
-    printf("  bds_af2        : =% .12e s/s^2\n", eph->bds_af2);
-    printf("  bds_iode       : raw=%u\n", eph->bds_iode);
-    printf("  bds_iodc       : raw=%u\n", eph->bds_iodc);
-    printf("  bds_idot       : =% .12e rad/s\n", eph->bds_idot);
-    printf("  bds_crs        : =% .12e m\n", eph->bds_crs);
-    printf("  bds_crc        : =% .12e m\n", eph->bds_crc);
-    printf("  bds_cus        : =% .12e rad\n", eph->bds_cus);
-    printf("  bds_cuc        : =% .12e rad\n", eph->bds_cuc);
-    printf("  bds_cis        : =% .12e rad\n", eph->bds_cis);
-    printf("  bds_cic        : =% .12e rad\n", eph->bds_cic);
-    printf("  bds_delta_n0   : =% .12e rad/s\n", eph->bds_delta_n0);
-    printf("  bds_delta_n0_dot: =% .12e\n", eph->bds_delta_n0_dot);
-    printf("  bds_m0         : =% .12e rad\n", eph->bds_m0);
-    printf("  bds_ecc        : =% .12e\n", eph->bds_ecc);
-    printf("  bds_deltaA     : =% .12e m\n", eph->bds_deltaA);
-    printf("  bds_adot       : =% .12e m/s\n", eph->bds_adot);
-    printf("  bds_omega0     : =% .12e rad\n", eph->bds_omega0);
-    printf("  bds_i0         : =% .12e rad\n", eph->bds_i0);
-    printf("  bds_omega      : =% .12e rad\n", eph->bds_omega);
-    printf("  bds_omegadot   : =% .12e rad/s\n", eph->bds_omegadot);
-    printf("  bds_tgdb2bI    : =% .12e s\n", eph->bds_tgdb2bI);
-    printf("  bds_reserved   : raw=%u\n", eph->bds_reserved);
-    printf("  payload_crc24  : raw=%06X calc=%06X [%s]\n",
-           eph->crc24,
+    printf("  time_system     : raw=%u (%s)\n", pos->time_system, pos_time_system_desc(pos->time_system));
+    printf("  week_num        : raw=%u\n", pos->week_num);
+    printf("  sec_in_week     : =% .12e s\n", pos->sec_in_week);
+    printf("  leap_second     : raw=%d s\n", pos->leap_second);
+    printf("  sys_status      : raw=%u (%s)\n", pos->sys_status, pos_sys_status_desc(pos->sys_status));
+    printf("  pos_type        : raw=%u (%s)\n", pos->pos_type, pos_fix_type_desc(pos->pos_type));
+    printf("  azi_type        : raw=%u (%s)\n", pos->azi_type, pos_fix_type_desc(pos->azi_type));
+    printf("  latitude        : =% .12e deg\n", pos->latitude);
+    printf("  longitude       : =% .12e deg\n", pos->longitude);
+    printf("  altitude        : =% .12e m\n", pos->altitude);
+    printf("  east_velocity   : =% .12e m/s\n", pos->east_velocity);
+    printf("  north_velocity  : =% .12e m/s\n", pos->north_velocity);
+    printf("  up_velocity     : =% .12e m/s\n", pos->up_velocity);
+    printf("  pitch           : =% .12e deg\n", pos->pitch);
+    printf("  roll            : =% .12e deg\n", pos->roll);
+    printf("  azimuth         : =% .12e deg\n", pos->azimuth);
+    printf("  lat_sigma       : =% .12e m\n", pos->lat_sigma);
+    printf("  lon_sigma       : =% .12e m\n", pos->lon_sigma);
+    printf("  altitude_sigma  : =% .12e m\n", pos->altitude_sigma);
+    printf("  east_vel_sigma  : =% .12e m/s\n", pos->east_vel_sigma);
+    printf("  north_vel_sigma : =% .12e m/s\n", pos->north_vel_sigma);
+    printf("  up_vel_sigma    : =% .12e m/s\n", pos->up_vel_sigma);
+    printf("  pitch_sigma     : =% .12e deg\n", pos->pitch_sigma);
+    printf("  roll_sigma      : =% .12e deg\n", pos->roll_sigma);
+    printf("  azimuth_sigma   : =% .12e deg\n", pos->azimuth_sigma);
+    printf("  gnss_sat_m      : raw=%u\n", pos->gnss_sat_m);
+    printf("  gnss_sat_s      : raw=%u\n", pos->gnss_sat_s);
+    printf("  diff_age        : =% .12e s\n", pos->diff_age);
+    printf("  odo_flag        : raw=%u\n", pos->odo_flag);
+    printf("  gear            : raw=%u (%s)\n", pos->gear, pos_gear_desc(pos->gear));
+    printf("  fl_wheel_speed  : =% .12e m/s\n", pos->fl_wheel_speed);
+    printf("  fr_wheel_speed  : =% .12e m/s\n", pos->fr_wheel_speed);
+    printf("  rl_wheel_speed  : =% .12e m/s\n", pos->rl_wheel_speed);
+    printf("  rr_wheel_speed  : =% .12e m/s\n", pos->rr_wheel_speed);
+    printf("  reserved0       : raw=%08X\n", pos->reserved0);
+    printf("  reserved1       : raw=%08X\n", pos->reserved1);
+    printf("  payload_crc24   : raw=%06X calc=%06X [%s]\n",
+           pos->crc24,
            payload_crc_calc,
-           (eph->crc24 == payload_crc_calc) ? "OK" : "BAD");
+           (pos->crc24 == payload_crc_calc) ? "OK" : "BAD");
 }
-
-static void print_gpsephb(const GPSEPHB_Decoded_t *eph, uint32_t payload_crc_calc)
-{
-    printf("GPSEPHB decoded frame:\n");
-    printf("  head: ");
-    for (size_t i = 0; i < sizeof(eph->head); ++i)
-    {
-        printf("%02X%s", eph->head[i], (i + 1 == sizeof(eph->head)) ? "" : " ");
-    }
-    printf("\n");
-
-    printf("  gps_week_count   : raw=%u\n", eph->gps_week_count);
-    printf("  gps_tow_s        : raw=%u s\n", eph->gps_tow_s);
-    printf("  gps_satid        : raw=%u\n", eph->gps_satid);
-    printf("  gps_sv_accuracy   : raw=%u m\n", eph->gps_sv_accuracy);
-    printf("  gps_sv_health    : raw=%u\n", eph->gps_sv_health);
-    printf("  gps_week         : raw=%u\n", eph->gps_week);
-    printf("  gps_toe          : raw=%u s\n", eph->gps_toe);
-    printf("  gps_toc          : raw=%u s\n", eph->gps_toc);
-    printf("  gps_af0          : =% .12e s\n", eph->gps_af0);
-    printf("  gps_af1          : =% .12e s/s\n", eph->gps_af1);
-    printf("  gps_af2          : =% .12e s/s^2\n", eph->gps_af2);
-    printf("  gps_iode         : raw=%u\n", eph->gps_iode);
-    printf("  gps_iodc         : raw=%u\n", eph->gps_iodc);
-    printf("  gps_idot         : =% .12e rad/s\n", eph->gps_idot);
-    printf("  gps_crs          : =% .12e m\n", eph->gps_crs);
-    printf("  gps_crc          : =% .12e m\n", eph->gps_crc);
-    printf("  gps_cus          : =% .12e rad\n", eph->gps_cus);
-    printf("  gps_cuc          : =% .12e rad\n", eph->gps_cuc);
-    printf("  gps_cis          : =% .12e rad\n", eph->gps_cis);
-    printf("  gps_cic          : =% .12e rad\n", eph->gps_cic);
-    printf("  gps_delta_n      : =% .12e rad/s\n", eph->gps_delta_n);
-    printf("  gps_m0           : =% .12e rad\n", eph->gps_m0);
-    printf("  gps_ecc          : =% .12e\n", eph->gps_ecc);
-    printf("  gps_a_half       : =% .12e m^1/2\n", eph->gps_a_half);
-    printf("  gps_omega0       : =% .12e rad\n", eph->gps_omega0);
-    printf("  gps_i0           : =% .12e rad\n", eph->gps_i0);
-    printf("  gps_omega        : =% .12e rad\n", eph->gps_omega);
-    printf("  gps_omegadot     : =% .12e rad/s\n", eph->gps_omegadot);
-    printf("  gps_tgd          : =% .12e s\n", eph->gps_tgd);
-    printf("  gps_code_on_l2   : raw=%u (%s)\n", eph->gps_code_on_l2, gps_l2_code_desc(eph->gps_code_on_l2));
-    printf("  gps_l2p_data_flag: raw=%u\n", eph->gps_l2p_data_flag);
-    printf("  gps_fit          : raw=%u (%s)\n", eph->gps_fit, gps_fit_desc(eph->gps_fit));
-    printf("  reserved         : raw=%u\n", eph->reserved);
-    printf("  payload_crc24    : raw=%06X calc=%06X [%s]\n",
-           eph->crc24,
-           payload_crc_calc,
-           (eph->crc24 == payload_crc_calc) ? "OK" : "BAD");
-}
-
-
-void gpsephb_file_header()
-{
-    FILE *f = fopen(TEST_GPSEPHB_FILE_PATH, "w");
-    if (f)
-    {
-        fprintf(f, "gps_satid,gps_sv_accuracy,gps_sv_health,gps_week,gps_toe,gps_toc,"
-                   "gps_af0,gps_af1,gps_af2,"
-                   "gps_iode,gps_iodc,"
-                   "gps_idot,gps_crs,gps_crc,gps_cus,gps_cuc,gps_cis,gps_cic,gps_delta_n,"
-                   "gps_m0,gps_ecc,gps_a_half,gps_omega0,gps_i0,gps_omega,gps_omegadot,gps_tgd,"
-                   "gps_code_on_l2,gps_l2p_data_flag,gps_fit\n");
-    }
-    fclose(f);
-}
-
-void gpsephb_file_header2()
-{
-    FILE *f = fopen(TEST_GPSEPHB_FILE_PATH, "w");
-    if (f)
-    {
-        fprintf(f, "卫星号,用户等效距离精度(m),星自主健康标识,时间周计数,卫星星历参考时间(s),卫星钟参考时刻(s),"
-                   "卫星钟钟差改正参数(s),卫星钟钟速改正参数(s/s),卫星钟钟漂改正参数(s/s^2),"
-                   "卫星星历数据期号,卫星钟参数期卷号,"
-                   "卫星轨道倾角变化率(π/s),卫星轨道半径正弦调和改正项的振幅(m),卫星轨道半径余弦调和改正项的振幅(m),"
-                   "卫星纬度幅角正弦调和改正项的振幅(rad),卫星纬度幅角余弦调和改正项的振幅(rad),"
-                   "卫星轨道倾角正弦调和改正项的振幅(rad),卫星轨道倾角余弦调和改正项的振幅(rad),"
-                   "卫星平均运动速率与计算值之差(π/s),"
-                   "卫星参考时间的平近点角(π),卫星轨道偏心率,卫星轨道长半轴的平方根(m^1/2),卫星按参考时间计算的升交点赤经(π),卫星参考时间的轨道倾角(π),卫星近地点幅角(π),卫星升交点赤经变化率(π/s),卫星L1和L2信号频率的群延迟差(s),"
-                   "L2测距码标志,L2P码导航电文可用状态,曲线拟合标志\n");
-    }
-    fclose(f);
-}
-
-
-
-void gpsephb_to_save(const GPSEPHB_Decoded_t *eph)
-{
-    FILE *f = fopen(TEST_GPSEPHB_FILE_PATH, "a+");
-    if (f)
-    {
-        char buffer[2048];
-        snprintf(buffer, sizeof(buffer), "%u,%u,%u,%u,%u,%u,"
-                                         "% .12e,% .12e,% .12e,"
-                                         "%u,%u,"
-                                         "% .12e,% .12e,% .12e,% .12e,% .12e,% .12e,% .12e,% .12e,"
-                                         "% .12e,% .12e,% .12e,% .12e,% .12e,% .12e,% .12e,% .12e,"
-                                         "%u,%u,%u\n",
-                 eph->gps_satid, eph->gps_sv_accuracy, eph->gps_sv_health, eph->gps_week, eph->gps_toe, eph->gps_toc,
-                 eph->gps_af0, eph->gps_af1, eph->gps_af2,
-                 eph->gps_iode, eph->gps_iodc,
-                 eph->gps_idot, eph->gps_crs, eph->gps_crc, eph->gps_cus, eph->gps_cuc, eph->gps_cis, eph->gps_cic, eph->gps_delta_n,
-                 eph->gps_m0, eph->gps_ecc, eph->gps_a_half, eph->gps_omega0, eph->gps_i0, eph->gps_omega, eph->gps_omegadot, eph->gps_tgd,
-                 eph->gps_code_on_l2, eph->gps_l2p_data_flag, eph->gps_fit);
-        fputs(buffer, f);
-    }
-    fclose(f);
-}
-
-static void print_gpsephb_simple(const GPSEPHB_Decoded_t *eph)
-{
-    // printf("%d % .12e % .12e % .12e % .12e % .12e % .12e\n",
-    //        eph->gps_satid, eph->gps_i0, eph->gps_omega0, eph->gps_ecc, eph->gps_omega, eph->gps_m0, eph->gps_delta_n);
-    // printf("%d %u %u % .12e % .12e % .12e % .12e % .12e % .12e\n\n",
-    //        eph->gps_satid, eph->gps_toe, eph->gps_toc, eph->gps_cuc, eph->gps_cus, eph->gps_crc, eph->gps_crs, eph->gps_omegadot);
-
-    printf("%d %u %u % .12e % .12e % .12e % .12e % .12e % .12e % .12e % .12e %u % .12e \n",
-           eph->gps_satid, eph->gps_toe, eph->gps_toc, eph->gps_af0, eph->gps_af1, eph->gps_cuc,
-           eph->gps_cus, eph->gps_crc, eph->gps_crs, eph->gps_cic, eph->gps_cis, eph->gps_iodc, eph->gps_omegadot);
-    printf("%d % .12e % .12e % .12e % .12e % .12e % .12e\n\n",
-           eph->gps_satid, eph->gps_i0, eph->gps_omega0, eph->gps_ecc, eph->gps_omega, eph->gps_m0, eph->gps_delta_n);
-}
-
-
-
-
-
 
 int handle_gnss_raw(const uint8_t *data, size_t len)
 {
     int handle_cnt = 0;
     for (size_t i = 0; i < len - 3; i++)
     {
-        gns_raw_data_packet_t *packet = (gns_raw_data_packet_t *)(data + i);
-        if (packet->header == Header)
+        gns_raw_data1_packet_t *packet = (gns_raw_data1_packet_t *)(data + i);
+        gns_raw_data2_packet_t *packet2 = (gns_raw_data2_packet_t *)(data + i);
+        if (packet->header == Header1)
         {
             // printf("Packet header found at offset %zu\n", i);
-            if (packet->length > len - i - sizeof(gns_raw_data_packet_t))
+            if (packet->length > len - i - sizeof(gns_raw_data1_packet_t))
             {
                 continue;
             }
             uint32_t crc_calculated = rtk_crc24q((const uint8_t *)packet, packet->length + 8);
-            uint32_t crc_received = data[i + sizeof(gns_raw_data_packet_t) + packet->length - 3] << 16 |
-                                    data[i + sizeof(gns_raw_data_packet_t) + packet->length - 2] << 8 |
-                                    data[i + sizeof(gns_raw_data_packet_t) + packet->length - 1];
+            uint32_t crc_received = data[i + sizeof(gns_raw_data1_packet_t) + packet->length - 3] << 16 |
+                                    data[i + sizeof(gns_raw_data1_packet_t) + packet->length - 2] << 8 |
+                                    data[i + sizeof(gns_raw_data1_packet_t) + packet->length - 1];
             if (crc_calculated == crc_received)
             {
                 // printf("Valid packet found at offset %zu: type=%u length=%u\n", i, packet->type, packet->length);
-                // 这里可以根据 packet->type 进一步
-                // 解析 packet->payload 数据
-                // const uint8_t *payload = (uint8_t *)packet + RAW_PACKET_HEADER_LEN;
                 switch (packet->type)
                 {
+                case RAW_BD2EPHB:
+                {
+                    BD2EPHB_Decoded_t eph;
+                    if (packet->length >= BD2EPHB_PAYLOAD_LEN) // 67
+                    {
+                        decode_bd2ephb((uint8_t *)packet, packet->length, &eph);
+                        print_bd2ephb(&eph, crc_calculated);
+                    }
+                }
+                break;
                 case RAW_BD3EPHB:
                 {
                     BD3EPHB_Decoded_t eph;
-                    if (packet->length > 0)
+                    if (packet->length >= BD3EPHB_PAYLOAD_LEN) // 76
                     {
                         decode_bd3ephb((uint8_t *)packet, packet->length, &eph);
                         print_bd3ephb(&eph, crc_calculated);
+                    }
+                }
+                break;
+                case RAW_BD3CNAV2EPHB:
+                {
+                    BD3CNAV2EPHB_Decoded_t eph;
+                    if (packet->length > 0)
+                    {
+                        decode_bd3cnav2ephb((uint8_t *)packet, packet->length, &eph);
+                        print_bd3cnav2ephb(&eph, crc_calculated);
+                    }
+                }
+                break;
+                case RAW_BD3CNAV3EPHB:
+                {
+                    BD3CNAV3EPHB_Decoded_t eph;
+                    if (packet->length > 0)
+                    {
+                        decode_bd3cnav3ephb((uint8_t *)packet, packet->length, &eph);
+                        print_bd3cnav3ephb(&eph, crc_calculated);
+                    }
+                }
+                break;
+                case RAW_GPSEPHB:
+                {
+                    GPSEPHB_Decoded_t eph;
+                    if (packet->length >= GPSEPHB_PAYLOAD_LEN) // 64
+                    {
+                        decode_gpsephb((uint8_t *)packet, packet->length, &eph); // 64
+                        // print_gpsephb(&eph, crc_calculated);
+                        print_gpsephb_simple(&eph);
+                        // gpsephb_to_save(&eph);
                     }
                 }
                 break;
@@ -669,40 +799,10 @@ int handle_gnss_raw(const uint8_t *data, size_t len)
                 case RAW_GALEPHB:
                 {
                     GALEPHB_Decoded_t eph;
-                    if (packet->length > 0)
+                    if (packet->length >= GALEPHB_PAYLOAD_LEN) // 66
                     {
                         decode_galephb((uint8_t *)packet, packet->length, &eph);
                         print_galephb(&eph, crc_calculated);
-                    }
-                }
-                break;
-                case RAW_BD3CNAV3EPHB:
-                {
-                    BD3CNAV3EPHB_Decoded_t eph;
-                    if (packet->length > 0)
-                    {
-                        decode_bd3cnav3ephb((uint8_t *)packet, packet->length, &eph);
-                        print_bd3cnav3ephb(&eph, crc_calculated);
-                    }
-                }
-                break;
-                case RAW_BD3CNAV1EPHB:
-                {
-                    BD3CNAV1EPHB_Decoded_t eph;
-                    if (packet->length > 0)
-                    {
-                        decode_bd3cnav1ephb((uint8_t *)packet, packet->length, &eph);
-                        print_bd3cnav1ephb(&eph, crc_calculated);
-                    }
-                }
-                break;
-                case RAW_BD3CNAV2EPHB:
-                {
-                    BD3CNAV2EPHB_Decoded_t eph;
-                    if (packet->length > 0)
-                    {
-                        decode_bd3cnav2ephb((uint8_t *)packet, packet->length, &eph);
-                        print_bd3cnav2ephb(&eph, crc_calculated);
                     }
                 }
                 break;
@@ -712,37 +812,53 @@ int handle_gnss_raw(const uint8_t *data, size_t len)
                     PRANGEB_Decoded_t p;
                     if (packet->length > 0)
                     {
-                        decode_prangeb((uint8_t *)packet, packet->length, &p);                       
+                        decode_prangeb((uint8_t *)packet, packet->length, &p);
                         print_prangeb(&p, crc_calculated);
                     }
-                    
-                }
-                break;                
-                case RAW_BD2EPHB:
-                {
-                    BD2EPHB_Decoded_t eph;
-                    if (packet->length >= BD2EPHB_PAYLOAD_LEN)
-                    {
-                        decode_bd2ephb((uint8_t *)packet, packet->length, &eph);
-                        print_bd2ephb(&eph, crc_calculated);
-                    }
                 }
                 break;
-                case RAW_GPSEPHB:               
-                {
-                    GPSEPHB_Decoded_t eph;
-                    decode_gpsephb((uint8_t *)packet, packet->length, &eph);
-                    // print_gpsephb(&eph, crc_calculated);
-                    print_gpsephb_simple(&eph);
-                    // gpsephb_to_save(&eph);
-                }
-                break;
+                case RAW_BD2IonoB:
+                case RAW_BD3IonoB:
+                case RAW_GPSIonoB:
+                    break;
                 default:
                     printf("Unknown packet type %u \n", packet->type);
                     break;
                 }
                 handle_cnt = i + packet->length; // 移动到下一个可能的包位置
                 i += packet->length - 1;         // 跳过当前包的 payload 和 checksum
+            }
+        }
+        else if (packet2->header == Header2)
+        {
+            // printf("Packet2 header found at offset %zu\n", i);
+            if (packet2->length > len - i - sizeof(gns_raw_data2_packet_t))
+            {
+                continue;
+            }
+            uint32_t crc_calculated = rtk_crc24q((const uint8_t *)packet2, packet2->length + 12);
+            uint32_t crc_received = data[i + sizeof(gns_raw_data2_packet_t) + packet2->length - 3] << 16 |
+                                    data[i + sizeof(gns_raw_data2_packet_t) + packet2->length - 2] << 8 |
+                                    data[i + sizeof(gns_raw_data2_packet_t) + packet2->length - 1];
+            if (crc_calculated == crc_received)
+            {
+                // printf("Valid packet2 found at offset %zu: type=%u length=%u\n", i, packet2->type, packet2->length);
+                switch (packet2->type)
+                {
+                case RAW_POSDATAB:
+                {
+                    POSDATAB_Decoded_t pos;
+                    if (packet2->length >= POSDATAB_PAYLOAD_LEN)
+                    {
+                        decode_posdatab((uint8_t *)packet2, packet2->length, &pos);
+                        print_posdatab(&pos, crc_calculated);
+                    }
+                }
+                break;
+                default:
+                    printf("Unknown packet2 type %u \n", packet2->type);
+                    break;
+                }
             }
         }
     }

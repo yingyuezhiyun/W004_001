@@ -240,44 +240,6 @@ extern "C"
         uint32_t crc24;          // 占位24；校验范围从帧头至有效数据；-
     } BD3CNAV3EPHB_Decoded_t;
 
-    typedef struct
-    {
-        uint8_t head[8];
-        uint16_t gps_week_count; // 占位12；输出数据时刻，GPS 时间，周计数为实际值；-
-        uint32_t gps_tow_s;      // 占位20；GPS 周内秒；-
-        uint8_t bds_satid;       // 占位6；按卫星号从小到大顺序输出；-
-        uint8_t bds_sattype;     // 占位3；1-GEO 2-MEO 4-IGSO；-
-        uint16_t bds_week;       // 占位13；BDS 时间周计数；-
-        uint32_t bds_toe;        // 占位11；BDS 卫星星历数据参考时刻；s
-        uint32_t bds_toc;        // 占位11；BDS 卫星钟数据参考时刻；s
-        double bds_af0;          // 占位25；BDS 卫星钟钟差改正参数；s
-        double bds_af1;          // 占位22；BDS 卫星钟钟速改正参数；s/s
-        double bds_af2;          // 占位11；BDS 卫星钟钟漂改正参数；s/s2
-        uint8_t bds_iode;        // 占位8；BDS 卫星星历数据龄期,注意转 RINEX 时转为 AODE；-
-        uint16_t bds_iodc;       // 占位16；BDS 卫星时钟数据龄期；-
-        double bds_idot;         // 占位15；BDS 卫星轨道倾角变化率；π/s
-        double bds_crs;          // 占位24；BDS 卫星轨道半径正弦调和改正项的振幅；m
-        double bds_crc;          // 占位24；BDS 卫星轨道半径的余弦调和改正项的振幅；m
-        double bds_cus;          // 占位21；BDS 卫星纬度幅角的正弦调和改正项的振幅；rad
-        double bds_cuc;          // 占位21；BDS 卫星纬度幅角的余弦调和改正项的振幅；rad
-        double bds_cis;          // 占位16；BDS 卫星轨道倾角的正弦调和改正项的振幅；rad
-        double bds_cic;          // 占位16；BDS 卫星轨道倾角的余弦调和改正项的振幅；rad
-        double bds_delta_n0;     // 占位17；BDS 卫星平均运动速率与计算值之差；π/s
-        double bds_delta_n0_dot; // 占位23；RINEX 中没有，需放在保留字段处；π/s2
-        double bds_m0;           // 占位33；BDS 卫星参考时间的平近点角；π
-        double bds_ecc;          // 占位33；BDS 卫星轨道偏心率；-
-        double bds_deltaA;       // 占位26；与 SatType 共同计算得到(A)1/2；m
-        double bds_adot;         // 占位25；BDS ADOT；m/s
-        double bds_omega0;       // 占位33；BDS 卫星按参考时间计算的升交点赤经；π
-        double bds_i0;           // 占位33；BDS 卫星参考时间的轨道倾角；π
-        double bds_omega;        // 占位33；BDS 卫星近地点幅角；π
-        double bds_omegadot;     // 占位19；BDS 卫星升交点赤经变化率；π/s
-        double bds_tgdb1cp;      // 占位12；B1C 导频分量试时延差；s
-        double bds_tgdb2ap;      // 占位12；B2A 导频分量试时延差；s
-        double bds_iscb1cd;      // 占位12；B1C 数据分量相对于 B1C 导频分量的时延修正项；s
-        uint8_t bds_reserved2;   // 占位2；保留；-
-        uint32_t crc24;          // 占位24；校验范围从帧头至有效数据；-
-    } BD3CNAV1EPHB_Decoded_t;
 
     typedef struct
     {
@@ -342,40 +304,40 @@ extern "C"
     typedef struct
     {
         uint8_t head[12];
-        uint8_t time_system;    // 占位3；0-无效系统，1-BDS，2-GPS，3-GAL，4-GLO，5~7-保留；-
-        uint16_t week_num;      // 占位13；ID4=1 时为 BDS 周计数，ID4=2 时为 GPS 周计数，无效时为 0x1FFF；-
-        uint32_t sec_in_week;   // 占位32；ID4=1 时为 BDS 周内秒，ID4=2 时为 GPS 周内秒，无效时为 0xFFFFFFFF；s
-        int8_t leap_second;     // 占位8；对应时间系统与 UTC 时间差，高位 1 表示负，无效时为 0x80；s
-        uint8_t sys_status;     // 占位4；0：未定位 1：纯卫导 2：组合导航 3：纯惯导 4~15：保留；-
-        uint8_t pos_type;       // 占位6；0 = 无效解 1 = 单点解 2 = 伪距差分 3 = PPS 4 = 固定解 5 = 浮点解 6 = 航位推算 7 = 用户输入 8 = PPP 9~63:保留；-
-        uint8_t azi_type;       // 占位6；0 = 无效解 1 = 单点解 2 = 伪距差分 3 = PPS 4 = 固定解 5 = 浮点解 6 = 航位推算 7 = 用户输入 8 = PPP 9~63:保留；-
-        double latitude;        // 占位36；纬度，单位：度，北纬为正，南纬为负；度
-        double longitude;       // 占位36；经度，单位：度，东经为正，西经为负；度
-        double altitude;        // 占位30；大地高，单位：m；m
-        double east_velocity;   // 占位16；ENU 下东向速度，单位：m/s；m/s
-        double north_velocity;  // 占位16；ENU 下北向速度，单位：m/s；m/s
-        double up_velocity;     // 占位16；ENU 下对天速度，单位：m/s；m/s
-        double pitch;           // 占位16；俯仰角，单位：度，仰角为正，俯角为负，范围[-90,+90]；度
-        double roll;            // 占位16；横滚角，单位：度，右倾为正，左倾为负，范围[-180,+180]；度
-        double azimuth;         // 占位16；航向角，单位：度，范围[0,360]；度
-        double lat_sigma;       // 占位18；纬度标准差，单位：m；m
-        double lon_sigma;       // 占位18；经度标准差，单位：m；m
-        double altitude_sigma;  // 占位18；高程标准差，单位：m；m
-        double east_vel_sigma;  // 占位12；东向速度标准差，单位：m/s；m/s
-        double north_vel_sigma; // 占位12；北向速度标准差，单位：m/s；m/s
-        double up_vel_sigma;    // 占位12；天向速度标准差，单位：m/s；m/s
-        double pitch_sigma;     // 占位12；俯仰角标准差，单位：度；度
-        double roll_sigma;      // 占位12；横滚角标准差，单位：度；度
-        double azimuth_sigma;   // 占位12；航向角标准差，单位：度；度
-        uint8_t gnss_sat_m;     // 占位8；主天线卫星数，单位：颗，无效时为 0xFF；-
-        uint8_t gnss_sat_s;     // 占位8；从天线卫星数，单位：颗，无效时为 0xFF；-
-        double diff_age;        // 占位16；差分龄期，单位：s，无效时为 0xFFFF；s
-        uint8_t odo_flag;       // 占位1；1-里程计速度有效 0-里程计速度无效；-
-        uint8_t gear;           // 占位3；1-N；1-D；2-R；3-P；4~6-备用，无效时取 7；-
-        double fl_wheel_speed;  // 占位16；前左轮速，单位：m/s；m/s
-        double fr_wheel_speed;  // 占位16；前右轮速，单位：m/s；m/s
-        double rl_wheel_speed;  // 占位16；后左轮速，单位：m/s；m/s
-        double rr_wheel_speed;  // 占位16；后右轮速，单位：m/s；m/s
+        uint8_t time_system;    // 占位3；时间系统：0-无效系统，1-BDS，2-GPS，3-GAL，4-GLO，5~7-保留；-
+        uint16_t week_num;      // 占位13；周计数：ID4=1 时为 BDS 周计数，ID4=2 时为 GPS 周计数，无效时为 0x1FFF；-
+        double sec_in_week;     // 占位32；周内秒：ID4=1 时为 BDS 周内秒，ID4=2 时为 GPS 周内秒，无效时为 0xFFFFFFFF；s
+        int8_t leap_second;     // 占位8；UTC 差：对应时间系统与 UTC 时间差，高位 1 表示负，无效时为 0x80；s
+        uint8_t sys_status;     // 占位4；系统状态：0-未定位 1-纯卫导 2-组合导航 3-纯惯导 4~15-保留；-
+        uint8_t pos_type;       // 占位6；卫导定位状态：0-无效解 1-单点解 2-伪距差分 3-PPS 4-固定解 5-浮点解 6-航位推算 7-用户输入 8-PPP 9~63-保留；-
+        uint8_t azi_type;       // 占位6；卫导定向状态：0-无效解 1-单点解 2-伪距差分 3-PPS 4-固定解 5-浮点解 6-航位推算 7-用户输入 8-PPP 9~63-保留；-
+        double latitude;        // 占位36；纬度：单位度，北纬为正，南纬为负；度
+        double longitude;       // 占位36；经度：单位度，东经为正，西经为负；度
+        double altitude;        // 占位30；大地高：单位 m；m
+        double east_velocity;   // 占位16；东向速度：ENU 下东向速度，单位 m/s；m/s
+        double north_velocity;  // 占位16；北向速度：ENU 下北向速度，单位 m/s；m/s
+        double up_velocity;     // 占位16；天向速度：ENU 下对天速度，单位 m/s；m/s
+        double pitch;           // 占位16；俯仰角：范围[-90,+90]，仰角为正，俯角为负；度
+        double roll;            // 占位16；横滚角：范围[-180,+180]，右倾为正，左倾为负；度
+        double azimuth;         // 占位16；航向角：范围[0,360]；度
+        double lat_sigma;       // 占位18；纬度标准差：单位 m；m
+        double lon_sigma;       // 占位18；经度标准差：单位 m；m
+        double altitude_sigma;  // 占位18；高程标准差：单位 m；m
+        double east_vel_sigma;  // 占位12；东向速度标准差：单位 m/s；m/s
+        double north_vel_sigma; // 占位12；北向速度标准差：单位 m/s；m/s
+        double up_vel_sigma;    // 占位12；天向速度标准差：单位 m/s；m/s
+        double pitch_sigma;     // 占位12；俯仰角标准差：单位度；度
+        double roll_sigma;      // 占位12；横滚角标准差：单位度；度
+        double azimuth_sigma;   // 占位12；航向角标准差：单位度；度
+        uint8_t gnss_sat_m;     // 占位8；主天线卫星数：单位 颗，无效时为 0xFF；-
+        uint8_t gnss_sat_s;     // 占位8；从天线卫星数：单位 颗，无效时为 0xFF；-
+        double diff_age;        // 占位16；差分龄期：单位 s，无效时为 0xFFFF；s
+        uint8_t odo_flag;       // 占位1；里程计标志：1-里程计速度有效，0-里程计速度无效；-
+        uint8_t gear;           // 占位3；档位：1-N，1-D，2-R，3-P，4~6-备用，无效时取 7；-
+        double fl_wheel_speed;  // 占位16；前左轮速：单位 m/s；m/s
+        double fr_wheel_speed;  // 占位16；前右轮速：单位 m/s；m/s
+        double rl_wheel_speed;  // 占位16；后左轮速：单位 m/s；m/s
+        double rr_wheel_speed;  // 占位16；后右轮速：单位 m/s；m/s
         uint32_t reserved0;     // 占位32；保留位，无效时为 0xFFFFFFFF；-
         uint32_t reserved1;     // 占位32；保留位，无效时为 0xFFFFFFFF；-
         uint32_t crc24;         // 占位24；CRC24 校验，校验范围从帧头至有效数据；-
@@ -421,9 +383,9 @@ extern "C"
     void decode_bd3ephb(const uint8_t *payload, size_t payload_len, BD3EPHB_Decoded_t *out);
     void decode_gloephb(const uint8_t *payload, size_t payload_len, GLOEPHB_Decoded_t *out);
     void decode_galephb(const uint8_t *payload, size_t payload_len, GALEPHB_Decoded_t *out);
-    void decode_bd3cnav1ephb(const uint8_t *payload, size_t payload_len, BD3CNAV1EPHB_Decoded_t *out);
     void decode_bd3cnav2ephb(const uint8_t *payload, size_t payload_len, BD3CNAV2EPHB_Decoded_t *out);
     void decode_bd3cnav3ephb(const uint8_t *payload, size_t payload_len, BD3CNAV3EPHB_Decoded_t *out);
+    void decode_posdatab(const uint8_t *payload, size_t payload_len, POSDATAB_Decoded_t *out);
     void decode_prangeb(const uint8_t *payload, size_t payload_len, PRANGEB_Decoded_t *out);
 
     extern gnss_ctrl_t gnss_ctrl;
@@ -431,7 +393,7 @@ extern "C"
     void handle_gnss_nmea(const char *sentence);
     int handle_gnss_raw(const uint8_t *data, size_t len);
     void gnss_cfg_close_all(int fd);
-    void gnss_cfg_eable_onchange(int fd, char *type);
+    void gnss_cfg_enable_onchange(int fd, char *type);
     void gnss_cfg(int fd, char *type, uint8_t enable, uint8_t per_second);
     int8_t gnss_bdd_enable();
     int8_t gnss_bdd_disable();
