@@ -427,26 +427,38 @@ void dbb_online_func(void)
     case DEV_DBB_CGDCONT_OK:
         if (dbb_at_expect("enable AT ip transport", "AT^PSDATA", "OK") == 0)
         {
-            if (dbb_wait_for_text("+CREGXW: 1", response, sizeof(response), DBB_WAIT_EVENT_TIMEOUT_MS) < 0)
-            {
-                debug_err_dbb("wait +CREGXW: 1 failed");
-                return;
-            }
-            dbb_dump_response(response);
+            // if (dbb_wait_for_text("+CREGXW: 1", response, sizeof(response), DBB_WAIT_EVENT_TIMEOUT_MS) < 0)
+            // {
+            //     debug_err_dbb("wait +CREGXW: 1 failed");
+            //     return;
+            // }
+            // dbb_dump_response(response);
 
-            if (dbb_wait_for_text("+CREV: ME PDN ACT 1", response, sizeof(response), DBB_WAIT_EVENT_TIMEOUT_MS) < 0)
-            {
-                debug_err_dbb("wait +CREV: ME PDN ACT 1 failed");
-                return;
-            }
-            dbb_dump_response(response);
+            // if (dbb_wait_for_text("+CREV: ME PDN ACT 1", response, sizeof(response), DBB_WAIT_EVENT_TIMEOUT_MS) < 0)
+            // {
+            //     debug_err_dbb("wait +CREV: ME PDN ACT 1 failed");
+            //     return;
+            // }
+            // dbb_dump_response(response);
 
-            if (dbb_wait_for_text("+CIREG: 1", response, sizeof(response), DBB_WAIT_EVENT_TIMEOUT_MS) < 0)
-            {
-                debug_err_dbb("wait +CIREG: 1 failed");
-                return;
-            }
-            dbb_dump_response(response);
+            // if (dbb_wait_for_text("+CIREG: 1", response, sizeof(response), DBB_WAIT_EVENT_TIMEOUT_MS) < 0)
+            // {
+            //     debug_err_dbb("wait +CIREG: 1 failed");
+            //     return;
+            // }
+            // dbb_dump_response(response);
+            dbb_ctrl.status = DEV_DBB_WAIT_CREGXW;
+        }
+        break;
+    case DEV_DBB_WAIT_CREGXW:
+        if (dbb_at_expect("wait for CREGXW", "AT+CREGXW?", "+CREGXW:1") == 0)
+        {
+            dbb_ctrl.status = DEV_DBB_WAIT_CIREG;
+        }
+        break;
+    case DEV_DBB_WAIT_CIREG:
+        if (dbb_at_expect("wait for CIREG", "AT+CIREG?", "+CIREG:1") == 0)
+        {
             dbb_ctrl.status = DEV_DBB_ONLINE;
         }
         break;
