@@ -70,7 +70,7 @@ int gnss_dev_write(int fd, const void *buf, size_t count)
 /// @param type NMEA sentence type, e.g. "RMC", "GGA", "GLL", "GSA", "GST", "GSV", "VTG", "ZDA" , "GBS" ,"HDT", "NTR", "ORI", "ROT", "TRA", "DTM"
 /// @param enable 0 to disable, 1 to enable
 /// @param per_second > 0 , number of sentences to output per second
-void gnss_cfg(int fd, char *type, uint8_t enable, uint8_t per_second)
+void gnss_cfg_dis_enable(int fd, char *type, uint8_t enable, uint8_t per_second)
 {
 
     char buff[128];
@@ -112,11 +112,27 @@ void gnss_cfg_enable_onchange(int fd, char *type)
     }
 }
 
-void gnss_cfg_close_all(int fd)
+void gnss_cfg_disable_all(int fd)
 {
     char buff[128];
     snprintf(buff, sizeof(buff), "CSHG CLOSEALL COM3 \r\n");
     int result = gnss_dev_write(fd, buff, strlen(buff));
+}
+
+/// @brief 设置GNSS工作模式，设置模式后，模块会重启，需要再次开启相关协议数据输出
+/// @param fd
+/// @param workMode 工作模式 BASE:基准站模式 ROVER:流动站模式
+/// @param calcType 解算类型 RTD/RTK/PPP/DPPP/FPPP
+/// @param freqCode 工作频点代码 1：全频点模式  2：低功耗模式 10：高性能模式 13：导航增强模式
+void gnss_cfg_mode(int fd, char *workMode, char *calcType, uint8_t freqCode)
+{
+    char buff[128];
+    snprintf(buff, sizeof(buff), "CSHG MODE %s %s %d \r\n", workMode, calcType, freqCode);
+    int result = gnss_dev_write(fd, buff, strlen(buff));
+    if (result < 0)
+    {
+        perror("write gnss device");
+    }
 }
 
 void *gnss_thread_func(void *arg)
@@ -138,34 +154,34 @@ void *gnss_thread_func(void *arg)
     }
     set_opt(gnss_ctrl.fd, 115200, 8, 'N', 1);
     usleep(100000); // Sleep for 100 milliseconds to allow the device to initialize
-    gnss_cfg_close_all(gnss_ctrl.fd);
+    gnss_cfg_disable_all(gnss_ctrl.fd);
     usleep(100000); // Sleep for 100 milliseconds
 
     gnss_ctrl.data_type = GNSS_DATA_NMEA;
 
-    gnss_cfg(gnss_ctrl.fd, "RMC", 1, 1);
+    gnss_cfg_dis_enable(gnss_ctrl.fd, "RMC", 1, 1);
     // usleep(100000); // Sleep for 100 milliseconds
-    // gnss_cfg(gnss_ctrl.fd, "GGA", 1, 1);
+    // gnss_cfg_dis_enable(gnss_ctrl.fd, "GGA", 1, 1);
     // usleep(100000); // Sleep for 100 milliseconds
-    // gnss_cfg(gnss_ctrl.fd, "GSA", 1, 1);
+    // gnss_cfg_dis_enable(gnss_ctrl.fd, "GSA", 1, 1);
     // usleep(100000); // Sleep for 100 milliseconds
-    // gnss_cfg(gnss_ctrl.fd, "GST", 1, 1);
+    // gnss_cfg_dis_enable(gnss_ctrl.fd, "GST", 1, 1);
 
     // gnss_cfg_enable_onchange(gnss_ctrl.fd, "GPSEPHB");
-    // gnss_cfg(gnss_ctrl.fd, "GPSEPHB", 1, 1);
-    // gpsephb_file_header2();
-    // gnss_cfg(gnss_ctrl.fd, "BD2EPHB", 1, 1);
-    // gnss_cfg(gnss_ctrl.fd, "BD3EPHB", 1, 1);
-    // gnss_cfg(gnss_ctrl.fd, "GLOEPHB", 1, 1);//todo 无数据
-    // gnss_cfg(gnss_ctrl.fd, "GALEPHB", 1, 1);
-    // gnss_cfg(gnss_ctrl.fd, "BD3CANV1EPHB", 1, 1); // todo 无数据
-    // gnss_cfg(gnss_ctrl.fd, "BD3CANV2EPHB", 1, 1);//todo 无数据
-    // gnss_cfg(gnss_ctrl.fd, "BD3CNAV3EPHB", 1, 1);//todo 无数据 解析错误
-    // gnss_cfg(gnss_ctrl.fd, "PRANGEB", 1, 1);//
-    // gnss_cfg(gnss_ctrl.fd, "PRANGE2B", 1, 1); // todo 无数据
+    // gnss_cfg_dis_enable(gnss_ctrl.fd, "GPSEPHB", 1, 1);
+    // gpsephb_file_header();
+    // gnss_cfg_dis_enable(gnss_ctrl.fd, "BD2EPHB", 1, 1);
+    // gnss_cfg_dis_enable(gnss_ctrl.fd, "BD3EPHB", 1, 1);
+    // gnss_cfg_dis_enable(gnss_ctrl.fd, "GLOEPHB", 1, 1);//todo 无数据
+    // gnss_cfg_dis_enable(gnss_ctrl.fd, "GALEPHB", 1, 1);
+    // gnss_cfg_dis_enable(gnss_ctrl.fd, "BD3CANV1EPHB", 1, 1); // todo 无数据
+    // gnss_cfg_dis_enable(gnss_ctrl.fd, "BD3CANV2EPHB", 1, 1);//todo 无数据
+    // gnss_cfg_dis_enable(gnss_ctrl.fd, "BD3CNAV3EPHB", 1, 1);//todo 无数据 解析错误
+    // gnss_cfg_dis_enable(gnss_ctrl.fd, "PRANGEB", 1, 1);//
+    // gnss_cfg_dis_enable(gnss_ctrl.fd, "PRANGE2B", 1, 1); // todo 无数据
     // char *enable_ins = "CSHG INS ON\r\n"; // 启用组合导航功能
     // gnss_dev_write(gnss_ctrl.fd, enable_ins, strlen(enable_ins));
-    // gnss_cfg(gnss_ctrl.fd, "POSDATAB", 1, 1);//最优定位信息输出
+    // gnss_cfg_dis_enable(gnss_ctrl.fd, "POSDATAB", 1, 1);//最优定位信息输出
 
     char buf[256];
 

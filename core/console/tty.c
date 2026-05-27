@@ -90,7 +90,7 @@ DEFUN(gnss_type_on_cfg,
 {
 
     int per_second = atoi(argv[1]);
-    gnss_cfg(gnss_ctrl.fd, argv[0], 1, per_second);
+    gnss_cfg_dis_enable(gnss_ctrl.fd, argv[0], 1, per_second);
     vty_out(vty, "set gnss type %s to on %d/s%s", argv[0], per_second, VTY_NEWLINE);
 
     return CMD_SUCCESS;
@@ -105,16 +105,35 @@ DEFUN(gnss_type_off_cfg,
 {
     if (strcmp(argv[0], "all") == 0)
     {
-        gnss_cfg_close_all(gnss_ctrl.fd);
+        gnss_cfg_disable_all(gnss_ctrl.fd);
         vty_out(vty, "set gnss all type to off%s", VTY_NEWLINE);
     }
     else
     {
-        gnss_cfg(gnss_ctrl.fd, argv[0], 0, 0);
+        gnss_cfg_dis_enable(gnss_ctrl.fd, argv[0], 0, 0);
         vty_out(vty, "set gnss type %s to off%s", argv[0], VTY_NEWLINE);
     }
     return CMD_SUCCESS;
 }
+
+DEFUN(gnss_mode_cfg,
+      gnss_mode_cfg_cmd,
+      "gnss mode (base|rover) (rtd|rtk|ppp|dppp|fppp) (1|2|10|13)",
+      "gnss ctrl\n"
+      "Set gnss mode\n"
+      "Work mode\n"
+      "Calculation type\n"
+      "Frequency code\n")
+{
+    char *workMode = argv[0];
+    char *calcType = argv[1];
+    uint8_t freqCode = atoi(argv[2]);
+    gnss_cfg_mode(gnss_ctrl.fd, workMode, calcType, freqCode);
+    vty_out(vty, "set gnss mode to %s %s freq code %d%s", workMode, calcType, freqCode, VTY_NEWLINE);
+    vty_out(vty, "Note: the module will restart after setting mode, please re-enable the desired data output%s", VTY_NEWLINE);
+    return CMD_SUCCESS;
+}
+
 
 DEFUN(gnss_gps_test,
       gnss_gps_test_cmd,
@@ -125,17 +144,17 @@ DEFUN(gnss_gps_test,
 {
     if (strcmp(argv[0], "on") == 0)
     {
-        gnss_cfg_close_all(gnss_ctrl.fd);
+        gnss_cfg_disable_all(gnss_ctrl.fd);
         usleep(100000);
-        gnss_cfg(gnss_ctrl.fd, "GPSEPHB", 1, 1);
+        gnss_cfg_dis_enable(gnss_ctrl.fd, "GPSEPHB", 1, 1);
         gnss_ctrl.data_type = GNSS_DATA_RAW;
         vty_out(vty, "set gnss gps test to on%s", VTY_NEWLINE);
     }
     else
     {
-        gnss_cfg_close_all(gnss_ctrl.fd);
+        gnss_cfg_disable_all(gnss_ctrl.fd);
         usleep(100000);
-        gnss_cfg(gnss_ctrl.fd, "RMC", 1, 1);
+        gnss_cfg_dis_enable(gnss_ctrl.fd, "RMC", 1, 1);
         gnss_ctrl.data_type = GNSS_DATA_NMEA;
 
         vty_out(vty, "set gnss gps test to off%s", VTY_NEWLINE);
@@ -196,5 +215,9 @@ void tty_init(void)
 
     install_element(ENABLE_NODE, &gnss_data_type_cfg_cmd);
     install_element(RADIO_NODE, &gnss_data_type_cfg_cmd);
+
+
+    install_element(ENABLE_NODE, &gnss_mode_cfg_cmd);
+    install_element(RADIO_NODE, &gnss_mode_cfg_cmd);
 
 }

@@ -471,7 +471,7 @@ void gpsephb_file_header()
     FILE *f = fopen(TEST_GPSEPHB_FILE_PATH, "w");
     if (f)
     {
-        fprintf(f, "gps_satid,gps_sv_accuracy,gps_sv_health,gps_week,gps_toe,gps_toc,"
+        fprintf(f, "gps_week_count,gps_tow_s,gps_satid,gps_sv_accuracy,gps_sv_health,gps_week,gps_toe,gps_toc,"
                    "gps_af0,gps_af1,gps_af2,"
                    "gps_iode,gps_iodc,"
                    "gps_idot,gps_crs,gps_crc,gps_cus,gps_cuc,gps_cis,gps_cic,gps_delta_n,"
@@ -486,7 +486,7 @@ void gpsephb_file_header2()
     FILE *f = fopen(TEST_GPSEPHB_FILE_PATH, "w");
     if (f)
     {
-        fprintf(f, "卫星号,用户等效距离精度(m),星自主健康标识,时间周计数,卫星星历参考时间(s),卫星钟参考时刻(s),"
+        fprintf(f, "周计数,周内秒,卫星号,用户等效距离精度(m),星自主健康标识,时间周计数,卫星星历参考时间(s),卫星钟参考时刻(s),"
                    "卫星钟钟差改正参数(s),卫星钟钟速改正参数(s/s),卫星钟钟漂改正参数(s/s^2),"
                    "卫星星历数据期号,卫星钟参数期卷号,"
                    "卫星轨道倾角变化率(π/s),卫星轨道半径正弦调和改正项的振幅(m),卫星轨道半径余弦调和改正项的振幅(m),"
@@ -505,13 +505,13 @@ void gpsephb_to_save(const GPSEPHB_Decoded_t *eph)
     if (f)
     {
         char buffer[2048];
-        snprintf(buffer, sizeof(buffer), "%u,%u,%u,%u,%u,%u,"
+        snprintf(buffer, sizeof(buffer), "%u,%u,%u,%u,%u,%u,%u,%u,"
                                          "% .12e,% .12e,% .12e,"
                                          "%u,%u,"
                                          "% .12e,% .12e,% .12e,% .12e,% .12e,% .12e,% .12e,% .12e,"
                                          "% .12e,% .12e,% .12e,% .12e,% .12e,% .12e,% .12e,% .12e,"
                                          "%u,%u,%u\n",
-                 eph->gps_satid, eph->gps_sv_accuracy, eph->gps_sv_health, eph->gps_week, eph->gps_toe, eph->gps_toc,
+                 eph->gps_week_count, eph->gps_tow_s, eph->gps_satid, eph->gps_sv_accuracy, eph->gps_sv_health, eph->gps_week, eph->gps_toe, eph->gps_toc,
                  eph->gps_af0, eph->gps_af1, eph->gps_af2,
                  eph->gps_iode, eph->gps_iodc,
                  eph->gps_idot, eph->gps_crs, eph->gps_crc, eph->gps_cus, eph->gps_cuc, eph->gps_cis, eph->gps_cic, eph->gps_delta_n,
@@ -782,7 +782,7 @@ int handle_gnss_raw(const uint8_t *data, size_t len)
                         decode_gpsephb((uint8_t *)packet, packet->length, &eph); // 64
                         // print_gpsephb(&eph, crc_calculated);
                         print_gpsephb_simple(&eph);
-                        // gpsephb_to_save(&eph);
+                        gpsephb_to_save(&eph);
                     }
                 }
                 break;
