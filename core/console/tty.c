@@ -146,6 +146,7 @@ DEFUN(gnss_gps_test,
     {
         gnss_cfg_disable_all(gnss_ctrl.fd);
         usleep(100000);
+        gpsephb_file_header();
         gnss_cfg_dis_enable(gnss_ctrl.fd, "GPSEPHB", 1, 1);
         gnss_ctrl.data_type = GNSS_DATA_RAW;
         vty_out(vty, "set gnss gps test to on%s", VTY_NEWLINE);

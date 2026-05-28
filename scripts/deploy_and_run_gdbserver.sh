@@ -61,9 +61,14 @@ REMOTE_COMMAND="chmod +x $(shell_quote "$TARGET_PATH") && exec gdbserver 0.0.0.0
 
 TARGET_ARGS_TRIMMED=$(printf '%s' "$TARGET_ARGS" | sed 's/^[[:space:]]*//; s/[[:space:]]*$//')
 if [ -n "$TARGET_ARGS_TRIMMED" ]; then
-    # Pass as a SINGLE argv entry even if it contains spaces.
-    # Example: "-f config.conf" -> argv[1] == "-f config.conf"
-    REMOTE_COMMAND="$REMOTE_COMMAND $(shell_quote "$TARGET_ARGS_TRIMMED")"
+    # Split TARGET_ARGS on whitespace and append each token as its own argv entry.
+    # Example: "-f config.conf" -> argv[1] == "-f" argv[2] == "config.conf"
+    set -f
+    set -- $TARGET_ARGS_TRIMMED
+    set +f
+    for target_arg do
+        REMOTE_COMMAND="$REMOTE_COMMAND $(shell_quote "$target_arg")"
+    done
 fi
 
 if [ "${DEBUG_DEPLOY:-0}" != "0" ]; then

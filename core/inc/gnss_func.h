@@ -240,7 +240,6 @@ extern "C"
         uint32_t crc24;          // 占位24；校验范围从帧头至有效数据；-
     } BD3CNAV3EPHB_Decoded_t;
 
-
     typedef struct
     {
         uint8_t head[8];
@@ -399,6 +398,8 @@ extern "C"
     int8_t gnss_bdd_enable();
     int8_t gnss_bdd_disable();
 
+    void gpsephb_file_header();
+    void gpsephb_file_header2();
 #ifdef __cplusplus
 }
 #endif
