@@ -215,7 +215,7 @@ void *gnss_thread_func(void *arg)
     sleep(1);
     if (gnss_bdd_enable() < 0)
     {
-        fprintf(stderr, "Failed to enable GNSS BDD\n");
+        // fprintf(stderr, "Failed to enable GNSS BDD\n");
         return NULL;
     }
     sleep(2); // Sleep for 2 seconds to allow the BDD to power up

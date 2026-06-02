@@ -418,6 +418,18 @@ extern "C"
         uint32_t crc24; // 占位24；校验范围从帧头至有效数据；-
     } PRANGEB_Decoded_t;
 
+    typedef struct
+    {
+        uint8_t gps;
+        uint8_t bd2;
+        uint8_t bd3;
+        uint8_t glo;
+        uint8_t gal;
+        uint8_t bdxw;
+        uint8_t bd3cnav2;
+        uint8_t bd3cnav3;
+    } EPHB_File_sw_t;
+
     void decode_gpsephb(const uint8_t *payload, size_t payload_len, GPSEPHB_Decoded_t *out);
     void decode_bd2ephb(const uint8_t *payload, size_t payload_len, BD2EPHB_Decoded_t *out);
     void decode_bd3ephb(const uint8_t *payload, size_t payload_len, BD3EPHB_Decoded_t *out);
@@ -430,6 +442,8 @@ extern "C"
     void decode_prangeb(const uint8_t *payload, size_t payload_len, PRANGEB_Decoded_t *out);
 
     extern gnss_ctrl_t gnss_ctrl;
+
+    extern EPHB_File_sw_t ephb_file_sw;
 
     void handle_gnss_nmea(const char *sentence);
     int handle_gnss_raw(const uint8_t *data, size_t len);

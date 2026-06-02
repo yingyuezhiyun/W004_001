@@ -623,7 +623,7 @@ bool minmea_parse_gsv(struct minmea_sentence_gsv *frame, const char *sentence)
     // $GPGSV,4,4,13*7B
     // $GPGSV,3,1,11,09,57,333,29.0,07,54,227,,04,49,043,24.5,03,43,129,,1*67
 
-    if (!minmea_scan(sentence, "tiii;iiifiiifiiifiiif",
+    if (!minmea_scan(sentence, "tiii;iiifiiifiiifiiif;s",
                      &frame->type,
                      &frame->total_msgs,
                      &frame->msg_nr,
@@ -643,7 +643,8 @@ bool minmea_parse_gsv(struct minmea_sentence_gsv *frame, const char *sentence)
                      &frame->sats[3].nr,
                      &frame->sats[3].elevation,
                      &frame->sats[3].azimuth,
-                     &frame->sats[3].snr))
+                     &frame->sats[3].snr,
+                     frame->signal_id))
     {
         return false;
     }

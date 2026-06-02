@@ -13,14 +13,29 @@
 #include "src_io.h"
 #include "gnss_func.h"
 
+EPHB_File_sw_t ephb_file_sw = {
+    .gps = 0,
+    .bd2 = 0,
+    .bd3 = 0,
+    .glo = 0,
+    .gal = 0,
+    .bdxw = 0,
+    .bd3cnav2 = 0,
+    .bd3cnav3 = 0};
 
-uint8_t gpsephb_file_sw = 0;
+
 
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
 #endif
 
 #define TEST_GPSEPHB_FILE_PATH "/root/gps_ephe.csv"
+#define TEST_BD2EPHB_FILE_PATH "/root/bd2_ephe.csv"
+#define TEST_BD3EPHB_FILE_PATH "/root/bd3_ephe.csv"
+#define TEST_BDXWEPHB_FILE_PATH "/root/bdxw_ephe.csv"
+#define TEST_BD3CNAV2EPHB_FILE_PATH "/root/bd3cnav2_ephe.csv"
+#define TEST_BD3CNAV3EPHB_FILE_PATH "/root/bd3cnav3_ephe.csv"
+
 
 // #define Header1 (0x43534847)
 #define Header1 (0x47485343) //CSHG
@@ -291,6 +306,57 @@ static void print_bd2ephb(const BD2EPHB_Decoded_t *eph, uint32_t payload_crc_cal
            (eph->crc24 == payload_crc_calc) ? "OK" : "BAD");
 }
 
+
+void bd2ephb_file_header()
+{
+    FILE *fp = fopen(TEST_BD2EPHB_FILE_PATH, "w");
+    if (fp)
+    {
+        fprintf(fp, "gps_week_count,gps_tow_s,bd2_satid,bd2_sv_urai,bd2_sv_health,bd2_week,bd2_toe,bd2_toc,bd2_af0,bd2_af1,bd2_af2,bd2_aode,bd2_aodc,bd2_idot,bd2_crs,bd2_crc,bd2_cus,bd2_cuc,bd2_cis,bd2_cic,bd2_delta_n,bd2_m0,bd2_ecc,bd2_a_half,bd2_omega0,bd2_i0,bd2_omega,bd2_omegadot,bd2_tgd1,bd2_tgd2\n");
+        fclose(fp);
+    }
+}
+
+void bd2ephb_file_append(const BD2EPHB_Decoded_t *eph)
+{
+    FILE *fp = fopen(TEST_BD2EPHB_FILE_PATH, "a");
+    if (fp)
+    {
+        fprintf(fp, "%u,%u,%u,%u,%u,%u,%u,% .12e,% .12e,% .12e,%u,%u,% .12e,% .12e,% .12e,% .12e,% .12e,% .12e,% .12e,% .12e,% .12e,%u\n",
+                eph->gps_week_count,
+                eph->gps_tow_s,
+                eph->bd2_satid,
+                eph->bd2_sv_urai,
+                eph->bd2_sv_health,
+                eph->bd2_week,
+                eph->bd2_toe,
+                eph->bd2_toc,
+                eph->bd2_af0,
+                eph->bd2_af1,
+                eph->bd2_af2,
+                eph->bd2_aode,
+                eph->bd2_aodc,
+                eph->bd2_idot,
+                eph->bd2_crs,
+                eph->bd2_crc,
+                eph->bd2_cus,
+                eph->bd2_cuc,
+                eph->bd2_cis,
+                eph->bd2_cic,
+                eph->bd2_delta_n,
+                eph->bd2_m0,
+                eph->bd2_ecc,
+                eph->bd2_a_half,
+                eph->bd2_omega0,
+                eph->bd2_i0,
+                eph->bd2_omega,
+                eph->bd2_omegadot,
+                eph->bd2_tgd1,
+                eph->bd2_tgd2);
+        fclose(fp);
+    }
+}
+
 static void print_bd3ephb(const BD3EPHB_Decoded_t *eph, uint32_t payload_crc_calc)
 {
     printf("BD3EPHB decoded frame:\n");
@@ -340,6 +406,58 @@ static void print_bd3ephb(const BD3EPHB_Decoded_t *eph, uint32_t payload_crc_cal
            (eph->crc24 == payload_crc_calc) ? "OK" : "BAD");
 }
 
+void bd3ephb_file_header()
+{
+    FILE *fp = fopen(TEST_BD3EPHB_FILE_PATH, "w");
+    if (fp)
+    {
+        fprintf(fp, "gps_week_count,gps_tow_s,bd3_satid,bd3_sattype,bd3_week,bd3_toe,bd3_toc,bd3_af0,bd3_af1,bd3_af2,bd3_iode,bd3_iodc,bd3_idot,bd3_crs,bd3_crc,bd3_cus,bd3_cuc,bd3_cis,bd3_cic,bd3_delta_n0,bd3_delta_n0_dot,bd3_m0,bd3_ecc,bd3_deltaA,bd3_adot,bd3_omega0,bd3_i0,bd3_omega,bd3_omegadot,bd3_tgdb1cp,bd3_tgdb2ap,bd3_iscb1cd\n");
+        fclose(fp);
+    }
+}
+
+void bd3ephb_file_append(const BD3EPHB_Decoded_t *eph)
+{
+    FILE *fp = fopen(TEST_BD3EPHB_FILE_PATH, "a");
+    if (fp)
+    {
+        fprintf(fp, "%u,%u,%u,%u,%u,%u,% .12e,% .12e,% .12e,%u,%u,% .12e,% .12e,% .12e,% .12e,% .12e,% .12e,% .12e,% .12e,%u\n",
+                eph->gps_week_count,
+                eph->gps_tow_s,
+                eph->bd3_satid,
+                eph->bd3_sattype,
+                eph->bd3_week,
+                eph->bd3_toe,
+                eph->bd3_toc,
+                eph->bd3_af0,
+                eph->bd3_af1,
+                eph->bd3_af2,
+                eph->bd3_iode,
+                eph->bd3_iodc,
+                eph->bd3_idot,
+                eph->bd3_crs,
+                eph->bd3_crc,
+                eph->bd3_cus,
+                eph->bd3_cuc,
+                eph->bd3_cis,
+                eph->bd3_cic,
+                eph->bd3_delta_n0,
+                eph->bd3_delta_n0_dot,
+                eph->bd3_m0,
+                eph->bd3_ecc,
+                eph->bd3_deltaA,
+                eph->bd3_adot,
+                eph->bd3_omega0,
+                eph->bd3_i0,
+                eph->bd3_omega,
+                eph->bd3_omegadot,
+                eph->bd3_tgdb1cp,
+                eph->bd3_tgdb2ap,
+                eph->bd3_iscb1cd);
+        fclose(fp);
+    }
+}
+
 static void print_bdxwephb(const BDXWEPHB_Decoded_t *eph, uint32_t payload_crc_calc)
 {
     printf("BDXWEPHB decoded frame:\n");
@@ -374,6 +492,54 @@ static void print_bdxwephb(const BDXWEPHB_Decoded_t *eph, uint32_t payload_crc_c
     printf("  reserved        : 0x%llx\n", (unsigned long long)eph->xws_reserved);
     printf("  crc24           : 0x%06x (calc:0x%06x)%s\n", (unsigned)eph->crc24, payload_crc_calc,
            ((uint32_t)eph->crc24 == payload_crc_calc) ? " OK" : " ERR");
+}
+
+void bdxwephb_file_header()
+{
+    FILE *fp = fopen(TEST_BDXWEPHB_FILE_PATH, "w");
+    if (fp)
+    {
+        fprintf(fp, "gps_week_count,gps_tow_s,xws_satid,xws_sattype,xws_week,xws_toe,xws_toc,xws_af0,xws_af1,xws_iodc,xws_iode,xws_crs,xws_crc,xws_cus,xws_cuc,xws_cis,xws_cic,xws_delta_n0,xws_delta_n0_dot,xws_m0,xws_ecc,xws_deltaA0,xws_i0_dot,xws_a_dot,xws_delta_i0,xws_omega0,xws_omega_dot,xws_omega\n");
+        fclose(fp);
+    }
+}
+
+void bdxwephb_file_append(const BDXWEPHB_Decoded_t *eph)
+{
+    FILE *fp = fopen(TEST_BDXWEPHB_FILE_PATH, "a");
+    if (fp)
+    {
+        fprintf(fp, "%u,%u,%u,%u,%u,%u,%u,%.12e,%.12e,%u,%u,%.12e,%.12e,%.12e,%.12e,%.12e,%.12e,%.12e,%.12e,%.12e,%.12e,%.12e,%.12e,%.12e,%.12e,%.12e\n",
+                eph->gps_week_count,
+                eph->gps_tow_s,
+                eph->xws_satid,
+                eph->xws_sattype,
+                eph->xws_week,
+                eph->xws_toe,
+                eph->xws_toc,
+                eph->xws_af0,
+                eph->xws_af1,
+                eph->xws_iodc,
+                eph->xws_iode,
+                eph->xws_crs,
+                eph->xws_crc,
+                eph->xws_cus,
+                eph->xws_cuc,
+                eph->xws_cis,
+                eph->xws_cic,
+                eph->xws_delta_n0,
+                eph->xws_delta_n0_dot,
+                eph->xws_m0,
+                eph->xws_ecc,
+                eph->xws_deltaA0,
+                eph->xws_i0_dot,
+                eph->xws_a_dot,
+                eph->xws_delta_i0,
+                eph->xws_omega0,
+                eph->xws_omega_dot,
+                eph->xws_omega);
+        fclose(fp);
+    }
 }
 
 static void print_bd3cnav2ephb(const BD3CNAV2EPHB_Decoded_t *eph, uint32_t payload_crc_calc)
@@ -423,6 +589,60 @@ static void print_bd3cnav2ephb(const BD3CNAV2EPHB_Decoded_t *eph, uint32_t paylo
            (eph->crc24 == payload_crc_calc) ? "OK" : "BAD");
 }
 
+
+void bd3cnav2ephb_file_header()
+{
+    FILE *fp = fopen(TEST_BD3CNAV2EPHB_FILE_PATH, "w");
+    if (fp)
+    {
+        fprintf(fp, "gps_week_count,gps_tow_s,bds_satid,bds_sattype,bds_week,bds_toe,bds_toc,bds_af0,bds_af1,bds_af2,bds_iode,bds_iodc,bds_idot,bds_crs,bds_crc,bds_cus,bds_cuc,bds_cis,bds_cic,bds_delta_n0,bds_delta_n0_dot,bds_m0,bds_ecc,bds_AA,bds_adot,bds_omega0,bds_i0,bds_omega,bds_omegadot,bds_tgdb1cp,bds_tgdb2ap,bds_iscb2ad\n");
+        fclose(fp);
+    }
+}
+
+void bd3cnav2ephb_file_append(const BD3CNAV2EPHB_Decoded_t *eph)
+{
+    FILE *fp = fopen(TEST_BD3CNAV2EPHB_FILE_PATH, "a");
+    if (fp)
+    {
+        fprintf(fp, "%u,%u,%u,%u,%u,%u,% .12e,% .12e,% .12e,%u,%u,% .12e,% .12e,% .12e,% .12e,% .12e,% .12e,% .12e,% .12e,%u\n",
+                eph->gps_week_count,
+                eph->gps_tow_s,
+                eph->bds_satid,
+                eph->bds_sattype,
+                eph->bds_week,
+                eph->bds_toe,
+                eph->bds_toc,
+                eph->bds_af0,
+                eph->bds_af1,
+                eph->bds_af2,
+                eph->bds_iode,
+                eph->bds_iodc,
+                eph->bds_idot,
+                eph->bds_crs,
+                eph->bds_crc,
+                eph->bds_cus,
+                eph->bds_cuc,
+                eph->bds_cis,
+                eph->bds_cic,
+                eph->bds_delta_n0,
+                eph->bds_delta_n0_dot,
+                eph->bds_m0,
+                eph->bds_ecc,
+                eph->bds_AA,
+                eph->bds_adot,
+                eph->bds_omega0,
+                eph->bds_i0,
+                eph->bds_omega,
+                eph->bds_omegadot,
+                eph->bds_tgdb1cp,
+                eph->bds_tgdb2ap,
+                eph->bds_iscb2ad);
+        fclose(fp);
+    }
+}
+
+
 static void print_bd3cnav3ephb(const BD3CNAV3EPHB_Decoded_t *eph, uint32_t payload_crc_calc)
 {
     printf("BD3CNAV3EPHB decoded frame:\n");
@@ -466,6 +686,56 @@ static void print_bd3cnav3ephb(const BD3CNAV3EPHB_Decoded_t *eph, uint32_t paylo
            eph->crc24,
            payload_crc_calc,
            (eph->crc24 == payload_crc_calc) ? "OK" : "BAD");
+}
+
+void bd3cnav3ephb_file_header()
+{
+    FILE *fp = fopen(TEST_BD3CNAV3EPHB_FILE_PATH, "w");
+    if (fp)
+    {
+        fprintf(fp, "gps_week_count,gps_tow_s,bds_satid,bds_sattype,bds_week,bds_toe,bds_toc,bds_af0,bds_af1,bds_af2,bds_iode,bds_iodc,bds_idot,bds_crs,bds_crc,bds_cus,bds_cuc,bds_cis,bds_cic,bds_delta_n0,bds_delta_n0_dot,bds_m0,bds_ecc,bds_deltaA,bds_adot,bds_omega0,bds_i0,bds_omega,bds_omegadot,bds_tgdb2bI\n");
+        fclose(fp);
+    }
+}
+
+void bd3cnav3ephb_file_append(const BD3CNAV3EPHB_Decoded_t *eph)
+{
+    FILE *fp = fopen(TEST_BD3CNAV3EPHB_FILE_PATH, "a");
+    if (fp)
+    {
+        fprintf(fp, "%u,%u,%u,%u,%u,%u,% .12e,% .12e,% .12e,%u,%u,% .12e,% .12e,% .12e,% .12e,% .12e,% .12e,% .12e,% .12e,%u\n",
+                eph->gps_week_count,
+                eph->gps_tow_s,
+                eph->bds_satid,
+                eph->bds_sattype,
+                eph->bds_week,
+                eph->bds_toe,
+                eph->bds_toc,
+                eph->bds_af0,
+                eph->bds_af1,
+                eph->bds_af2,
+                eph->bds_iode,
+                eph->bds_iodc,
+                eph->bds_idot,
+                eph->bds_crs,
+                eph->bds_crc,
+                eph->bds_cus,
+                eph->bds_cuc,
+                eph->bds_cis,
+                eph->bds_cic,
+                eph->bds_delta_n0,
+                eph->bds_delta_n0_dot,
+                eph->bds_m0,
+                eph->bds_ecc,
+                eph->bds_deltaA,
+                eph->bds_adot,
+                eph->bds_omega0,
+                eph->bds_i0,
+                eph->bds_omega,
+                eph->bds_omegadot,
+                eph->bds_tgdb2bI);
+        fclose(fp);
+    }
 }
 
 static void print_gpsephb(const GPSEPHB_Decoded_t *eph, uint32_t payload_crc_calc)
@@ -550,7 +820,7 @@ void gpsephb_file_header2()
     fclose(f);
 }
 
-void gpsephb_to_save(const GPSEPHB_Decoded_t *eph)
+void gpsephb_file_append(const GPSEPHB_Decoded_t *eph)
 {
     FILE *f = fopen(TEST_GPSEPHB_FILE_PATH, "a+");
     if (f)
@@ -643,8 +913,8 @@ static void print_galephb(const GALEPHB_Decoded_t *eph, uint32_t payload_crc_cal
     printf("  gal_e1b_health : raw=%u\n", eph->gal_e1b_health);
     printf("  gal_e1b_valid  : raw=%u\n", eph->gal_e1b_valid);
     printf("  gal_week       : raw=%u\n", eph->gal_week);
-    printf("  gal_toe        : raw=%u s (需按协议乘比例)\n", eph->gal_toe);
-    printf("  gal_toc        : raw=%u s (需按协议乘比例)\n", eph->gal_toc);
+    printf("  gal_toe        : raw=%u s \n", eph->gal_toe);
+    printf("  gal_toc        : raw=%u s \n", eph->gal_toc);
     printf("  gal_af0        : =% .12e s\n", eph->gal_af0);
     printf("  gal_af1        : =% .12e s/s\n", eph->gal_af1);
     printf("  gal_af2        : =% .12e s/s^2\n", eph->gal_af2);
@@ -791,7 +1061,12 @@ int handle_gnss_raw(const uint8_t *data, size_t len)
                     if (packet->length >= BD2EPHB_PAYLOAD_LEN) // 67
                     {
                         decode_bd2ephb((uint8_t *)packet, packet->length, &eph);
-                        print_bd2ephb(&eph, crc_calculated);
+                        printf("date:%s BDS-2 EPHB: satid=%u \n", gps_week_sec_to_utc(eph.gps_week_count, eph.gps_tow_s), eph.bd2_satid);
+                        // print_bd2ephb(&eph, crc_calculated);
+                        if (ephb_file_sw.bd2)
+                        {
+                            bd2ephb_file_append(&eph);  
+                        }
                     }
                 }
                 break;
@@ -801,7 +1076,12 @@ int handle_gnss_raw(const uint8_t *data, size_t len)
                     if (packet->length >= BD3EPHB_PAYLOAD_LEN) // 76
                     {
                         decode_bd3ephb((uint8_t *)packet, packet->length, &eph);
-                        print_bd3ephb(&eph, crc_calculated);
+                        printf("date:%s BDS-3 EPHB: satid=%u \n", gps_week_sec_to_utc(eph.gps_week_count, eph.gps_tow_s), eph.bd3_satid);
+                        // print_bd3ephb(&eph, crc_calculated);
+                        if (ephb_file_sw.bd3)
+                        {
+                            bd3ephb_file_append(&eph);
+                        }
                     }
                 }
                 break;
@@ -811,7 +1091,28 @@ int handle_gnss_raw(const uint8_t *data, size_t len)
                     if (packet->length > 0)
                     {
                         decode_bd3cnav2ephb((uint8_t *)packet, packet->length, &eph);
-                        print_bd3cnav2ephb(&eph, crc_calculated);
+                        printf("date:%s BDS-3 CNAV2 Ephemeris: satid=%u \n", gps_week_sec_to_utc(eph.gps_week_count, eph.gps_tow_s), eph.bds_satid);
+                        // print_bd3cnav2ephb(&eph, crc_calculated);
+                        if (ephb_file_sw.bd3cnav2)
+                        {
+                            bd3cnav2ephb_file_append(&eph);
+                        }
+                    }
+                }
+                break;
+                case RAW_BD3CNAV3EPHB:
+                {
+                    BD3CNAV3EPHB_Decoded_t eph;
+                    if (packet->length > 0)
+                    {
+                        decode_bd3cnav3ephb((uint8_t *)packet, packet->length, &eph);
+                        printf("date:%s BDS-3 CNAV3 Ephemeris: satid=%u \n", gps_week_sec_to_utc(eph.gps_week_count, eph.gps_tow_s), eph.bds_satid);
+                        // print_bd3cnav3ephb(&eph, crc_calculated);
+                        if (ephb_file_sw.bd3cnav3)
+                        {
+                            bd3cnav3ephb_file_append(&eph);
+                        }
+                        
                     }
                 }
                 break;
@@ -822,16 +1123,11 @@ int handle_gnss_raw(const uint8_t *data, size_t len)
                     {
                         decode_bdxwephb((uint8_t *)packet, packet->length, &eph);
                         print_bdxwephb(&eph, crc_calculated);
-                    }
-                }
-                break;
-                case RAW_BD3CNAV3EPHB:
-                {
-                    BD3CNAV3EPHB_Decoded_t eph;
-                    if (packet->length > 0)
-                    {
-                        decode_bd3cnav3ephb((uint8_t *)packet, packet->length, &eph);
-                        print_bd3cnav3ephb(&eph, crc_calculated);
+                        if (ephb_file_sw.bdxw)
+                        {
+                            bdxwephb_file_append(&eph);
+                        }
+                        
                     }
                 }
                 break;
@@ -844,9 +1140,9 @@ int handle_gnss_raw(const uint8_t *data, size_t len)
                         // print_gpsephb(&eph, crc_calculated);
                         // print_gpsephb_simple(&eph);                    
                         printf("date:%s GPS Ephemeris: satid=%u \n", gps_week_sec_to_utc(eph.gps_week_count, eph.gps_tow_s), eph.gps_satid);
-                        if (gpsephb_file_sw)
+                        if (ephb_file_sw.gps)
                         {
-                            gpsephb_to_save(&eph);
+                            gpsephb_file_append(&eph);
                         }
                     }
                 }
@@ -862,6 +1158,7 @@ int handle_gnss_raw(const uint8_t *data, size_t len)
                 }
                 break;
                 case RAW_GALEPHB:
+                case RAW_GALINAV:
                 {
                     GALEPHB_Decoded_t eph;
                     if (packet->length >= GALEPHB_PAYLOAD_LEN) // 66

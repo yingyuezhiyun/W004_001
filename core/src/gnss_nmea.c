@@ -52,6 +52,113 @@ static void print_date_field(const struct minmea_date *date)
     printf("%02d-%02d-%04d", date->day, date->month, date->year);
 }
 
+static const char *gsv_talker_name(const char *talker)
+{
+    if (strcmp(talker, "GB") == 0)
+        return "BDS";
+    if (strcmp(talker, "GP") == 0)
+        return "GPS";
+    if (strcmp(talker, "GL") == 0)
+        return "GLONASS";
+    if (strcmp(talker, "GA") == 0)
+        return "Galileo";
+    if (strcmp(talker, "GQ") == 0)
+        return "QZSS";
+    if (strcmp(talker, "GX") == 0)
+        return "XW";
+    return "UNKNOWN";
+}
+
+static const char *gsv_signal_name(const char *talker, const char *signal_id)
+{
+    if (signal_id[0] == '\0')
+        return "";
+
+    if (strcmp(talker, "GB") == 0)
+    {
+        if (strcmp(signal_id, "0") == 0)
+            return "ALL SIGNALS";
+        if (strcmp(signal_id, "1") == 0)
+            return "B1I";
+        if (strcmp(signal_id, "3") == 0)
+            return "B1C";
+        if (strcmp(signal_id, "5") == 0)
+            return "B2a";
+        if (strcmp(signal_id, "6") == 0)
+            return "B2b";
+        if (strcmp(signal_id, "8") == 0)
+            return "B3I";
+        if (strcmp(signal_id, "B") == 0)
+            return "B2I";
+        return "RESERVED";
+    }
+
+    if (strcmp(talker, "GP") == 0)
+    {
+        if (strcmp(signal_id, "0") == 0)
+            return "ALL SIGNALS";
+        if (strcmp(signal_id, "1") == 0)
+            return "L1CA";
+        if (strcmp(signal_id, "3") == 0)
+            return "L1C";
+        if (strcmp(signal_id, "4") == 0)
+            return "L2P";
+        if (strcmp(signal_id, "5") == 0)
+            return "L2C";
+        if (strcmp(signal_id, "7") == 0)
+            return "L5";
+        return "RESERVED";
+    }
+
+    if (strcmp(talker, "GL") == 0)
+    {
+        if (strcmp(signal_id, "0") == 0)
+            return "ALL SIGNALS";
+        if (strcmp(signal_id, "1") == 0)
+            return "G1";
+        if (strcmp(signal_id, "3") == 0)
+            return "G2";
+        return "RESERVED";
+    }
+
+    if (strcmp(talker, "GA") == 0)
+    {
+        if (strcmp(signal_id, "0") == 0)
+            return "ALL SIGNALS";
+        if (strcmp(signal_id, "1") == 0)
+            return "E5a";
+        if (strcmp(signal_id, "2") == 0)
+            return "E5b";
+        if (strcmp(signal_id, "7") == 0)
+            return "E1";
+        return "RESERVED";
+    }
+
+    if (strcmp(talker, "GQ") == 0)
+    {
+        if (strcmp(signal_id, "0") == 0)
+            return "ALL SIGNALS";
+        if (strcmp(signal_id, "1") == 0)
+            return "L1";
+        if (strcmp(signal_id, "5") == 0)
+            return "L2";
+        if (strcmp(signal_id, "7") == 0)
+            return "L5";
+        return "RESERVED";
+    }
+
+    if (strcmp(talker, "GX") == 0)
+    {
+        if (strcmp(signal_id, "1") == 0)
+            return "XW-CNL";
+        if (strcmp(signal_id, "2") == 0)
+            return "XW-B2b";
+        return "RESERVED";
+    }
+
+    return "UNKNOWN";
+}
+
 void handle_gnss_nmea(const char *sentence)
 {
     if (!minmea_check(sentence, false))
@@ -182,12 +289,36 @@ void handle_gnss_nmea(const char *sentence)
     case MINMEA_SENTENCE_GSV:
     {
         struct minmea_sentence_gsv frame;
+        char talker[3] = {0};
         if (minmea_parse_gsv(&frame, sentence))
         {
-            printf("GSV msgs=%d/%d sats=%d",
-                   frame.msg_nr,
-                   frame.total_msgs,
-                   frame.total_sats);
+            if (!minmea_talker_id(talker, sentence))
+            {
+                strcpy(talker, "??");
+            }
+
+            const char *signal_name = gsv_signal_name(talker, frame.signal_id);
+
+            if (frame.signal_id[0])
+            {
+                printf("GSV talker=%s(%s) signal_id=%s(%s) msgs=%d/%d sats=%d",
+                       talker,
+                       gsv_talker_name(talker),
+                       frame.signal_id,
+                       signal_name,
+                       frame.msg_nr,
+                       frame.total_msgs,
+                       frame.total_sats);
+            }
+            else
+            {
+                printf("GSV talker=%s(%s) signal_id=- msgs=%d/%d sats=%d",
+                       talker,
+                       gsv_talker_name(talker),
+                       frame.msg_nr,
+                       frame.total_msgs,
+                       frame.total_sats);
+            }
             for (int i = 0; i < 4; i++)
             {
                 if (frame.sats[i].nr > 0)

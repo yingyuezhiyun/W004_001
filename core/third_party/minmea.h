@@ -203,6 +203,7 @@ extern "C"
         int total_msgs;                 // 总消息数
         int msg_nr;                     // 当前消息序号
         int total_sats;                 // 可见卫星总数
+        char signal_id[8];              // 信号ID（如 0/1/2/B）
         struct minmea_sat_info sats[4]; // 当前消息中的卫星信息
     };
 
