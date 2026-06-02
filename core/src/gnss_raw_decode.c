@@ -461,6 +461,85 @@ void decode_bd3cnav3ephb(const uint8_t *payload, size_t payload_len, BD3CNAV3EPH
     out->crc24 = read_bits_be(payload, bit, 24);
 }
 
+void decode_bdxwephb(const uint8_t *payload, size_t payload_len, BDXWEPHB_Decoded_t *out)
+{
+    size_t bit = 0;
+
+    memset(out, 0, sizeof(*out));
+    memcpy(out->head, payload, sizeof(out->head));
+    bit += 64;
+
+    out->gps_week_count = (uint16_t)read_bits_be(payload, bit, 12);
+    bit += 12;
+    out->gps_tow_s = read_bits_be(payload, bit, 20);
+    bit += 20;
+    out->xws_satid = (uint8_t)read_bits_be(payload, bit, 8);
+    bit += 8;
+    out->xws_sattype = (uint8_t)read_bits_be(payload, bit, 2);
+    bit += 2;
+    out->xws_week = (uint16_t)read_bits_be(payload, bit, 13);
+    bit += 13;
+    out->xws_toe = read_bits_be(payload, bit, 16) * 12u;
+    bit += 16;
+    out->xws_toc = read_bits_be(payload, bit, 17) * 6u;
+    bit += 17;
+    out->xws_af0 = scale_pow2(read_signed_bits_be(payload, bit, 27), -36);
+    bit += 27;
+    out->xws_af1 = scale_pow2(read_signed_bits_be(payload, bit, 22), -50);
+    bit += 22;
+    out->xws_iodc = (uint8_t)read_bits_be(payload, bit, 4);
+    bit += 4;
+    out->xws_iode = (uint8_t)read_bits_be(payload, bit, 3);
+    bit += 3;
+    out->xws_crs = scale_pow2(read_signed_bits_be(payload, bit, 26), -11);
+    bit += 26;
+    out->xws_crc = scale_pow2(read_signed_bits_be(payload, bit, 26), -11);
+    bit += 26;
+    out->xws_cus = scale_pi_pow2(read_signed_bits_be(payload, bit, 25), -34);
+    bit += 25;
+    out->xws_cuc = scale_pi_pow2(read_signed_bits_be(payload, bit, 25), -34);
+    bit += 25;
+    out->xws_cis = scale_pi_pow2(read_signed_bits_be(payload, bit, 21), -34);
+    bit += 21;
+    out->xws_cic = scale_pi_pow2(read_signed_bits_be(payload, bit, 21), -34);
+    bit += 21;
+    out->xws_deltacic = scale_pi_pow2(read_signed_bits_be(payload, bit, 21), -34);
+    bit += 21;
+    out->xws_deltacis = scale_pi_pow2(read_signed_bits_be(payload, bit, 21), -34);
+    bit += 21;
+    out->xws_deltacrs = scale_pi_pow2(read_signed_bits_be(payload, bit, 26), -11);
+    bit += 26;
+    out->xws_deltacrc = scale_pi_pow2(read_signed_bits_be(payload, bit, 26), -11);
+    bit += 26;
+    out->xws_delta_n0 = scale_pi_pow2(read_signed_bits_be(payload, bit, 27), -45);
+    bit += 27;
+    out->xws_delta_n0_dot = scale_pi_pow2_64(read_signed_bits_be64(payload, bit, 33), -54);
+    bit += 33;
+    out->xws_m0 = scale_pi_pow2_64(read_signed_bits_be64(payload, bit, 36), -35);
+    bit += 36;
+    out->xws_ecc = scale_pow2_u64(read_bits_be64(payload, bit, 30), -35);
+    bit += 30;
+    out->xws_deltaA0 = scale_pow2(read_signed_bits_be(payload, bit, 27), -10);
+    bit += 27;
+    out->xws_i0_dot = scale_pi_pow2(read_signed_bits_be(payload, bit, 22), -45);
+    bit += 22;
+    out->xws_a_dot = scale_pow2(read_signed_bits_be(payload, bit, 22), -19);
+    bit += 22;
+    out->xws_delta_i0 = scale_pi_pow2_64(read_signed_bits_be64(payload, bit, 31), -35);
+    bit += 31;
+    out->xws_omega0 = scale_pi_pow2_64(read_signed_bits_be64(payload, bit, 36), -35);
+    bit += 36;
+    out->xws_omega_dot = scale_pi_pow2(read_signed_bits_be(payload, bit, 26), -45);
+    bit += 26;
+    out->xws_omega = scale_pi_pow2_64(read_signed_bits_be64(payload, bit, 36), -35);
+    bit += 36;
+    out->xws_reserved = read_bits_be64(payload, bit, 36);
+    bit += 36;
+    out->crc24 = read_bits_be(payload, bit, 24);
+
+    (void)payload_len;
+}
+
 void decode_gpsephb(const uint8_t *payload, size_t payload_len, GPSEPHB_Decoded_t *out)
 {
     size_t bit = 0;

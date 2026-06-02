@@ -2,6 +2,7 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include "comm_service.h"
 #include "src_thread.h"
 
 pthread_t gnss_thread;
@@ -21,6 +22,7 @@ int thread_init()
     // pthread_create(&lora_thread, NULL, lora_thread_func, NULL);
     // pthread_create(&eth_4g_thread, NULL, eth_4g_thread_func, NULL);
     // pthread_create(&dbb_thread, NULL, dbb_thread_func, NULL);
+    // comm_service_init(NULL);
 
     return 0;
 }

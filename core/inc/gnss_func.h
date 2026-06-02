@@ -8,6 +8,7 @@ extern "C"
 #include "third_party/minmea.h"
     typedef enum
     {
+        GNSS_DATA_AUTO,
         GNSS_DATA_NMEA,
         GNSS_DATA_RAW,
     } gnss_DataType_t;
@@ -16,8 +17,8 @@ extern "C"
     {
         int fd;
         gnss_DataType_t data_type;
-        char Nmea_sentence[MINMEA_MAX_SENTENCE_LENGTH + 16];
-        uint16_t Nmea_len;
+        char data_nmea[MINMEA_MAX_SENTENCE_LENGTH + 16];
+        uint16_t data_nmea_len;
         uint8_t data_raw[1024];
         uint16_t data_raw_len;
     } gnss_ctrl_t;
@@ -203,6 +204,46 @@ extern "C"
         uint32_t crc24;            // 占位24；校验范围从帧头至有效数据；-
     } GALEPHB_Decoded_t;
 
+    /* BDXWEPHB: XWS/BDXW 星历（根据截图字段顺序与比例因子） */
+    typedef struct
+    {
+        uint8_t head[8];
+        uint16_t gps_week_count; // 占位12；输出数据时刻，GPS 时间，周计数为实际值；-
+        uint32_t gps_tow_s;      // 占位20；GPS 周内秒；s
+        uint8_t xws_satid;       // 占位8；按卫星号从小到大顺序输出（1~168）；-
+        uint8_t xws_sattype;     // 占位2；卫星类型；-
+        uint16_t xws_week;       // 占位13；XWS 时间周计数；-
+        uint32_t xws_toe;        // 占位16；参考时刻 Toe，单位 12 s；s
+        uint32_t xws_toc;        // 占位17；参考时刻 Toc，单位 6 s；s
+        double xws_af0;          // 占位27；卫星钟偏差系数；比例因子 2^-36 s
+        double xws_af1;          // 占位22；卫星钟漂移系数；比例因子 2^-50 s/s
+        uint8_t xws_iodc;        // 占位4；星历/钟参数版本号；-
+        uint8_t xws_iode;        // 占位3；星历版本号；-
+        double xws_crs;          // 占位26；轨道半径正弦调和改正项振幅；比例因子 2^-11 m
+        double xws_crc;          // 占位26；轨道半径余弦调和改正项振幅；比例因子 2^-11 m
+        double xws_cus;          // 占位25；纬度幅角正弦调和改正项振幅；比例因子 2^-34 π
+        double xws_cuc;          // 占位25；纬度幅角余弦调和改正项振幅；比例因子 2^-34 π
+        double xws_cis;          // 占位21；轨道倾角正弦调和改正项振幅；比例因子 2^-34 π
+        double xws_cic;          // 占位21；轨道倾角余弦调和改正项振幅；比例因子 2^-34 π
+        double xws_deltacic;     // 占位21；纬度幅角的三次余弦改正项振幅；比例因子 2^-34 π
+        double xws_deltacis;     // 占位21；纬度幅角的三次正弦改正项振幅；比例因子 2^-34 π
+        double xws_deltacrs;     // 占位26；轨道半径三次余弦改正项振幅；比例因子 2^-11 π
+        double xws_deltacrc;     // 占位26；轨道半径三次正弦改正项振幅；比例因子 2^-11 π
+        double xws_delta_n0;     // 占位27；卫星平均运动速率与计算值之差；比例因子 2^-45 π/s
+        double xws_delta_n0_dot; // 占位33；卫星平均运动速率变化率；比例因子 2^-54 π/s^2
+        double xws_m0;           // 占位36；参考时刻的平近点角；比例因子 2^-35 π
+        double xws_ecc;          // 占位30；轨道偏心率；比例因子 2^-35
+        double xws_deltaA0;      // 占位27；相对参考值 Aref 的偏差；比例因子 2^-10 m
+        double xws_i0_dot;       // 占位22；轨道倾角变化率；比例因子 2^-45 π/s
+        double xws_a_dot;        // 占位22；长半轴变化率；比例因子 2^-19 m/s
+        double xws_delta_i0;     // 占位31；相对参考值 iref 偏差；比例因子 2^-35 π
+        double xws_omega0;       // 占位36；升交点赤经；比例因子 2^-35 π
+        double xws_omega_dot;    // 占位26；升交点赤经变化率；比例因子 2^-45 π/s
+        double xws_omega;        // 占位36；近地点幅角；比例因子 2^-35 π
+        uint64_t xws_reserved;   // 占位36；保留位
+        uint32_t crc24;          // 占位24；CRC24 校验
+    } BDXWEPHB_Decoded_t;
+
     typedef struct
     {
         uint8_t head[8];
@@ -385,6 +426,7 @@ extern "C"
     void decode_bd3cnav2ephb(const uint8_t *payload, size_t payload_len, BD3CNAV2EPHB_Decoded_t *out);
     void decode_bd3cnav3ephb(const uint8_t *payload, size_t payload_len, BD3CNAV3EPHB_Decoded_t *out);
     void decode_posdatab(const uint8_t *payload, size_t payload_len, POSDATAB_Decoded_t *out);
+    void decode_bdxwephb(const uint8_t *payload, size_t payload_len, BDXWEPHB_Decoded_t *out);
     void decode_prangeb(const uint8_t *payload, size_t payload_len, PRANGEB_Decoded_t *out);
 
     extern gnss_ctrl_t gnss_ctrl;

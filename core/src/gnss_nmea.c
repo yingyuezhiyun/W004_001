@@ -13,6 +13,8 @@
 #include "src_io.h"
 #include "third_party/minmea.h"
 #include "gnss_func.h"
+#include <time.h>
+#include <sys/time.h>
 
 static void print_coord(const char *label, const struct minmea_float *coord)
 {
@@ -71,6 +73,39 @@ void handle_gnss_nmea(const char *sentence)
                    frame.time.minutes,
                    frame.time.seconds,
                    frame.time.microseconds);
+
+            struct timeval tv;
+            struct tm tm_now;
+            tm_now.tm_year = frame.date.year + 2000 - 1900; // tm结构的年份是从1900年开始计算的
+            tm_now.tm_mon = frame.date.month - 1;
+            tm_now.tm_mday = frame.date.day;
+            tm_now.tm_hour = frame.time.hours;
+            tm_now.tm_min = frame.time.minutes;
+            tm_now.tm_sec = frame.time.seconds;
+            tm_now.tm_isdst = -1;        // 不确定是否夏令时
+
+            gettimeofday(&tv, NULL); // 获取当前系统时间
+            //mktime
+            if (fabs(tv.tv_sec - mktime(&tm_now)) > 10)
+            {
+                tv.tv_sec = mktime(&tm_now); // 转换为UTC时间
+                tv.tv_usec = frame.time.microseconds;
+                if (settimeofday(&tv, NULL) == -1)// 设置系统时间
+                {
+                    // perror("settimeofday");
+                }
+            }
+
+            // if (fabs(tv.tv_sec - timegm(&tm_now)) > 10)
+            // {
+            //     tv.tv_sec = timegm(&tm_now); // 转换为UTC时间
+            //     tv.tv_usec = frame.time.microseconds;
+            //     settimeofday(&tv, NULL); // 设置系统时间
+            // }
+
+            // time_t utc_time = timegm(&tm_now); // 转换为UTC时间            
+            // double time_diff = difftime(tv.tv_sec, utc_time) + (tv.tv_usec / 1e6);
+            // printf("time_diff=%.2f seconds ", time_diff);
             print_coord("lat", &frame.latitude);
             printf(" ");
             print_coord("lon", &frame.longitude);

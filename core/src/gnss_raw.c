@@ -13,6 +13,9 @@
 #include "src_io.h"
 #include "gnss_func.h"
 
+
+uint8_t gpsephb_file_sw = 0;
+
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
 #endif
@@ -20,10 +23,10 @@
 #define TEST_GPSEPHB_FILE_PATH "/root/gps_ephe.csv"
 
 // #define Header1 (0x43534847)
-#define Header1 (0x47485343) //
+#define Header1 (0x47485343) //CSHG
 
 // #define Header2 (0x2448455844415441)
-#define Header2 (0x4154414458454824)
+#define Header2 (0x4154414458454824)//$HEXDATA
 
 #define GPSEPHB_PAYLOAD_LEN (64)
 #define BD2EPHB_PAYLOAD_LEN (67)
@@ -50,6 +53,7 @@ enum
     RAW_BD3CNAV1EPHB = 02, // BDS BD3 CNAV1 星历
     RAW_BD3CNAV2EPHB = 03, // BDS BD3 CNAV2 星历
     RAW_BD3CNAV3EPHB = 04, // BDS BD3 CNAV3 星历
+    RAW_BDXWEPHB = 41,     // BDXW/XWS 星历（扩展）
     RAW_BD3IonoB = 206,    // BDS BD3 电离层参数
     RAW_GPSEPHB = 11,      // GPS 星历 / GPS LNAV 星历
     RAW_GPSCNAV = 12,      // GPS CNAV 星历
@@ -229,6 +233,17 @@ static const char *pos_gear_desc(uint8_t gear)
     }
 }
 
+char *gps_week_sec_to_utc(uint16_t gps_week, uint32_t gps_sec)
+{
+    static char buf[64];
+    // GPS时间起点是1980-01-06 00:00:00 UTC
+    const time_t gps_epoch = 315964800; // 1980-01-06 00:00:00 UTC对应的Unix时间戳
+    time_t utc_time = gps_epoch + (gps_week * 7 * 24 * 3600) + gps_sec;
+    struct tm *tm_info = gmtime(&utc_time);
+    strftime(buf, sizeof(buf), "%Y-%m-%d %H:%M:%S", tm_info);
+    return buf;
+}
+
 static void print_bd2ephb(const BD2EPHB_Decoded_t *eph, uint32_t payload_crc_calc)
 {
     printf("BD2EPHB decoded frame:\n");
@@ -323,6 +338,42 @@ static void print_bd3ephb(const BD3EPHB_Decoded_t *eph, uint32_t payload_crc_cal
            eph->crc24,
            payload_crc_calc,
            (eph->crc24 == payload_crc_calc) ? "OK" : "BAD");
+}
+
+static void print_bdxwephb(const BDXWEPHB_Decoded_t *eph, uint32_t payload_crc_calc)
+{
+    printf("BDXWEPHB decoded frame:\n");
+    printf("  gps_week_count  : %u\n", eph->gps_week_count);
+    printf("  gps_tow_s       : %u\n", eph->gps_tow_s);
+    printf("  xws_satid       : %u\n", eph->xws_satid);
+    printf("  xws_sattype     : %u\n", eph->xws_sattype);
+    printf("  xws_week        : %u\n", eph->xws_week);
+    printf("  xws_toe         : %u s\n", eph->xws_toe);
+    printf("  xws_toc         : %u s\n", eph->xws_toc);
+    printf("  xws_af0         : %.12e s\n", eph->xws_af0);
+    printf("  xws_af1         : %.12e s/s\n", eph->xws_af1);
+    printf("  xws_iodc        : %u\n", eph->xws_iodc);
+    printf("  xws_iode        : %u\n", eph->xws_iode);
+    printf("  xws_crs         : %.12e m\n", eph->xws_crs);
+    printf("  xws_crc         : %.12e m\n", eph->xws_crc);
+    printf("  xws_cus         : %.12e rad\n", eph->xws_cus);
+    printf("  xws_cuc         : %.12e rad\n", eph->xws_cuc);
+    printf("  xws_cis         : %.12e rad\n", eph->xws_cis);
+    printf("  xws_cic         : %.12e rad\n", eph->xws_cic);
+    printf("  xws_delta_n0    : %.12e rad/s\n", eph->xws_delta_n0);
+    printf("  xws_delta_n0_dot: %.12e rad/s^2\n", eph->xws_delta_n0_dot);
+    printf("  xws_m0          : %.12e rad\n", eph->xws_m0);
+    printf("  xws_ecc         : %.12e\n", eph->xws_ecc);
+    printf("  xws_deltaA0     : %.12e m\n", eph->xws_deltaA0);
+    printf("  xws_i0_dot      : %.12e rad/s\n", eph->xws_i0_dot);
+    printf("  xws_a_dot       : %.12e m/s\n", eph->xws_a_dot);
+    printf("  xws_delta_i0    : %.12e rad\n", eph->xws_delta_i0);
+    printf("  xws_omega0      : %.12e rad\n", eph->xws_omega0);
+    printf("  xws_omega_dot   : %.12e rad/s\n", eph->xws_omega_dot);
+    printf("  xws_omega       : %.12e rad\n", eph->xws_omega);
+    printf("  reserved        : 0x%llx\n", (unsigned long long)eph->xws_reserved);
+    printf("  crc24           : 0x%06x (calc:0x%06x)%s\n", (unsigned)eph->crc24, payload_crc_calc,
+           ((uint32_t)eph->crc24 == payload_crc_calc) ? " OK" : " ERR");
 }
 
 static void print_bd3cnav2ephb(const BD3CNAV2EPHB_Decoded_t *eph, uint32_t payload_crc_calc)
@@ -764,6 +815,16 @@ int handle_gnss_raw(const uint8_t *data, size_t len)
                     }
                 }
                 break;
+                case RAW_BDXWEPHB:
+                {
+                    BDXWEPHB_Decoded_t eph;
+                    if (packet->length > 0)
+                    {
+                        decode_bdxwephb((uint8_t *)packet, packet->length, &eph);
+                        print_bdxwephb(&eph, crc_calculated);
+                    }
+                }
+                break;
                 case RAW_BD3CNAV3EPHB:
                 {
                     BD3CNAV3EPHB_Decoded_t eph;
@@ -781,8 +842,12 @@ int handle_gnss_raw(const uint8_t *data, size_t len)
                     {
                         decode_gpsephb((uint8_t *)packet, packet->length, &eph); // 64
                         // print_gpsephb(&eph, crc_calculated);
-                        print_gpsephb_simple(&eph);
-                        gpsephb_to_save(&eph);
+                        // print_gpsephb_simple(&eph);                    
+                        printf("date:%s GPS Ephemeris: satid=%u \n", gps_week_sec_to_utc(eph.gps_week_count, eph.gps_tow_s), eph.gps_satid);
+                        if (gpsephb_file_sw)
+                        {
+                            gpsephb_to_save(&eph);
+                        }
                     }
                 }
                 break;

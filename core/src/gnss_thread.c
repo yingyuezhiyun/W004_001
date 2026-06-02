@@ -15,15 +15,85 @@
 #include "src_io.h"
 #include "third_party/minmea.h"
 #include "gnss_func.h"
+#include "src_led.h"
 
 gnss_ctrl_t gnss_ctrl = {
     .fd = -1,
-    // .data_type = GNSS_DATA_NMEA,
-    .data_type = GNSS_DATA_RAW,
-    .Nmea_sentence = {0},
-    .Nmea_len = 0,
+    .data_type = GNSS_DATA_AUTO,
+    .data_nmea = {0},
+    .data_nmea_len = 0,
     .data_raw = {0},
     .data_raw_len = 0};
+
+static void gnss_handle_nmea_bytes(const uint8_t *buf, size_t len, int require_sentence_start)
+{
+    for (size_t i = 0; i < len; i++)
+    {
+        char c = (char)buf[i];
+
+        if (c == '\r')
+        {
+            continue;
+        }
+
+        if (gnss_ctrl.data_nmea_len == 0)
+        {
+            if (require_sentence_start && c != '$')
+            {
+                continue;
+            }
+
+            if (!require_sentence_start && c == '\n')
+            {
+                continue;
+            }
+        }
+
+        if (c == '\n')
+        {
+            if (gnss_ctrl.data_nmea_len > 0)
+            {
+                gnss_ctrl.data_nmea[gnss_ctrl.data_nmea_len] = '\0';
+                handle_gnss_nmea(gnss_ctrl.data_nmea);
+                gnss_ctrl.data_nmea_len = 0;
+            }
+            continue;
+        }
+
+        if (gnss_ctrl.data_nmea_len < sizeof(gnss_ctrl.data_nmea) - 1)
+        {
+            gnss_ctrl.data_nmea[gnss_ctrl.data_nmea_len++] = c;
+        }
+        else
+        {
+            gnss_ctrl.data_nmea_len = 0;
+        }
+    }
+}
+
+static void gnss_handle_raw_bytes(const uint8_t *buf, size_t len)
+{
+    if (gnss_ctrl.data_raw_len == sizeof(gnss_ctrl.data_raw))
+    {
+        fprintf(stderr, "GNSS raw data buffer overflow, dropping data\n");
+        gnss_ctrl.data_raw_len = 0;
+    }
+
+    size_t room = sizeof(gnss_ctrl.data_raw) - gnss_ctrl.data_raw_len;
+    size_t copy_len = (len < room) ? len : room;
+    memcpy(gnss_ctrl.data_raw + gnss_ctrl.data_raw_len, buf, copy_len);
+    gnss_ctrl.data_raw_len += copy_len;
+
+    uint16_t handle_len = handle_gnss_raw(gnss_ctrl.data_raw, gnss_ctrl.data_raw_len);
+    if (handle_len > 0)
+    {
+        if (handle_len < gnss_ctrl.data_raw_len)
+        {
+            memmove(gnss_ctrl.data_raw, gnss_ctrl.data_raw + handle_len, gnss_ctrl.data_raw_len - handle_len);
+        }
+        gnss_ctrl.data_raw_len -= handle_len;
+    }
+}
 
 int8_t gnss_bdd_enable()
 {
@@ -138,6 +208,9 @@ void gnss_cfg_mode(int fd, char *workMode, char *calcType, uint8_t freqCode)
 void *gnss_thread_func(void *arg)
 {
     (void)arg;
+    // set_led(DEV_4G_LED, 1);
+    // set_led(DEV_LoRa_LED, 1);
+    // set_led(DEV_DBB_LED, 1);
     gnss_bdd_disable();
     sleep(1);
     if (gnss_bdd_enable() < 0)
@@ -154,12 +227,12 @@ void *gnss_thread_func(void *arg)
     }
     set_opt(gnss_ctrl.fd, 115200, 8, 'N', 1);
     usleep(100000); // Sleep for 100 milliseconds to allow the device to initialize
-    gnss_cfg_disable_all(gnss_ctrl.fd);
+    // gnss_cfg_disable_all(gnss_ctrl.fd);
     usleep(100000); // Sleep for 100 milliseconds
 
-    gnss_ctrl.data_type = GNSS_DATA_NMEA;
+    gnss_ctrl.data_type = GNSS_DATA_AUTO;
 
-    gnss_cfg_dis_enable(gnss_ctrl.fd, "RMC", 1, 1);
+    // gnss_cfg_dis_enable(gnss_ctrl.fd, "RMC", 1, 1);
     // usleep(100000); // Sleep for 100 milliseconds
     // gnss_cfg_dis_enable(gnss_ctrl.fd, "GGA", 1, 1);
     // usleep(100000); // Sleep for 100 milliseconds
@@ -182,7 +255,7 @@ void *gnss_thread_func(void *arg)
     // char *enable_ins = "CSHG INS ON\r\n"; // 启用组合导航功能
     // gnss_dev_write(gnss_ctrl.fd, enable_ins, strlen(enable_ins));
     // gnss_cfg_dis_enable(gnss_ctrl.fd, "POSDATAB", 1, 1);//最优定位信息输出
-
+    // gnss_cfg_dis_enable(gnss_ctrl.fd, "BDXWEPHB", 1, 1);
     char buf[256];
 
     while (1)
@@ -190,55 +263,18 @@ void *gnss_thread_func(void *arg)
         int n = read(gnss_ctrl.fd, buf, sizeof(buf) - 1);
         if (n > 0)
         {
-            if (gnss_ctrl.data_type == GNSS_DATA_NMEA)
+            if (gnss_ctrl.data_type == GNSS_DATA_AUTO)
             {
-                for (int i = 0; i < n; i++)
-                {
-                    char c = buf[i];
-                    if (c == '\r')
-                    {
-                        continue;
-                    }
-                    if (c == '\n')
-                    {
-                        if (gnss_ctrl.Nmea_len > 0)
-                        {
-                            gnss_ctrl.Nmea_sentence[gnss_ctrl.Nmea_len] = '\0';
-                            handle_gnss_nmea(gnss_ctrl.Nmea_sentence);
-                            gnss_ctrl.Nmea_len = 0;
-                        }
-                        continue;
-                    }
-                    if (gnss_ctrl.Nmea_len < sizeof(gnss_ctrl.Nmea_sentence) - 1)
-                    {
-                        gnss_ctrl.Nmea_sentence[gnss_ctrl.Nmea_len++] = c;
-                    }
-                    else
-                    {
-                        gnss_ctrl.Nmea_len = 0;
-                    }
-                }
+                gnss_handle_raw_bytes((const uint8_t *)buf, (size_t)n);
+                gnss_handle_nmea_bytes((const uint8_t *)buf, (size_t)n, 1);
+            }
+            else if (gnss_ctrl.data_type == GNSS_DATA_NMEA)
+            {
+                gnss_handle_nmea_bytes((const uint8_t *)buf, (size_t)n, 0);
             }
             else
             {
-                if (sizeof(gnss_ctrl.data_raw) == gnss_ctrl.data_raw_len)
-                {
-                    fprintf(stderr, "GNSS raw data buffer overflow, dropping data\n");
-                    gnss_ctrl.data_raw_len = 0;
-                }
-
-                int copy_len = (n < sizeof(gnss_ctrl.data_raw) - gnss_ctrl.data_raw_len) ? n : (sizeof(gnss_ctrl.data_raw) - gnss_ctrl.data_raw_len);
-                memcpy(gnss_ctrl.data_raw + gnss_ctrl.data_raw_len, buf, copy_len);
-                gnss_ctrl.data_raw_len += copy_len;
-                uint16_t handle_len = handle_gnss_raw(gnss_ctrl.data_raw, gnss_ctrl.data_raw_len);
-                if (handle_len > 0)
-                {
-                    if (handle_len < gnss_ctrl.data_raw_len)
-                    {
-                        memmove(gnss_ctrl.data_raw, gnss_ctrl.data_raw + handle_len, gnss_ctrl.data_raw_len - handle_len);
-                    }
-                    gnss_ctrl.data_raw_len -= handle_len;
-                }
+                gnss_handle_raw_bytes((const uint8_t *)buf, (size_t)n);
             }
         }
         else if (n < 0 && errno != EAGAIN && errno != EWOULDBLOCK)

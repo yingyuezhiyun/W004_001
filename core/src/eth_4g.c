@@ -686,12 +686,14 @@ void eth_4g_online_func()
     switch (eth_4g_ctrl.status)
     {
     case DEV_4G_IDLE:
+        set_led(DEV_4G_LED, 0);
         sleep(1);
         break;
     case DEV_4G_INIT:
         eth_4g_load_env();
         if (eth_4g_power_on() == 0)
         {
+            set_led(DEV_4G_LED, 0);
             eth_4g_ctrl.status = DEV_4G_POWER_ON;
             eth_4g_close_device();
         }
@@ -787,6 +789,7 @@ void eth_4g_online_func()
             eth_4g_show_status();
             eth_4g_ctrl.status = DEV_4G_ONLINE;
             debug_info_4g("module is online with IP address");
+            set_led(DEV_4G_LED, 1);
         }
         break;
     case DEV_4G_ONLINE:

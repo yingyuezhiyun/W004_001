@@ -18,6 +18,7 @@
 #include "glob_cfg.h"
 #include "src_io.h"
 #include "src_tty.h"
+#include "src_led.h"
 
 #define DBB_DEBUG_INFO (1)
 #define DBB_DEBUG_ERR (1)
@@ -1262,12 +1263,14 @@ void dbb_online_func(void)
     switch (dbb_ctrl.status)
     {
     case DEV_DBB_IDLE:
+        set_led(DEV_DBB_LED, 0);
         sleep(1);
         break;
     case DEV_DBB_INIT:
         if (dbb_open_device() == 0)
         {
             dbb_ctrl.status = DEV_DBB_POWER_ON;
+            set_led(DEV_DBB_LED, 0);
         }
         else
         {
@@ -1354,6 +1357,7 @@ void dbb_online_func(void)
         if (dbb_at_expect("wait for CIREG", "AT+CIREG?", "+CIREG:1") == 0)
         {
             dbb_ctrl.status = DEV_DBB_ONLINE;
+            set_led(DEV_DBB_LED, 1);
         }
         break;
     case DEV_DBB_ONLINE:

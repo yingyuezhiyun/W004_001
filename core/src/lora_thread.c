@@ -11,6 +11,7 @@
 #include "glob_cfg.h"
 #include "src_tty.h"
 #include "src_io.h"
+#include "src_led.h"
 
 static int lora_fd = -1;
 
@@ -37,6 +38,8 @@ int8_t lora_enable()
     sleep(1); // Sleep for 1 second to allow the module to initialize
     io_set_direction(DEV_LoRa_IO_AUX, IO_DIR_IN);
 
+    set_led(DEV_LoRa_LED, 1);
+
     return 0;
 }
 
@@ -47,6 +50,7 @@ int8_t lora_disable()
         fprintf(stderr, "Failed to set LoRa RESET pin high\n");
         return -1;
     }
+    set_led(DEV_LoRa_LED, 0);
     return 0;
 }
 

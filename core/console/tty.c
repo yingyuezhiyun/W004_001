@@ -32,7 +32,7 @@
 
 #define RADIO_NODE RIP_NODE
 
-#define GNSS_TYPE "posdatab|gpsephb|bd2ephb|bd3ephb|gloephb|galephb|prangeb|prange2b|rmc|gga|gll|gsa|gst|gsv|vtg|zda"
+#define GNSS_TYPE "bdwxephb|posdatab|gpsephb|bd2ephb|bd3ephb|gloephb|galephb|prangeb|prange2b|rmc|gga|gll|gsa|gst|gsv|vtg|zda"
 
 /*  node structure. */
 static struct cmd_node vty_node =
@@ -51,12 +51,17 @@ struct vty_cfg_s *vty_cfg = NULL;
 
 DEFUN(gnss_data_type_cfg,
       gnss_data_type_cfg_cmd,
-      "gnss data type (nmea|raw)",
+      "gnss data type (auto|nmea|raw)",
       "gnss ctrl\n"
       "Set gnss data type\n"
-      "nmea or raw\n")
+      "auto, nmea or raw\n")
 {
-    if (strcmp(argv[0], "nmea") == 0)
+    if (strcmp(argv[0], "auto") == 0)
+    {
+        gnss_ctrl.data_type = GNSS_DATA_AUTO;
+        vty_out(vty, "set gnss data type to auto%s", VTY_NEWLINE);
+    }
+    else if (strcmp(argv[0], "nmea") == 0)
     {
         gnss_ctrl.data_type = GNSS_DATA_NMEA;
         vty_out(vty, "set gnss data type to nmea%s", VTY_NEWLINE);
@@ -134,7 +139,7 @@ DEFUN(gnss_mode_cfg,
     return CMD_SUCCESS;
 }
 
-
+extern uint8_t gpsephb_file_sw ;
 DEFUN(gnss_gps_test,
       gnss_gps_test_cmd,
       "gnss gps test  (on|off)",
@@ -149,6 +154,7 @@ DEFUN(gnss_gps_test,
         gpsephb_file_header();
         gnss_cfg_dis_enable(gnss_ctrl.fd, "GPSEPHB", 1, 1);
         gnss_ctrl.data_type = GNSS_DATA_RAW;
+        gpsephb_file_sw = 1;
         vty_out(vty, "set gnss gps test to on%s", VTY_NEWLINE);
     }
     else
@@ -156,8 +162,8 @@ DEFUN(gnss_gps_test,
         gnss_cfg_disable_all(gnss_ctrl.fd);
         usleep(100000);
         gnss_cfg_dis_enable(gnss_ctrl.fd, "RMC", 1, 1);
-        gnss_ctrl.data_type = GNSS_DATA_NMEA;
-
+        gnss_ctrl.data_type = GNSS_DATA_AUTO;
+        gpsephb_file_sw = 0;
         vty_out(vty, "set gnss gps test to off%s", VTY_NEWLINE);
     }
     return CMD_SUCCESS;
