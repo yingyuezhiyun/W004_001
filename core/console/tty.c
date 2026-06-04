@@ -32,7 +32,7 @@
 
 #define RADIO_NODE RIP_NODE
 
-#define GNSS_TYPE "bdwxephb|posdatab|gpsephb|bd2ephb|bd3ephb|gloephb|galephb|prangeb|prange2b|rmc|gga|gll|gsa|gst|gsv|vtg|zda"
+#define GNSS_TYPE "bdwxephb|gpsephb|bd2ephb|bd3ephb|bd3cnav2ephb|bd3cnav3ephb|gloephb|galephb|prangeb|posdatab|rmc|gga|gll|gsa|gst|gsv|vtg|zda"
 
 /*  node structure. */
 static struct cmd_node vty_node =
@@ -143,7 +143,7 @@ DEFUN(gnss_mode_cfg,
 
 DEFUN(gnss_gps_file,
       gnss_gps_file_cmd,
-      "gnss file (gps|bd2|bd3|glo|gal|bdxw|bd3cnav2|bd3cnav3) (on|off)",
+      "gnss file (bdwxephb|gpsephb|bd2ephb|bd3ephb|bd3cnav2ephb|bd3cnav3ephb|gloephb|galephb) (on|off)",
       "gnss file <type> \n"
       "Set gnss file <type>  on or off\n"
       "on or off\n")
@@ -152,94 +152,7 @@ DEFUN(gnss_gps_file,
     uint8_t sw = strcmp(argv[1], "on") == 0;
     // gnss_cfg_disable_all(gnss_ctrl.fd);
     usleep(100000);
-    if (strcmp(argv[0], "gps") == 0)
-    {
-        ephb_file_sw.gps = sw;
-        if (ephb_file_sw.gps)
-        {
-            gpsephb_file_header();
-            gnss_cfg_dis_enable(gnss_ctrl.fd, "GPSEPHB", 1, 1);
-        }
-        else
-        {
-            gnss_cfg_dis_enable(gnss_ctrl.fd, "GPSEPHB", 0, 0);
-        }
-    }
-    else if (strcmp(argv[0], "bd2") == 0)
-    {
-        ephb_file_sw.bd2 = sw;
-        if (ephb_file_sw.bd2)
-        {
-            bd2ephb_file_header();
-            gnss_cfg_dis_enable(gnss_ctrl.fd, "BD2EPHB", 1, 1);
-        }
-        else
-        {
-            gnss_cfg_dis_enable(gnss_ctrl.fd, "BD2EPHB", 0, 0);
-        }
-    }
-    else if (strcmp(argv[0], "bd3") == 0)
-    {
-        ephb_file_sw.bd3 = sw;
-        if (ephb_file_sw.bd3)
-        {
-            // bd3ephb_file_header();
-            gnss_cfg_dis_enable(gnss_ctrl.fd, "BD3EPHB", 1, 1);
-        }
-        else
-        {
-            gnss_cfg_dis_enable(gnss_ctrl.fd, "BD3EPHB", 0, 0);
-        }
-    }
-    else if (strcmp(argv[0], "glo") == 0)
-    {
-        ephb_file_sw.glo = sw;
-        if (ephb_file_sw.glo)
-        {
-            gnss_cfg_dis_enable(gnss_ctrl.fd, "GLOEPHB", 1, 1);
-        }
-        else
-        {
-            gnss_cfg_dis_enable(gnss_ctrl.fd, "GLOEPHB", 0, 0);
-        }
-    }
-    else if (strcmp(argv[0], "gal") == 0)
-    {
-        ephb_file_sw.gal = sw;
-        if (ephb_file_sw.gal)
-        {
-            gnss_cfg_dis_enable(gnss_ctrl.fd, "GALEPHB", 1, 1);
-        }
-        else
-        {
-            gnss_cfg_dis_enable(gnss_ctrl.fd, "GALEPHB", 0, 0);
-        }
-    }
-    else if (strcmp(argv[0], "bdxw") == 0)
-    {
-        ephb_file_sw.bdxw = sw;
-        if (ephb_file_sw.bdxw)
-        {
-            gnss_cfg_dis_enable(gnss_ctrl.fd, "BDXWEPHB", 1, 1);
-        }
-        else
-        {
-            gnss_cfg_dis_enable(gnss_ctrl.fd, "BDXWEPHB", 0, 0);
-        }
-    }
-    else if (strcmp(argv[0], "bd3cnav2") == 0)
-    {
-        ephb_file_sw.bd3cnav2 = sw;
-        if (ephb_file_sw.bd3cnav2)
-        {
-            gnss_cfg_dis_enable(gnss_ctrl.fd, "BD3CNAV2EPHB", 1, 1);
-        }
-        else
-        {
-            gnss_cfg_dis_enable(gnss_ctrl.fd, "BD3CNAV2EPHB", 0, 0);
-        }
-    }
-
+    gnss_raw_info_file_header(argv[0], sw);
     vty_out(vty, "set gnss %s file to %s%s", argv[0], argv[1], VTY_NEWLINE);
 
     return CMD_SUCCESS;

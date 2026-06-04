@@ -420,14 +420,14 @@ extern "C"
 
     typedef struct
     {
-        uint8_t gps;
-        uint8_t bd2;
-        uint8_t bd3;
-        uint8_t glo;
-        uint8_t gal;
-        uint8_t bdxw;
-        uint8_t bd3cnav2;
-        uint8_t bd3cnav3;
+        uint8_t gpsephb;
+        uint8_t bd2ephb;
+        uint8_t bd3ephb;
+        uint8_t gloephb;
+        uint8_t galephb;
+        uint8_t bdxwephb;
+        uint8_t bd3cnav2ephb;
+        uint8_t bd3cnav3ephb;
     } EPHB_File_sw_t;
 
     void decode_gpsephb(const uint8_t *payload, size_t payload_len, GPSEPHB_Decoded_t *out);
@@ -441,10 +441,6 @@ extern "C"
     void decode_bdxwephb(const uint8_t *payload, size_t payload_len, BDXWEPHB_Decoded_t *out);
     void decode_prangeb(const uint8_t *payload, size_t payload_len, PRANGEB_Decoded_t *out);
 
-    extern gnss_ctrl_t gnss_ctrl;
-
-    extern EPHB_File_sw_t ephb_file_sw;
-
     void handle_gnss_nmea(const char *sentence);
     int handle_gnss_raw(const uint8_t *data, size_t len);
     void gnss_cfg_disable_all(int fd);
@@ -456,6 +452,32 @@ extern "C"
 
     void gpsephb_file_header();
     void gpsephb_file_header2();
+
+    char *gps_week_sec_to_utc(uint16_t gps_week, uint32_t gps_sec);
+
+    void print_bd2ephb(const BD2EPHB_Decoded_t *eph, uint32_t payload_crc_calc);
+    void print_bd3ephb(const BD3EPHB_Decoded_t *eph, uint32_t payload_crc_calc);
+    void print_bd3cnav2ephb(const BD3CNAV2EPHB_Decoded_t *eph, uint32_t payload_crc_calc);
+    void print_bd3cnav3ephb(const BD3CNAV3EPHB_Decoded_t *eph, uint32_t payload_crc_calc);
+    void print_bdxwephb(const BDXWEPHB_Decoded_t *eph, uint32_t payload_crc_calc);
+    void print_gpsephb(const GPSEPHB_Decoded_t *eph, uint32_t payload_crc_calc);
+    void print_gpsephb_simple(const GPSEPHB_Decoded_t *eph);
+    void print_gloephb(const GLOEPHB_Decoded_t *eph, uint32_t payload_crc_calc);
+    void print_galephb(const GALEPHB_Decoded_t *eph, uint32_t payload_crc_calc);
+    void print_posdatab(const POSDATAB_Decoded_t *pos, uint32_t payload_crc_calc);
+    void print_prangeb(const PRANGEB_Decoded_t *prange, uint32_t payload_crc_calc);
+
+    void gnss_raw_info_file_header(char *type, uint8_t enable);
+    void bd2ephb_file_append(const BD2EPHB_Decoded_t *eph);
+    void bd3ephb_file_append(const BD3EPHB_Decoded_t *eph);
+    void bd3cnav2ephb_file_append(const BD3CNAV2EPHB_Decoded_t *eph);
+    void bd3cnav3ephb_file_append(const BD3CNAV3EPHB_Decoded_t *eph);
+    void bdxwephb_file_append(const BDXWEPHB_Decoded_t *eph);
+    void gpsephb_file_append(const GPSEPHB_Decoded_t *eph);
+
+    extern gnss_ctrl_t gnss_ctrl;
+    extern EPHB_File_sw_t ephb_file_sw;
+
 #ifdef __cplusplus
 }
 #endif

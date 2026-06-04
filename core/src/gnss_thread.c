@@ -251,7 +251,6 @@ void *gnss_thread_func(void *arg)
     // gnss_cfg_dis_enable(gnss_ctrl.fd, "BD3CANV2EPHB", 1, 1);//todo 无数据
     // gnss_cfg_dis_enable(gnss_ctrl.fd, "BD3CNAV3EPHB", 1, 1);//todo 无数据 解析错误
     // gnss_cfg_dis_enable(gnss_ctrl.fd, "PRANGEB", 1, 1);//
-    // gnss_cfg_dis_enable(gnss_ctrl.fd, "PRANGE2B", 1, 1); // todo 无数据
     // char *enable_ins = "CSHG INS ON\r\n"; // 启用组合导航功能
     // gnss_dev_write(gnss_ctrl.fd, enable_ins, strlen(enable_ins));
     // gnss_cfg_dis_enable(gnss_ctrl.fd, "POSDATAB", 1, 1);//最优定位信息输出

@@ -463,6 +463,30 @@ core/src/gnss_raw_decode.c.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/ok3506_demo.dir/build.make CMakeFiles/ok3506_demo.dir/core/src/gnss_raw_decode.c.s
 .PHONY : core/src/gnss_raw_decode.c.s
 
+core/src/gnss_raw_info.o: core/src/gnss_raw_info.c.o
+.PHONY : core/src/gnss_raw_info.o
+
+# target to build an object file
+core/src/gnss_raw_info.c.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/ok3506_demo.dir/build.make CMakeFiles/ok3506_demo.dir/core/src/gnss_raw_info.c.o
+.PHONY : core/src/gnss_raw_info.c.o
+
+core/src/gnss_raw_info.i: core/src/gnss_raw_info.c.i
+.PHONY : core/src/gnss_raw_info.i
+
+# target to preprocess a source file
+core/src/gnss_raw_info.c.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/ok3506_demo.dir/build.make CMakeFiles/ok3506_demo.dir/core/src/gnss_raw_info.c.i
+.PHONY : core/src/gnss_raw_info.c.i
+
+core/src/gnss_raw_info.s: core/src/gnss_raw_info.c.s
+.PHONY : core/src/gnss_raw_info.s
+
+# target to generate assembly for a file
+core/src/gnss_raw_info.c.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/ok3506_demo.dir/build.make CMakeFiles/ok3506_demo.dir/core/src/gnss_raw_info.c.s
+.PHONY : core/src/gnss_raw_info.c.s
+
 core/src/gnss_thread.o: core/src/gnss_thread.c.o
 .PHONY : core/src/gnss_thread.o
 
@@ -680,6 +704,9 @@ help:
 	@echo "... core/src/gnss_raw_decode.o"
 	@echo "... core/src/gnss_raw_decode.i"
 	@echo "... core/src/gnss_raw_decode.s"
+	@echo "... core/src/gnss_raw_info.o"
+	@echo "... core/src/gnss_raw_info.i"
+	@echo "... core/src/gnss_raw_info.s"
 	@echo "... core/src/gnss_thread.o"
 	@echo "... core/src/gnss_thread.i"
 	@echo "... core/src/gnss_thread.s"
