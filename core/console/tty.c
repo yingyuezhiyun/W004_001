@@ -32,7 +32,7 @@
 
 #define RADIO_NODE RIP_NODE
 
-#define GNSS_TYPE "bdwxephb|gpsephb|bd2ephb|bd3ephb|bd3cnav2ephb|bd3cnav3ephb|gloephb|galephb|prangeb|posdatab|rmc|gga|gll|gsa|gst|gsv|vtg|zda"
+#define GNSS_TYPE "bdxwephb|gpsephb|bd2ephb|bd3ephb|bd3cnav2ephb|bd3cnav3ephb|gloephb|galephb|prangeb|posdatab|rmc|gga|gll|gsa|gst|gsv|vtg|zda"
 
 /*  node structure. */
 static struct cmd_node vty_node =
@@ -143,7 +143,7 @@ DEFUN(gnss_mode_cfg,
 
 DEFUN(gnss_gps_file,
       gnss_gps_file_cmd,
-      "gnss file (bdwxephb|gpsephb|bd2ephb|bd3ephb|bd3cnav2ephb|bd3cnav3ephb|gloephb|galephb) (on|off)",
+      "gnss file (bdxwephb|gpsephb|bd2ephb|bd3ephb|bd3cnav2ephb|bd3cnav3ephb|gloephb|galephb) (on|off)",
       "gnss file <type> \n"
       "Set gnss file <type>  on or off\n"
       "on or off\n")
@@ -152,9 +152,15 @@ DEFUN(gnss_gps_file,
     uint8_t sw = strcmp(argv[1], "on") == 0;
     // gnss_cfg_disable_all(gnss_ctrl.fd);
     usleep(100000);
-    gnss_raw_info_file_header(argv[0], sw);
-    vty_out(vty, "set gnss %s file to %s%s", argv[0], argv[1], VTY_NEWLINE);
-
+    char *file_path = gnss_raw_info_file_header(argv[0], sw);
+    if (sw)
+    {
+        vty_out(vty, "set gnss file %s to on, file path: %s %s", argv[0], file_path, VTY_NEWLINE);
+    }
+    else
+    {
+        vty_out(vty, "set gnss file %s to off%s", argv[0], VTY_NEWLINE);
+    }
     return CMD_SUCCESS;
 }
 

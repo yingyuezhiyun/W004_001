@@ -197,9 +197,18 @@ void handle_gnss_nmea(const char *sentence)
             {
                 tv.tv_sec = mktime(&tm_now); // 转换为UTC时间
                 tv.tv_usec = frame.time.microseconds;
-                if (settimeofday(&tv, NULL) == -1)// 设置系统时间
+                if (settimeofday(&tv, NULL) == -1) // 设置系统时间
                 {
                     // perror("settimeofday");
+                    char command[128];
+                    snprintf(command, sizeof(command), "date -s \"%04d-%02d-%02d %02d:%02d:%02d\"",
+                             tm_now.tm_year + 1900,
+                             tm_now.tm_mon + 1,
+                             tm_now.tm_mday,
+                             tm_now.tm_hour,
+                             tm_now.tm_min,
+                             tm_now.tm_sec);
+                    system(command);
                 }
             }
 

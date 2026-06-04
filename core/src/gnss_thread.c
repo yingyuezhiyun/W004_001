@@ -16,6 +16,8 @@
 #include "third_party/minmea.h"
 #include "gnss_func.h"
 #include "src_led.h"
+#include <time.h>
+#include <sys/time.h>
 
 gnss_ctrl_t gnss_ctrl = {
     .fd = -1,

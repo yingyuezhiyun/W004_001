@@ -420,14 +420,21 @@ extern "C"
 
     typedef struct
     {
-        uint8_t gpsephb;
-        uint8_t bd2ephb;
-        uint8_t bd3ephb;
-        uint8_t gloephb;
-        uint8_t galephb;
-        uint8_t bdxwephb;
-        uint8_t bd3cnav2ephb;
-        uint8_t bd3cnav3ephb;
+        uint8_t en;
+        int fd;
+        char path[128];
+    } File_cfg_t;
+    
+    typedef struct
+    {
+        File_cfg_t gpsephb;
+        File_cfg_t bd2ephb;
+        File_cfg_t bd3ephb;
+        File_cfg_t gloephb;
+        File_cfg_t galephb;
+        File_cfg_t bdxwephb;
+        File_cfg_t bd3cnav2ephb;
+        File_cfg_t bd3cnav3ephb;
     } EPHB_File_sw_t;
 
     void decode_gpsephb(const uint8_t *payload, size_t payload_len, GPSEPHB_Decoded_t *out);
@@ -467,7 +474,7 @@ extern "C"
     void print_posdatab(const POSDATAB_Decoded_t *pos, uint32_t payload_crc_calc);
     void print_prangeb(const PRANGEB_Decoded_t *prange, uint32_t payload_crc_calc);
 
-    void gnss_raw_info_file_header(char *type, uint8_t enable);
+    char *gnss_raw_info_file_header(char *type, uint8_t enable);
     void bd2ephb_file_append(const BD2EPHB_Decoded_t *eph);
     void bd3ephb_file_append(const BD3EPHB_Decoded_t *eph);
     void bd3cnav2ephb_file_append(const BD3CNAV2EPHB_Decoded_t *eph);

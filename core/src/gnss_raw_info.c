@@ -12,6 +12,8 @@
 #include "src_tty.h"
 #include "src_io.h"
 #include "gnss_func.h"
+#include <time.h>
+#include <sys/time.h>
 
 #define TEST_GPSEPHB_FILE_PATH "/root/gps_ephe.csv"
 #define TEST_BD2EPHB_FILE_PATH "/root/bd2_ephe.csv"
@@ -609,15 +611,23 @@ void print_posdatab(const POSDATAB_Decoded_t *pos, uint32_t payload_crc_calc)
 
 #pragma region "file save"
 
-void gnss_raw_info_file_header(char *type, uint8_t enable)
+char* gnss_raw_info_file_header(char *type, uint8_t enable)
 {
-    char file_path[256];
-    snprintf(file_path, sizeof(file_path), "/root/%s.csv", type);
+    static char file_path[256];
+    char time_str[64];
+    // struct timeval tv; 
+    // gettimeofday(&tv, NULL);
+    time_t nowtime ;
+    time(&nowtime);
+    struct tm *nowtm = localtime(&nowtime);    
+    strftime(time_str, sizeof(time_str), "%Y-%m-%d_%H-%M-%S", nowtm);
+    snprintf(file_path, sizeof(file_path), "/root/%s_%s.csv", type, time_str);
     FILE *fp = NULL;
     if (strcmp(type, "gpsephb") == 0)
     {
         if (enable && (fp = fopen(file_path, "w")) && fp != NULL)
         {
+            memcpy(ephb_file_sw.gpsephb.path, file_path, sizeof(ephb_file_sw.gpsephb.path));
             fprintf(fp, "gps_week_count,gps_tow_s,gps_satid,gps_sv_accuracy,gps_sv_health,gps_week,gps_toe,gps_toc,"
                         "gps_af0,gps_af1,gps_af2,"
                         "gps_iode,gps_iodc,"
@@ -625,67 +635,75 @@ void gnss_raw_info_file_header(char *type, uint8_t enable)
                         "gps_m0,gps_ecc,gps_a_half,gps_omega0,gps_i0,gps_omega,gps_omegadot,gps_tgd,"
                         "gps_code_on_l2,gps_l2p_data_flag,gps_fit\n");
         }
-        ephb_file_sw.gpsephb = enable ? 1 : 0;
+        ephb_file_sw.gpsephb.en = enable ? 1 : 0;
     }
     else if (strcmp(type, "gloephb") == 0)
     {
         if (enable && (fp = fopen(file_path, "w")) && fp != NULL)
         {
+            memcpy(ephb_file_sw.gloephb.path, file_path, sizeof(ephb_file_sw.gloephb.path));
             fprintf(fp, "gps_week_count,gps_tow_s,glo_satid,glo_freq,glo_bn_msb,glo_n4,glo_nt,glo_tk_hour:glo_tk_min:glo_tk_sec,glo_tb_minute:glo_tb_minute*glo_tb, glo_gamma, glo_tau, glo_x, glo_x_dot, glo_x_ddot, glo_y, glo_y_dot, glo_y_ddot, glo_z, glo_z_dot, glo_z_ddot\n");
         }
-        ephb_file_sw.gloephb = enable ? 1 : 0;
+        ephb_file_sw.gloephb.en = enable ? 1 : 0;
     }
     else if (strcmp(type, "galephb") == 0)
     {
         if (enable && (fp = fopen(file_path, "w")) && fp != NULL)
         {
+            memcpy(ephb_file_sw.galephb.path, file_path, sizeof(ephb_file_sw.galephb.path));
             fprintf(fp, "gps_week_count,gps_tow_s,gal_satid,gal_sisa,gal_e5b_sv_health,gal_e5b_valid,gal_e1b_health,gal_e1b_valid,gal_week,gal_toe,gal_toc,gal_af0,gal_af1,gal_af2,gal_iodnav,gal_idot,gal_crs,gal_crc,gal_cus,gal_cuc,gal_cis,gal_cic,gal_delta_n,gal_m0,gal_ecc,gal_a_half,gal_omega0,gal_i0,gal_omega,gal_omegadot,gal_bgd_e5a_e1,gal_bgd_e5b_e1,gal_navtype\n");
         }
-        ephb_file_sw.galephb = enable ? 1 : 0;
+        ephb_file_sw.galephb.en = enable ? 1 : 0;
     }
     else if (strcmp(type, "bd2ephb") == 0)
     {
         if (enable && (fp = fopen(file_path, "w")) && fp != NULL)
         {
+            memcpy(ephb_file_sw.bd2ephb.path, file_path, sizeof(ephb_file_sw.bd2ephb.path));
             fprintf(fp, "gps_week_count,gps_tow_s,bd2_satid,bd2_sv_urai,bd2_sv_health,bd2_week,bd2_toe,bd2_toc,bd2_af0,bd2_af1,bd2_af2,bd2_aode,bd2_aodc,bd2_idot,bd2_crs,bd2_crc,bd2_cus,bd2_cuc,bd2_cis,bd2_cic,bd2_delta_n,bd2_m0,bd2_ecc,bd2_a_half,bd2_omega0,bd2_i0,bd2_omega,bd2_omegadot,bd2_tgd1,bd2_tgd2\n");
         }
-        ephb_file_sw.bd2ephb = enable ? 1 : 0;
+        ephb_file_sw.bd2ephb.en = enable ? 1 : 0;
     }
     else if (strcmp(type, "bd3ephb") == 0)
     {
         if (enable && (fp = fopen(file_path, "w")) && fp != NULL)
         {
+            memcpy(ephb_file_sw.bd3ephb.path, file_path, sizeof(ephb_file_sw.bd3ephb.path));
             fprintf(fp, "gps_week_count,gps_tow_s,bd3_satid,bd3_sattype,bd3_week,bd3_toe,bd3_toc,bd3_af0,bd3_af1,bd3_af2,bd3_iode,bd3_iodc,bd3_idot,bd3_crs,bd3_crc,bd3_cus,bd3_cuc,bd3_cis,bd3_cic	bd3_delta_n0	bд3_delta_n0_dot	bд3_m0	bд3_ecc	bд3_deltaA	bд3_adot	bд3_omega0	bд3_i0	bд3_omega	bд3_omegadot	bд3_tgdb1cp	bд3_tgdb2ap	bд3_iscb1cd\n");
         }
-        ephb_file_sw.bd3ephb = enable ? 1 : 0;
+        ephb_file_sw.bd3ephb.en = enable ? 1 : 0;
     }
     else if (strcmp(type, "bdxwephb") == 0)
     {
         if (enable && (fp = fopen(file_path, "w")) && fp != NULL)
         {
+            memcpy(ephb_file_sw.bdxwephb.path, file_path, sizeof(ephb_file_sw.bdxwephb.path));
             fprintf(fp, "gps_week_count,gps_tow_s,xws_satid,xws_sattype,xws_week,xws_toe,xws_toc,xws_af0,xws_af1,xws_iodc,xws_iode,xws_crs,xws_crc,xws_cus,xws_cuc,xws_cis,xws_cic,xws_delta_n0,xws_delta_n0_dot,xws_m0,xws_ecc,xws_deltaA0,xws_i0_dot,xws_a_dot,xws_delta_i0,xws_omega0,xws_omega_dot,xws_omega\n");
         }
-        ephb_file_sw.bdxwephb = enable ? 1 : 0;
+        ephb_file_sw.bdxwephb.en = enable ? 1 : 0;
     }
     else if (strcmp(type, "bd3cnav2ephb") == 0)
     {
         if (enable && (fp = fopen(file_path, "w")) && fp != NULL)
         {
+            memcpy(ephb_file_sw.bd3cnav2ephb.path, file_path, sizeof(ephb_file_sw.bd3cnav2ephb.path));
             fprintf(fp, "gps_week_count,gps_tow_s,bds_satid,bds_sattype,bds_week,bds_toe,bds_toc,bds_af0,bds_af1,bds_af2,bds_iode,bds_iodc,bds_idot,bds_crs,bds_crc,bds_cus,bds_cuc,bds_cis,bds_cic,bds_delta_n0,bds_delta_n0_dot,bds_m0,bds_ecc,bds_AA,bds_adot,bds_omega0,bds_i0,bds_omega,bds_omegadot,bds_tgdb1cp,bds_tgdb2ap,bds_iscb2ad\n");
         }
-        ephb_file_sw.bd3cnav2ephb = enable ? 1 : 0;
+        ephb_file_sw.bd3cnav2ephb.en = enable ? 1 : 0;
     }
     else if (strcmp(type, "bd3cnav3ephb") == 0)
     {
         if (enable && (fp = fopen(file_path, "w")) && fp != NULL)
         {
+            memcpy(ephb_file_sw.bd3cnav3ephb.path, file_path, sizeof(ephb_file_sw.bd3cnav3ephb.path));
             fprintf(fp, "gps_week_count,gps_tow_s,bds_satid,bds_sattype,bds_week,bds_toe,bds_toc,bds_af0,bds_af1,bds_af2,bds_iode,bds_iodc,but bgs_idot,but bgs_crs,but bgs_crc,but bgs_cus,but bgs_cuc,but bgs_cis,but bgs_cic,but bgs_delta_n0,but bgs_delta_n0_dot,but bgs_m0,but bgs_ecc,but bgs_deltaA,but bgs_adot,but bgs_omega0,but bgs_i0,but bgs_omega,but bgs_omegadot,but bgs_tgdb2bI\n");
         }
-        ephb_file_sw.bd3cnav3ephb = enable ? 1 : 0;
+        ephb_file_sw.bd3cnav3ephb.en = enable ? 1 : 0;
     }
     if (fp)
     fclose(fp);
     gnss_cfg_dis_enable(gnss_ctrl.fd, type, enable, 1);
+    return file_path;
 }
 
 void bd2ephb_file_header()
@@ -700,7 +718,7 @@ void bd2ephb_file_header()
 
 void bd2ephb_file_append(const BD2EPHB_Decoded_t *eph)
 {
-    FILE *fp = fopen(TEST_BD2EPHB_FILE_PATH, "a");
+    FILE *fp = fopen(ephb_file_sw.bd2ephb.path, "a");
     if (fp)
     {
         fprintf(fp, "%u,%u,%u,%u,%u,%u,%u,%u,% .12e,% .12e,% .12e,%u,%u,% .12e,% .12e,% .12e,% .12e,% .12e,% .12e,% .12e,% .12e,% .12e,% .12e,% .12e,% .12e,% .12e,% .12e,% .12e,% .12e,% .12e\n",
@@ -750,7 +768,7 @@ void bd3ephb_file_header()
 
 void bd3ephb_file_append(const BD3EPHB_Decoded_t *eph)
 {
-    FILE *fp = fopen(TEST_BD3EPHB_FILE_PATH, "a");
+    FILE *fp = fopen(ephb_file_sw.bd3ephb.path, "a");
     if (fp)
     {
         fprintf(fp, "%u,%u,%u,%u,%u,%u,%u,"
@@ -805,7 +823,7 @@ void bdxwephb_file_header()
 
 void bdxwephb_file_append(const BDXWEPHB_Decoded_t *eph)
 {
-    FILE *fp = fopen(TEST_BDXWEPHB_FILE_PATH, "a");
+    FILE *fp = fopen(ephb_file_sw.bdxwephb.path, "a");
     if (fp)
     {
         fprintf(fp, "%u,%u,%u,%u,%u,%u,%u,%.12e,%.12e,%u,%u,%.12e,%.12e,%.12e,%.12e,%.12e,%.12e,%.12e,%.12e,%.12e,%.12e,%.12e,%.12e,%.12e,%.12e,%.12e,%.12e,%.12e\n",
@@ -853,7 +871,7 @@ void bd3cnav2ephb_file_header()
 
 void bd3cnav2ephb_file_append(const BD3CNAV2EPHB_Decoded_t *eph)
 {
-    FILE *fp = fopen(TEST_BD3CNAV2EPHB_FILE_PATH, "a");
+    FILE *fp = fopen(ephb_file_sw.bd3cnav2ephb.path, "a");
     if (fp)
     {
         fprintf(fp, "%u,%u,%u,%u,%u,%u,%u,"
@@ -908,7 +926,7 @@ void bd3cnav3ephb_file_header()
 
 void bd3cnav3ephb_file_append(const BD3CNAV3EPHB_Decoded_t *eph)
 {
-    FILE *fp = fopen(TEST_BD3CNAV3EPHB_FILE_PATH, "a");
+    FILE *fp = fopen(ephb_file_sw.bd3cnav3ephb.path, "a");
     if (fp)
     {
         fprintf(fp, "%u,%u,%u,%u,%u,%u,%u,"
@@ -951,7 +969,7 @@ void bd3cnav3ephb_file_append(const BD3CNAV3EPHB_Decoded_t *eph)
 
 void gpsephb_file_header()
 {
-    FILE *f = fopen(TEST_GPSEPHB_FILE_PATH, "w");
+    FILE *f = fopen(ephb_file_sw.gpsephb.path, "w");
     if (f)
     {
         fprintf(f, "gps_week_count,gps_tow_s,gps_satid,gps_sv_accuracy,gps_sv_health,gps_week,gps_toe,gps_toc,"
@@ -966,7 +984,7 @@ void gpsephb_file_header()
 
 void gpsephb_file_header2()
 {
-    FILE *f = fopen(TEST_GPSEPHB_FILE_PATH, "w");
+    FILE *f = fopen(ephb_file_sw.gpsephb.path, "w");
     if (f)
     {
         fprintf(f, "周计数,周内秒,卫星号,用户等效距离精度(m),星自主健康标识,时间周计数,卫星星历参考时间(s),卫星钟参考时刻(s),"
@@ -984,7 +1002,7 @@ void gpsephb_file_header2()
 
 void gpsephb_file_append(const GPSEPHB_Decoded_t *eph)
 {
-    FILE *f = fopen(TEST_GPSEPHB_FILE_PATH, "a+");
+    FILE *f = fopen(ephb_file_sw.gpsephb.path, "a+");
     if (f)
     {
         char buffer[2048];
