@@ -11,7 +11,7 @@
 
 #include "comm_udp.h"
 
-#define COMM_UDP_PORT 9000
+#define COMM_UDP_PORT 8888
 #define COMM_UDP_QUEUE_CAPACITY 16
 
 typedef struct
@@ -186,18 +186,21 @@ static void *comm_udp_rx_thread_func(void *arg)
 
         char peer_ip[INET_ADDRSTRLEN] = {0};
         inet_ntop(AF_INET, &peer.sin_addr, peer_ip, sizeof(peer_ip));
-        printf("[UDP] %s:%u -> %s\n", peer_ip, ntohs(peer.sin_port), buffer);
+        printf("[UDP] %s:%u\n", peer_ip, ntohs(peer.sin_port));
+        // printf("[UDP] %s:%u -> %s\n", peer_ip, ntohs(peer.sin_port), buffer);
 
         pthread_mutex_lock(&g_comm_udp_ctx.state_mutex);
         g_comm_udp_ctx.last_peer = peer;
         g_comm_udp_ctx.last_peer_valid = 1;
         pthread_mutex_unlock(&g_comm_udp_ctx.state_mutex);
 
-        comm_udp_parse_frame(buffer, (size_t)n);
-        if (comm_udp_queue_push_frame(buffer, (size_t)n, &peer, peer_len) < 0)
-        {
-            perror("queue udp frame");
-        }
+        comm_service_receive(COMM_SERVICE_UDP, buffer, (size_t)n);
+
+        // comm_udp_parse_frame(buffer, (size_t)n);
+        // if (comm_udp_queue_push_frame(buffer, (size_t)n, &peer, peer_len) < 0)
+        // {
+        //     perror("queue udp frame");
+        // }
     }
 
     close(fd);
@@ -231,7 +234,7 @@ static void *comm_udp_tx_thread_func(void *arg)
             }
             else
             {
-                printf("[UDP][TX] sent %zu bytes\n", frame.len);
+                // printf("[UDP][TX] sent %zu bytes\n", frame.len);
             }
         }
 

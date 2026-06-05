@@ -12,6 +12,8 @@
 #include "src_tty.h"
 #include "src_io.h"
 #include "gnss_func.h"
+#include "glob_value.h"
+#include "comm_service.h"
 
 EPHB_File_sw_t ephb_file_sw = {
     .gpsephb = 0,
@@ -187,6 +189,10 @@ int handle_gnss_raw(const uint8_t *data, size_t len)
                         {
                             bd2ephb_file_append(&eph);  
                         }
+                        if (glob_comm_config.eph_sw.content.bd2)
+                        {
+                            net_send_eph(COMM_SERVICE_UDP, BD2EPH, (uint8_t *)&eph, sizeof(eph));
+                        }
                     }
                 }
                 break;
@@ -201,6 +207,10 @@ int handle_gnss_raw(const uint8_t *data, size_t len)
                         if (ephb_file_sw.bd3ephb.en)
                         {
                             bd3ephb_file_append(&eph);
+                        }
+                        if (glob_comm_config.eph_sw.content.bd3)
+                        {
+                            net_send_eph(COMM_SERVICE_UDP, BD3EPH, (uint8_t *)&eph, sizeof(eph));
                         }
                     }
                 }
@@ -217,6 +227,10 @@ int handle_gnss_raw(const uint8_t *data, size_t len)
                         {
                             bd3cnav2ephb_file_append(&eph);
                         }
+                        if (glob_comm_config.eph_sw.content.bd3cnav2)
+                        {
+                            net_send_eph(COMM_SERVICE_UDP, BD3CNAV2EPH, (uint8_t *)&eph, sizeof(eph));
+                        }
                     }
                 }
                 break;
@@ -232,7 +246,9 @@ int handle_gnss_raw(const uint8_t *data, size_t len)
                         {
                             bd3cnav3ephb_file_append(&eph);
                         }
-                        
+                        if (glob_comm_config.eph_sw.content.bd3cnav3)                        {
+                            net_send_eph(COMM_SERVICE_UDP, BD3CNAV3EPH, (uint8_t *)&eph, sizeof(eph));
+                        }
                     }
                 }
                 break;
@@ -242,12 +258,16 @@ int handle_gnss_raw(const uint8_t *data, size_t len)
                     if (packet->length > 0)
                     {
                         decode_bdxwephb((uint8_t *)packet, packet->length, &eph);
-                        print_bdxwephb(&eph, crc_calculated);
+                        // print_bdxwephb(&eph, crc_calculated);
+                        printf("date:%s BDXW EPHB: satid=%u \n", gps_week_sec_to_utc(eph.gps_week_count, eph.gps_tow_s), eph.xws_satid);
                         if (ephb_file_sw.bdxwephb.en)
                         {
                             bdxwephb_file_append(&eph);
                         }
-                        
+                        if (glob_comm_config.eph_sw.content.bdxw)
+                        {
+                            net_send_eph(COMM_SERVICE_UDP, BDXWEPH, (uint8_t *)&eph, sizeof(eph));
+                        }
                     }
                 }
                 break;
@@ -264,6 +284,10 @@ int handle_gnss_raw(const uint8_t *data, size_t len)
                         {
                             gpsephb_file_append(&eph);
                         }
+                        if (glob_comm_config.eph_sw.content.gps)
+                        {
+                            net_send_eph(COMM_SERVICE_UDP, GPSEPH, (uint8_t *)&eph, sizeof(eph));
+                        }
                     }
                 }
                 break;
@@ -274,6 +298,14 @@ int handle_gnss_raw(const uint8_t *data, size_t len)
                     {
                         decode_gloephb((uint8_t *)packet, packet->length, &eph);
                         print_gloephb(&eph, crc_calculated);
+                        // if (ephb_file_sw.gloephb.en)
+                        // {
+                        //     gloephb_file_append(&eph);
+                        // }
+                        if (glob_comm_config.eph_sw.content.glo)
+                        {
+                            net_send_eph(COMM_SERVICE_UDP, GLOEPH, (uint8_t *)&eph, sizeof(eph));
+                        }
                     }
                 }
                 break;
@@ -284,7 +316,16 @@ int handle_gnss_raw(const uint8_t *data, size_t len)
                     if (packet->length >= GALEPHB_PAYLOAD_LEN) // 66
                     {
                         decode_galephb((uint8_t *)packet, packet->length, &eph);
-                        print_galephb(&eph, crc_calculated);
+                        // print_galephb(&eph, crc_calculated);
+                        printf("date:%s Galileo EPHB: satid=%u \n", gps_week_sec_to_utc(eph.gps_week_count, eph.gps_tow_s), eph.gal_satid);
+                        // if (ephb_file_sw.galephb.en)
+                        // {
+                        //     galephb_file_append(&eph);
+                        // }
+                        if (glob_comm_config.eph_sw.content.gal)
+                        {
+                            net_send_eph(COMM_SERVICE_UDP, GALEPH, (uint8_t *)&eph, sizeof(eph));
+                        }
                     }
                 }
                 break;

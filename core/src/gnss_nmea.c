@@ -15,6 +15,15 @@
 #include "gnss_func.h"
 #include <time.h>
 #include <sys/time.h>
+#include "glob_value.h"
+#include "comm_service.h"
+
+typedef struct
+{
+    double longitude;   // 经度
+    double latitude;    // 纬度
+    uint64_t timestamp; // 时间戳，单位毫秒
+} pos_info_t;
 
 static void print_coord(const char *label, const struct minmea_float *coord)
 {
@@ -180,7 +189,6 @@ void handle_gnss_nmea(const char *sentence)
                    frame.time.minutes,
                    frame.time.seconds,
                    frame.time.microseconds);
-
             struct timeval tv;
             struct tm tm_now;
             tm_now.tm_year = frame.date.year + 2000 - 1900; // tm结构的年份是从1900年开始计算的
@@ -189,26 +197,29 @@ void handle_gnss_nmea(const char *sentence)
             tm_now.tm_hour = frame.time.hours;
             tm_now.tm_min = frame.time.minutes;
             tm_now.tm_sec = frame.time.seconds;
-            tm_now.tm_isdst = -1;        // 不确定是否夏令时
+            tm_now.tm_isdst = -1; // 不确定是否夏令时
 
-            gettimeofday(&tv, NULL); // 获取当前系统时间
-            //mktime
-            if (fabs(tv.tv_sec - mktime(&tm_now)) > 10)
+            if (frame.valid)
             {
-                tv.tv_sec = mktime(&tm_now); // 转换为UTC时间
-                tv.tv_usec = frame.time.microseconds;
-                if (settimeofday(&tv, NULL) == -1) // 设置系统时间
+                gettimeofday(&tv, NULL); // 获取当前系统时间
+                // mktime
+                if (fabs(tv.tv_sec - mktime(&tm_now)) > 10)
                 {
-                    // perror("settimeofday");
-                    char command[128];
-                    snprintf(command, sizeof(command), "date -s \"%04d-%02d-%02d %02d:%02d:%02d\"",
-                             tm_now.tm_year + 1900,
-                             tm_now.tm_mon + 1,
-                             tm_now.tm_mday,
-                             tm_now.tm_hour,
-                             tm_now.tm_min,
-                             tm_now.tm_sec);
-                    system(command);
+                    tv.tv_sec = mktime(&tm_now); // 转换为UTC时间
+                    tv.tv_usec = frame.time.microseconds;
+                    if (settimeofday(&tv, NULL) == -1) // 设置系统时间
+                    {
+                        // perror("settimeofday");
+                        char command[128];
+                        snprintf(command, sizeof(command), "date -s \"%04d-%02d-%02d %02d:%02d:%02d\"",
+                                 tm_now.tm_year + 1900,
+                                 tm_now.tm_mon + 1,
+                                 tm_now.tm_mday,
+                                 tm_now.tm_hour,
+                                 tm_now.tm_min,
+                                 tm_now.tm_sec);
+                        system(command);
+                    }
                 }
             }
 
@@ -219,7 +230,7 @@ void handle_gnss_nmea(const char *sentence)
             //     settimeofday(&tv, NULL); // 设置系统时间
             // }
 
-            // time_t utc_time = timegm(&tm_now); // 转换为UTC时间            
+            // time_t utc_time = timegm(&tm_now); // 转换为UTC时间
             // double time_diff = difftime(tv.tv_sec, utc_time) + (tv.tv_usec / 1e6);
             // printf("time_diff=%.2f seconds ", time_diff);
             print_coord("lat", &frame.latitude);
@@ -233,6 +244,11 @@ void handle_gnss_nmea(const char *sentence)
                    frame.date.year,
                    frame.date.month,
                    frame.date.day);
+            pos_info_t pos;
+            pos.latitude = minmea_tocoord(&frame.latitude);
+            pos.longitude = minmea_tocoord(&frame.longitude);
+            pos.timestamp = (uint64_t)timegm(&tm_now) * 1000 + frame.time.microseconds / 1000;
+            net_send(COMM_SERVICE_UDP, SEND_CMD_POS, &pos, sizeof(pos_info_t));
         }
     }
     break;

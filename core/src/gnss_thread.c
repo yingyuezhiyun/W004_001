@@ -234,7 +234,7 @@ void *gnss_thread_func(void *arg)
 
     gnss_ctrl.data_type = GNSS_DATA_AUTO;
 
-    // gnss_cfg_dis_enable(gnss_ctrl.fd, "RMC", 1, 1);
+    gnss_cfg_dis_enable(gnss_ctrl.fd, "RMC", 1, 1);
     // usleep(100000); // Sleep for 100 milliseconds
     // gnss_cfg_dis_enable(gnss_ctrl.fd, "GGA", 1, 1);
     // usleep(100000); // Sleep for 100 milliseconds
