@@ -13,6 +13,13 @@ extern "C"
         GNSS_DATA_RAW,
     } gnss_DataType_t;
 
+    typedef enum
+    {
+        GNSS_PRINT_NONE,
+        GNSS_PRINT_FULL,
+        GNSS_PRINT_SUMMARY,
+    } gnss_PrintType_t;
+
     typedef struct
     {
         int fd;
@@ -21,6 +28,11 @@ extern "C"
         uint16_t data_nmea_len;
         uint8_t data_raw[1024];
         uint16_t data_raw_len;
+        struct 
+        {
+            uint8_t nmea;
+            uint8_t raw;
+        }print;        
     } gnss_ctrl_t;
 
     typedef struct

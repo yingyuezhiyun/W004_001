@@ -14,6 +14,7 @@
 #include "gnss_func.h"
 #include <time.h>
 #include <sys/time.h>
+#include "stdarg.h"
 
 #define TEST_GPSEPHB_FILE_PATH "/root/gps_ephe.csv"
 #define TEST_BD2EPHB_FILE_PATH "/root/bd2_ephe.csv"
@@ -21,6 +22,18 @@
 #define TEST_BDXWEPHB_FILE_PATH "/root/bdxw_ephe.csv"
 #define TEST_BD3CNAV2EPHB_FILE_PATH "/root/bd3cnav2_ephe.csv"
 #define TEST_BD3CNAV3EPHB_FILE_PATH "/root/bd3cnav3_ephe.csv"
+
+void GNSS_RAW_LOG_FULL(const char *format, ...)
+{
+    if (gnss_ctrl.print.raw == GNSS_PRINT_FULL)
+    {
+
+        va_list args;
+        va_start(args, format);
+        vprintf(format, args);
+        va_end(args);
+    }
+}
 
 // #ifndef M_PI
 // #define M_PI 3.14159265358979323846
@@ -145,464 +158,464 @@ char *gps_week_sec_to_utc(uint16_t gps_week, uint32_t gps_sec)
 
 void print_bd2ephb(const BD2EPHB_Decoded_t *eph, uint32_t payload_crc_calc)
 {
-    printf("BD2EPHB decoded frame:\n");
-    printf("  head: ");
+    GNSS_RAW_LOG_FULL("BD2EPHB decoded frame:\n");
+    GNSS_RAW_LOG_FULL("  head: ");
     for (size_t i = 0; i < sizeof(eph->head); ++i)
     {
-        printf("%02X%s", eph->head[i], (i + 1 == sizeof(eph->head)) ? "" : " ");
+        GNSS_RAW_LOG_FULL("%02X%s", eph->head[i], (i + 1 == sizeof(eph->head)) ? "" : " ");
     }
-    printf("\n");
+    GNSS_RAW_LOG_FULL("\n");
 
-    printf("  gps_week_count  : raw=%u\n", eph->gps_week_count);
-    printf("  gps_tow_s       : raw=%u s\n", eph->gps_tow_s);
-    printf("  bd2_satid       : raw=%u\n", eph->bd2_satid);
-    printf("  bd2_sv_urai     : raw=%u\n", eph->bd2_sv_urai);
-    printf("  bd2_sv_health   : raw=%u\n", eph->bd2_sv_health);
-    printf("  bd2_week        : raw=%u\n", eph->bd2_week);
-    printf("  bd2_toe         : raw=%u s\n", eph->bd2_toe);
-    printf("  bd2_toc         : raw=%u s\n", eph->bd2_toc);
-    printf("  bd2_af0         : =% .12e s\n", eph->bd2_af0);
-    printf("  bd2_af1         : =% .12e s/s\n", eph->bd2_af1);
-    printf("  bd2_af2         : =% .12e s/s^2\n", eph->bd2_af2);
-    printf("  bd2_aode        : raw=%u\n", eph->bd2_aode);
-    printf("  bd2_aodc        : raw=%u\n", eph->bd2_aodc);
-    printf("  bd2_idot        : =% .12e rad/s\n", eph->bd2_idot);
-    printf("  bd2_crs         : =% .12e m\n", eph->bd2_crs);
-    printf("  bd2_crc         : =% .12e m\n", eph->bd2_crc);
-    printf("  bd2_cus         : =% .12e rad\n", eph->bd2_cus);
-    printf("  bd2_cuc         : =% .12e rad\n", eph->bd2_cuc);
-    printf("  bd2_cis         : =% .12e rad\n", eph->bd2_cis);
-    printf("  bd2_cic         : =% .12e rad\n", eph->bd2_cic);
-    printf("  bd2_delta_n     : =% .12e rad/s\n", eph->bd2_delta_n);
-    printf("  bd2_m0          : =% .12e rad\n", eph->bd2_m0);
-    printf("  bd2_ecc         : =% .12e\n", eph->bd2_ecc);
-    printf("  bd2_a_half      : =% .12e m^1/2\n", eph->bd2_a_half);
-    printf("  bd2_omega0      : =% .12e rad\n", eph->bd2_omega0);
-    printf("  bd2_i0          : =% .12e rad\n", eph->bd2_i0);
-    printf("  bd2_omega       : =% .12e rad\n", eph->bd2_omega);
-    printf("  bd2_omegadot    : =% .12e rad/s\n", eph->bd2_omegadot);
-    printf("  bd2_tgd1        : =% .12e s\n", eph->bd2_tgd1);
-    printf("  bd2_tgd2        : =% .12e s\n", eph->bd2_tgd2);
-    printf("  bd2_reserved    : raw=%u\n", eph->bd2_reserved);
-    printf("  payload_crc24   : raw=%06X calc=%06X [%s]\n",
-           eph->crc24,
-           payload_crc_calc,
-           (eph->crc24 == payload_crc_calc) ? "OK" : "BAD");
+    GNSS_RAW_LOG_FULL("  gps_week_count  : raw=%u\n", eph->gps_week_count);
+    GNSS_RAW_LOG_FULL("  gps_tow_s       : raw=%u s\n", eph->gps_tow_s);
+    GNSS_RAW_LOG_FULL("  bd2_satid       : raw=%u\n", eph->bd2_satid);
+    GNSS_RAW_LOG_FULL("  bd2_sv_urai     : raw=%u\n", eph->bd2_sv_urai);
+    GNSS_RAW_LOG_FULL("  bd2_sv_health   : raw=%u\n", eph->bd2_sv_health);
+    GNSS_RAW_LOG_FULL("  bd2_week        : raw=%u\n", eph->bd2_week);
+    GNSS_RAW_LOG_FULL("  bd2_toe         : raw=%u s\n", eph->bd2_toe);
+    GNSS_RAW_LOG_FULL("  bd2_toc         : raw=%u s\n", eph->bd2_toc);
+    GNSS_RAW_LOG_FULL("  bd2_af0         : =% .12e s\n", eph->bd2_af0);
+    GNSS_RAW_LOG_FULL("  bd2_af1         : =% .12e s/s\n", eph->bd2_af1);
+    GNSS_RAW_LOG_FULL("  bd2_af2         : =% .12e s/s^2\n", eph->bd2_af2);
+    GNSS_RAW_LOG_FULL("  bd2_aode        : raw=%u\n", eph->bd2_aode);
+    GNSS_RAW_LOG_FULL("  bd2_aodc        : raw=%u\n", eph->bd2_aodc);
+    GNSS_RAW_LOG_FULL("  bd2_idot        : =% .12e rad/s\n", eph->bd2_idot);
+    GNSS_RAW_LOG_FULL("  bd2_crs         : =% .12e m\n", eph->bd2_crs);
+    GNSS_RAW_LOG_FULL("  bd2_crc         : =% .12e m\n", eph->bd2_crc);
+    GNSS_RAW_LOG_FULL("  bd2_cus         : =% .12e rad\n", eph->bd2_cus);
+    GNSS_RAW_LOG_FULL("  bd2_cuc         : =% .12e rad\n", eph->bd2_cuc);
+    GNSS_RAW_LOG_FULL("  bd2_cis         : =% .12e rad\n", eph->bd2_cis);
+    GNSS_RAW_LOG_FULL("  bd2_cic         : =% .12e rad\n", eph->bd2_cic);
+    GNSS_RAW_LOG_FULL("  bd2_delta_n     : =% .12e rad/s\n", eph->bd2_delta_n);
+    GNSS_RAW_LOG_FULL("  bd2_m0          : =% .12e rad\n", eph->bd2_m0);
+    GNSS_RAW_LOG_FULL("  bd2_ecc         : =% .12e\n", eph->bd2_ecc);
+    GNSS_RAW_LOG_FULL("  bd2_a_half      : =% .12e m^1/2\n", eph->bd2_a_half);
+    GNSS_RAW_LOG_FULL("  bd2_omega0      : =% .12e rad\n", eph->bd2_omega0);
+    GNSS_RAW_LOG_FULL("  bd2_i0          : =% .12e rad\n", eph->bd2_i0);
+    GNSS_RAW_LOG_FULL("  bd2_omega       : =% .12e rad\n", eph->bd2_omega);
+    GNSS_RAW_LOG_FULL("  bd2_omegadot    : =% .12e rad/s\n", eph->bd2_omegadot);
+    GNSS_RAW_LOG_FULL("  bd2_tgd1        : =% .12e s\n", eph->bd2_tgd1);
+    GNSS_RAW_LOG_FULL("  bd2_tgd2        : =% .12e s\n", eph->bd2_tgd2);
+    GNSS_RAW_LOG_FULL("  bd2_reserved    : raw=%u\n", eph->bd2_reserved);
+    GNSS_RAW_LOG_FULL("  payload_crc24   : raw=%06X calc=%06X [%s]\n",
+                      eph->crc24,
+                      payload_crc_calc,
+                      (eph->crc24 == payload_crc_calc) ? "OK" : "BAD");
 }
 
 void print_bd3ephb(const BD3EPHB_Decoded_t *eph, uint32_t payload_crc_calc)
 {
-    printf("BD3EPHB decoded frame:\n");
-    printf("  head: ");
+    GNSS_RAW_LOG_FULL("BD3EPHB decoded frame:\n");
+    GNSS_RAW_LOG_FULL("  head: ");
     for (size_t i = 0; i < sizeof(eph->head); ++i)
     {
-        printf("%02X%s", eph->head[i], (i + 1 == sizeof(eph->head)) ? "" : " ");
+        GNSS_RAW_LOG_FULL("%02X%s", eph->head[i], (i + 1 == sizeof(eph->head)) ? "" : " ");
     }
-    printf("\n");
+    GNSS_RAW_LOG_FULL("\n");
 
-    printf("  gps_week_count : raw=%u\n", eph->gps_week_count);
-    printf("  gps_tow_s      : raw=%u s\n", eph->gps_tow_s);
-    printf("  bd3_satid      : raw=%u\n", eph->bd3_satid);
-    printf("  bd3_sattype    : raw=%u\n", eph->bd3_sattype);
-    printf("  bd3_week       : raw=%u\n", eph->bd3_week);
-    printf("  bd3_toe        : =%u s \n", eph->bd3_toe);
-    printf("  bd3_toc        : =%u s \n", eph->bd3_toc);
-    printf("  bd3_af0        : =% .12e s\n", eph->bd3_af0);
-    printf("  bd3_af1        : =% .12e s/s\n", eph->bd3_af1);
-    printf("  bd3_af2        : =% .12e s/s^2\n", eph->bd3_af2);
-    printf("  bd3_iode       : raw=%u\n", eph->bd3_iode);
-    printf("  bd3_iodc       : raw=%u\n", eph->bd3_iodc);
-    printf("  bd3_idot       : =% .12e rad/s\n", eph->bd3_idot);
-    printf("  bd3_crs        : =% .12e m\n", eph->bd3_crs);
-    printf("  bd3_crc        : =% .12e m\n", eph->bd3_crc);
-    printf("  bd3_cus        : =% .12e rad\n", eph->bd3_cus);
-    printf("  bd3_cuc        : =% .12e rad\n", eph->bd3_cuc);
-    printf("  bd3_cis        : =% .12e rad\n", eph->bd3_cis);
-    printf("  bd3_cic        : =% .12e rad\n", eph->bd3_cic);
-    printf("  bd3_delta_n0   : =% .12e rad/s\n", eph->bd3_delta_n0);
-    printf("  bd3_delta_n0_dot: =% .12e rad/s^2\n", eph->bd3_delta_n0_dot);
-    printf("  bd3_m0         : =% .12e rad\n", eph->bd3_m0);
-    printf("  bd3_ecc        : =% .12e\n", eph->bd3_ecc);
-    printf("  bd3_deltaA     : =% .12e m\n", eph->bd3_deltaA);
-    printf("  bd3_adot       : =% .12e m/s\n", eph->bd3_adot);
-    printf("  bd3_omega0     : =% .12e rad\n", eph->bd3_omega0);
-    printf("  bd3_i0         : =% .12e rad\n", eph->bd3_i0);
-    printf("  bd3_omega      : =% .12e rad\n", eph->bd3_omega);
-    printf("  bd3_omegadot   : =% .12e rad/s\n", eph->bd3_omegadot);
-    printf("  bd3_tgdb1cp    : =% .12e s\n", eph->bd3_tgdb1cp);
-    printf("  bd3_tgdb2ap    : =% .12e s\n", eph->bd3_tgdb2ap);
-    printf("  bd3_iscb1cd    : =% .12e s\n", eph->bd3_iscb1cd);
-    printf("  bd3_reserved   : raw=%u\n", eph->bd3_reserved);
-    printf("  payload_crc24  : raw=%06X calc=%06X [%s]\n",
-           eph->crc24,
-           payload_crc_calc,
-           (eph->crc24 == payload_crc_calc) ? "OK" : "BAD");
+    GNSS_RAW_LOG_FULL("  gps_week_count : raw=%u\n", eph->gps_week_count);
+    GNSS_RAW_LOG_FULL("  gps_tow_s      : raw=%u s\n", eph->gps_tow_s);
+    GNSS_RAW_LOG_FULL("  bd3_satid      : raw=%u\n", eph->bd3_satid);
+    GNSS_RAW_LOG_FULL("  bd3_sattype    : raw=%u\n", eph->bd3_sattype);
+    GNSS_RAW_LOG_FULL("  bd3_week       : raw=%u\n", eph->bd3_week);
+    GNSS_RAW_LOG_FULL("  bd3_toe        : =%u s \n", eph->bd3_toe);
+    GNSS_RAW_LOG_FULL("  bd3_toc        : =%u s \n", eph->bd3_toc);
+    GNSS_RAW_LOG_FULL("  bd3_af0        : =% .12e s\n", eph->bd3_af0);
+    GNSS_RAW_LOG_FULL("  bd3_af1        : =% .12e s/s\n", eph->bd3_af1);
+    GNSS_RAW_LOG_FULL("  bd3_af2        : =% .12e s/s^2\n", eph->bd3_af2);
+    GNSS_RAW_LOG_FULL("  bd3_iode       : raw=%u\n", eph->bd3_iode);
+    GNSS_RAW_LOG_FULL("  bd3_iodc       : raw=%u\n", eph->bd3_iodc);
+    GNSS_RAW_LOG_FULL("  bd3_idot       : =% .12e rad/s\n", eph->bd3_idot);
+    GNSS_RAW_LOG_FULL("  bd3_crs        : =% .12e m\n", eph->bd3_crs);
+    GNSS_RAW_LOG_FULL("  bd3_crc        : =% .12e m\n", eph->bd3_crc);
+    GNSS_RAW_LOG_FULL("  bd3_cus        : =% .12e rad\n", eph->bd3_cus);
+    GNSS_RAW_LOG_FULL("  bd3_cuc        : =% .12e rad\n", eph->bd3_cuc);
+    GNSS_RAW_LOG_FULL("  bd3_cis        : =% .12e rad\n", eph->bd3_cis);
+    GNSS_RAW_LOG_FULL("  bd3_cic        : =% .12e rad\n", eph->bd3_cic);
+    GNSS_RAW_LOG_FULL("  bd3_delta_n0   : =% .12e rad/s\n", eph->bd3_delta_n0);
+    GNSS_RAW_LOG_FULL("  bd3_delta_n0_dot: =% .12e rad/s^2\n", eph->bd3_delta_n0_dot);
+    GNSS_RAW_LOG_FULL("  bd3_m0         : =% .12e rad\n", eph->bd3_m0);
+    GNSS_RAW_LOG_FULL("  bd3_ecc        : =% .12e\n", eph->bd3_ecc);
+    GNSS_RAW_LOG_FULL("  bd3_deltaA     : =% .12e m\n", eph->bd3_deltaA);
+    GNSS_RAW_LOG_FULL("  bd3_adot       : =% .12e m/s\n", eph->bd3_adot);
+    GNSS_RAW_LOG_FULL("  bd3_omega0     : =% .12e rad\n", eph->bd3_omega0);
+    GNSS_RAW_LOG_FULL("  bd3_i0         : =% .12e rad\n", eph->bd3_i0);
+    GNSS_RAW_LOG_FULL("  bd3_omega      : =% .12e rad\n", eph->bd3_omega);
+    GNSS_RAW_LOG_FULL("  bd3_omegadot   : =% .12e rad/s\n", eph->bd3_omegadot);
+    GNSS_RAW_LOG_FULL("  bd3_tgdb1cp    : =% .12e s\n", eph->bd3_tgdb1cp);
+    GNSS_RAW_LOG_FULL("  bd3_tgdb2ap    : =% .12e s\n", eph->bd3_tgdb2ap);
+    GNSS_RAW_LOG_FULL("  bd3_iscb1cd    : =% .12e s\n", eph->bd3_iscb1cd);
+    GNSS_RAW_LOG_FULL("  bd3_reserved   : raw=%u\n", eph->bd3_reserved);
+    GNSS_RAW_LOG_FULL("  payload_crc24  : raw=%06X calc=%06X [%s]\n",
+                      eph->crc24,
+                      payload_crc_calc,
+                      (eph->crc24 == payload_crc_calc) ? "OK" : "BAD");
 }
 
 void print_bdxwephb(const BDXWEPHB_Decoded_t *eph, uint32_t payload_crc_calc)
 {
-    printf("BDXWEPHB decoded frame:\n");
-    printf("  gps_week_count  : %u\n", eph->gps_week_count);
-    printf("  gps_tow_s       : %u\n", eph->gps_tow_s);
-    printf("  xws_satid       : %u\n", eph->xws_satid);
-    printf("  xws_sattype     : %u\n", eph->xws_sattype);
-    printf("  xws_week        : %u\n", eph->xws_week);
-    printf("  xws_toe         : %u s\n", eph->xws_toe);
-    printf("  xws_toc         : %u s\n", eph->xws_toc);
-    printf("  xws_af0         : %.12e s\n", eph->xws_af0);
-    printf("  xws_af1         : %.12e s/s\n", eph->xws_af1);
-    printf("  xws_iodc        : %u\n", eph->xws_iodc);
-    printf("  xws_iode        : %u\n", eph->xws_iode);
-    printf("  xws_crs         : %.12e m\n", eph->xws_crs);
-    printf("  xws_crc         : %.12e m\n", eph->xws_crc);
-    printf("  xws_cus         : %.12e rad\n", eph->xws_cus);
-    printf("  xws_cuc         : %.12e rad\n", eph->xws_cuc);
-    printf("  xws_cis         : %.12e rad\n", eph->xws_cis);
-    printf("  xws_cic         : %.12e rad\n", eph->xws_cic);
-    printf("  xws_delta_n0    : %.12e rad/s\n", eph->xws_delta_n0);
-    printf("  xws_delta_n0_dot: %.12e rad/s^2\n", eph->xws_delta_n0_dot);
-    printf("  xws_m0          : %.12e rad\n", eph->xws_m0);
-    printf("  xws_ecc         : %.12e\n", eph->xws_ecc);
-    printf("  xws_deltaA0     : %.12e m\n", eph->xws_deltaA0);
-    printf("  xws_i0_dot      : %.12e rad/s\n", eph->xws_i0_dot);
-    printf("  xws_a_dot       : %.12e m/s\n", eph->xws_a_dot);
-    printf("  xws_delta_i0    : %.12e rad\n", eph->xws_delta_i0);
-    printf("  xws_omega0      : %.12e rad\n", eph->xws_omega0);
-    printf("  xws_omega_dot   : %.12e rad/s\n", eph->xws_omega_dot);
-    printf("  xws_omega       : %.12e rad\n", eph->xws_omega);
-    printf("  reserved        : 0x%llx\n", (unsigned long long)eph->xws_reserved);
-    printf("  crc24           : 0x%06x (calc:0x%06x)%s\n", (unsigned)eph->crc24, payload_crc_calc,
-           ((uint32_t)eph->crc24 == payload_crc_calc) ? " OK" : " ERR");
+    GNSS_RAW_LOG_FULL("BDXWEPHB decoded frame:\n");
+    GNSS_RAW_LOG_FULL("  gps_week_count  : %u\n", eph->gps_week_count);
+    GNSS_RAW_LOG_FULL("  gps_tow_s       : %u\n", eph->gps_tow_s);
+    GNSS_RAW_LOG_FULL("  xws_satid       : %u\n", eph->xws_satid);
+    GNSS_RAW_LOG_FULL("  xws_sattype     : %u\n", eph->xws_sattype);
+    GNSS_RAW_LOG_FULL("  xws_week        : %u\n", eph->xws_week);
+    GNSS_RAW_LOG_FULL("  xws_toe         : %u s\n", eph->xws_toe);
+    GNSS_RAW_LOG_FULL("  xws_toc         : %u s\n", eph->xws_toc);
+    GNSS_RAW_LOG_FULL("  xws_af0         : %.12e s\n", eph->xws_af0);
+    GNSS_RAW_LOG_FULL("  xws_af1         : %.12e s/s\n", eph->xws_af1);
+    GNSS_RAW_LOG_FULL("  xws_iodc        : %u\n", eph->xws_iodc);
+    GNSS_RAW_LOG_FULL("  xws_iode        : %u\n", eph->xws_iode);
+    GNSS_RAW_LOG_FULL("  xws_crs         : %.12e m\n", eph->xws_crs);
+    GNSS_RAW_LOG_FULL("  xws_crc         : %.12e m\n", eph->xws_crc);
+    GNSS_RAW_LOG_FULL("  xws_cus         : %.12e rad\n", eph->xws_cus);
+    GNSS_RAW_LOG_FULL("  xws_cuc         : %.12e rad\n", eph->xws_cuc);
+    GNSS_RAW_LOG_FULL("  xws_cis         : %.12e rad\n", eph->xws_cis);
+    GNSS_RAW_LOG_FULL("  xws_cic         : %.12e rad\n", eph->xws_cic);
+    GNSS_RAW_LOG_FULL("  xws_delta_n0    : %.12e rad/s\n", eph->xws_delta_n0);
+    GNSS_RAW_LOG_FULL("  xws_delta_n0_dot: %.12e rad/s^2\n", eph->xws_delta_n0_dot);
+    GNSS_RAW_LOG_FULL("  xws_m0          : %.12e rad\n", eph->xws_m0);
+    GNSS_RAW_LOG_FULL("  xws_ecc         : %.12e\n", eph->xws_ecc);
+    GNSS_RAW_LOG_FULL("  xws_deltaA0     : %.12e m\n", eph->xws_deltaA0);
+    GNSS_RAW_LOG_FULL("  xws_i0_dot      : %.12e rad/s\n", eph->xws_i0_dot);
+    GNSS_RAW_LOG_FULL("  xws_a_dot       : %.12e m/s\n", eph->xws_a_dot);
+    GNSS_RAW_LOG_FULL("  xws_delta_i0    : %.12e rad\n", eph->xws_delta_i0);
+    GNSS_RAW_LOG_FULL("  xws_omega0      : %.12e rad\n", eph->xws_omega0);
+    GNSS_RAW_LOG_FULL("  xws_omega_dot   : %.12e rad/s\n", eph->xws_omega_dot);
+    GNSS_RAW_LOG_FULL("  xws_omega       : %.12e rad\n", eph->xws_omega);
+    GNSS_RAW_LOG_FULL("  reserved        : 0x%llx\n", (unsigned long long)eph->xws_reserved);
+    GNSS_RAW_LOG_FULL("  crc24           : 0x%06x (calc:0x%06x)%s\n", (unsigned)eph->crc24, payload_crc_calc,
+                      ((uint32_t)eph->crc24 == payload_crc_calc) ? " OK" : " ERR");
 }
 
 void print_bd3cnav2ephb(const BD3CNAV2EPHB_Decoded_t *eph, uint32_t payload_crc_calc)
 {
-    printf("BD3CNAV2EPHB decoded frame:\n");
-    printf("  head: ");
+    GNSS_RAW_LOG_FULL("BD3CNAV2EPHB decoded frame:\n");
+    GNSS_RAW_LOG_FULL("  head: ");
     for (size_t i = 0; i < sizeof(eph->head); ++i)
-        printf("%02X%s", eph->head[i], (i + 1 == sizeof(eph->head)) ? "" : " ");
-    printf("\n");
+        GNSS_RAW_LOG_FULL("%02X%s", eph->head[i], (i + 1 == sizeof(eph->head)) ? "" : " ");
+    GNSS_RAW_LOG_FULL("\n");
 
-    printf("  gps_week_count : raw=%u\n", eph->gps_week_count);
-    printf("  gps_tow_s      : raw=%u s\n", eph->gps_tow_s);
-    printf("  bds_satid      : raw=%u\n", eph->bds_satid);
-    printf("  bds_sattype    : raw=%u\n", eph->bds_sattype);
-    printf("  bds_week       : raw=%u\n", eph->bds_week);
-    printf("  bds_toe        : raw=%u s \n", eph->bds_toe);
-    printf("  bds_toc        : raw=%u s \n", eph->bds_toc);
-    printf("  bds_af0        : =% .12e s\n", eph->bds_af0);
-    printf("  bds_af1        : =% .12e s/s\n", eph->bds_af1);
-    printf("  bds_af2        : =% .12e s/s^2\n", eph->bds_af2);
-    printf("  bds_iode       : raw=%u\n", eph->bds_iode);
-    printf("  bds_iodc       : raw=%u\n", eph->bds_iodc);
-    printf("  bds_idot       : =% .12e rad/s\n", eph->bds_idot);
-    printf("  bds_crs        : =% .12e m\n", eph->bds_crs);
-    printf("  bds_crc        : =% .12e m\n", eph->bds_crc);
-    printf("  bds_cus        : =% .12e rad\n", eph->bds_cus);
-    printf("  bds_cuc        : =% .12e rad\n", eph->bds_cuc);
-    printf("  bds_cis        : =% .12e rad\n", eph->bds_cis);
-    printf("  bds_cic        : =% .12e rad\n", eph->bds_cic);
-    printf("  bds_delta_n0   : =% .12e rad/s\n", eph->bds_delta_n0);
-    printf("  bds_delta_n0_dot: =% .12e\n", eph->bds_delta_n0_dot);
-    printf("  bds_m0         : =% .12e rad\n", eph->bds_m0);
-    printf("  bds_ecc        : =% .12e\n", eph->bds_ecc);
-    printf("  bds_AA         : =% .12e m\n", eph->bds_AA);
-    printf("  bds_adot       : =% .12e m/s\n", eph->bds_adot);
-    printf("  bds_omega0     : =% .12e rad\n", eph->bds_omega0);
-    printf("  bds_i0         : =% .12e rad\n", eph->bds_i0);
-    printf("  bds_omega      : =% .12e rad\n", eph->bds_omega);
-    printf("  bds_omegadot   : =% .12e rad/s\n", eph->bds_omegadot);
-    printf("  bds_tgdb1cp    : =% .12e s\n", eph->bds_tgdb1cp);
-    printf("  bds_tgdb2ap    : =% .12e s\n", eph->bds_tgdb2ap);
-    printf("  bds_iscb2ad    : =% .12e s\n", eph->bds_iscb2ad);
-    printf("  bds_reserved   : raw=%u\n", eph->bds_reserved);
-    printf("  payload_crc24  : raw=%06X calc=%06X [%s]\n",
-           eph->crc24,
-           payload_crc_calc,
-           (eph->crc24 == payload_crc_calc) ? "OK" : "BAD");
+    GNSS_RAW_LOG_FULL("  gps_week_count : raw=%u\n", eph->gps_week_count);
+    GNSS_RAW_LOG_FULL("  gps_tow_s      : raw=%u s\n", eph->gps_tow_s);
+    GNSS_RAW_LOG_FULL("  bds_satid      : raw=%u\n", eph->bds_satid);
+    GNSS_RAW_LOG_FULL("  bds_sattype    : raw=%u\n", eph->bds_sattype);
+    GNSS_RAW_LOG_FULL("  bds_week       : raw=%u\n", eph->bds_week);
+    GNSS_RAW_LOG_FULL("  bds_toe        : raw=%u s \n", eph->bds_toe);
+    GNSS_RAW_LOG_FULL("  bds_toc        : raw=%u s \n", eph->bds_toc);
+    GNSS_RAW_LOG_FULL("  bds_af0        : =% .12e s\n", eph->bds_af0);
+    GNSS_RAW_LOG_FULL("  bds_af1        : =% .12e s/s\n", eph->bds_af1);
+    GNSS_RAW_LOG_FULL("  bds_af2        : =% .12e s/s^2\n", eph->bds_af2);
+    GNSS_RAW_LOG_FULL("  bds_iode       : raw=%u\n", eph->bds_iode);
+    GNSS_RAW_LOG_FULL("  bds_iodc       : raw=%u\n", eph->bds_iodc);
+    GNSS_RAW_LOG_FULL("  bds_idot       : =% .12e rad/s\n", eph->bds_idot);
+    GNSS_RAW_LOG_FULL("  bds_crs        : =% .12e m\n", eph->bds_crs);
+    GNSS_RAW_LOG_FULL("  bds_crc        : =% .12e m\n", eph->bds_crc);
+    GNSS_RAW_LOG_FULL("  bds_cus        : =% .12e rad\n", eph->bds_cus);
+    GNSS_RAW_LOG_FULL("  bds_cuc        : =% .12e rad\n", eph->bds_cuc);
+    GNSS_RAW_LOG_FULL("  bds_cis        : =% .12e rad\n", eph->bds_cis);
+    GNSS_RAW_LOG_FULL("  bds_cic        : =% .12e rad\n", eph->bds_cic);
+    GNSS_RAW_LOG_FULL("  bds_delta_n0   : =% .12e rad/s\n", eph->bds_delta_n0);
+    GNSS_RAW_LOG_FULL("  bds_delta_n0_dot: =% .12e\n", eph->bds_delta_n0_dot);
+    GNSS_RAW_LOG_FULL("  bds_m0         : =% .12e rad\n", eph->bds_m0);
+    GNSS_RAW_LOG_FULL("  bds_ecc        : =% .12e\n", eph->bds_ecc);
+    GNSS_RAW_LOG_FULL("  bds_AA         : =% .12e m\n", eph->bds_AA);
+    GNSS_RAW_LOG_FULL("  bds_adot       : =% .12e m/s\n", eph->bds_adot);
+    GNSS_RAW_LOG_FULL("  bds_omega0     : =% .12e rad\n", eph->bds_omega0);
+    GNSS_RAW_LOG_FULL("  bds_i0         : =% .12e rad\n", eph->bds_i0);
+    GNSS_RAW_LOG_FULL("  bds_omega      : =% .12e rad\n", eph->bds_omega);
+    GNSS_RAW_LOG_FULL("  bds_omegadot   : =% .12e rad/s\n", eph->bds_omegadot);
+    GNSS_RAW_LOG_FULL("  bds_tgdb1cp    : =% .12e s\n", eph->bds_tgdb1cp);
+    GNSS_RAW_LOG_FULL("  bds_tgdb2ap    : =% .12e s\n", eph->bds_tgdb2ap);
+    GNSS_RAW_LOG_FULL("  bds_iscb2ad    : =% .12e s\n", eph->bds_iscb2ad);
+    GNSS_RAW_LOG_FULL("  bds_reserved   : raw=%u\n", eph->bds_reserved);
+    GNSS_RAW_LOG_FULL("  payload_crc24  : raw=%06X calc=%06X [%s]\n",
+                      eph->crc24,
+                      payload_crc_calc,
+                      (eph->crc24 == payload_crc_calc) ? "OK" : "BAD");
 }
 
 void print_bd3cnav3ephb(const BD3CNAV3EPHB_Decoded_t *eph, uint32_t payload_crc_calc)
 {
-    printf("BD3CNAV3EPHB decoded frame:\n");
-    printf("  head: ");
+    GNSS_RAW_LOG_FULL("BD3CNAV3EPHB decoded frame:\n");
+    GNSS_RAW_LOG_FULL("  head: ");
     for (size_t i = 0; i < sizeof(eph->head); ++i)
-        printf("%02X%s", eph->head[i], (i + 1 == sizeof(eph->head)) ? "" : " ");
-    printf("\n");
+        GNSS_RAW_LOG_FULL("%02X%s", eph->head[i], (i + 1 == sizeof(eph->head)) ? "" : " ");
+    GNSS_RAW_LOG_FULL("\n");
 
-    printf("  gps_week_count : raw=%u\n", eph->gps_week_count);
-    printf("  gps_tow_s      : raw=%u s\n", eph->gps_tow_s);
-    printf("  bds_satid      : raw=%u\n", eph->bds_satid);
-    printf("  bds_sattype    : raw=%u\n", eph->bds_sattype);
-    printf("  bds_week       : raw=%u\n", eph->bds_week);
-    printf("  bds_toe        : raw=%u s \n", eph->bds_toe);
-    printf("  bds_toc        : raw=%u s \n", eph->bds_toc);
-    printf("  bds_af0        : =% .12e s\n", eph->bds_af0);
-    printf("  bds_af1        : =% .12e s/s\n", eph->bds_af1);
-    printf("  bds_af2        : =% .12e s/s^2\n", eph->bds_af2);
-    printf("  bds_iode       : raw=%u\n", eph->bds_iode);
-    printf("  bds_iodc       : raw=%u\n", eph->bds_iodc);
-    printf("  bds_idot       : =% .12e rad/s\n", eph->bds_idot);
-    printf("  bds_crs        : =% .12e m\n", eph->bds_crs);
-    printf("  bds_crc        : =% .12e m\n", eph->bds_crc);
-    printf("  bds_cus        : =% .12e rad\n", eph->bds_cus);
-    printf("  bds_cuc        : =% .12e rad\n", eph->bds_cuc);
-    printf("  bds_cis        : =% .12e rad\n", eph->bds_cis);
-    printf("  bds_cic        : =% .12e rad\n", eph->bds_cic);
-    printf("  bds_delta_n0   : =% .12e rad/s\n", eph->bds_delta_n0);
-    printf("  bds_delta_n0_dot: =% .12e\n", eph->bds_delta_n0_dot);
-    printf("  bds_m0         : =% .12e rad\n", eph->bds_m0);
-    printf("  bds_ecc        : =% .12e\n", eph->bds_ecc);
-    printf("  bds_deltaA     : =% .12e m\n", eph->bds_deltaA);
-    printf("  bds_adot       : =% .12e m/s\n", eph->bds_adot);
-    printf("  bds_omega0     : =% .12e rad\n", eph->bds_omega0);
-    printf("  bds_i0         : =% .12e rad\n", eph->bds_i0);
-    printf("  bds_omega      : =% .12e rad\n", eph->bds_omega);
-    printf("  bds_omegadot   : =% .12e rad/s\n", eph->bds_omegadot);
-    printf("  bds_tgdb2bI    : =% .12e s\n", eph->bds_tgdb2bI);
-    printf("  bds_reserved   : raw=%u\n", eph->bds_reserved);
-    printf("  payload_crc24  : raw=%06X calc=%06X [%s]\n",
-           eph->crc24,
-           payload_crc_calc,
-           (eph->crc24 == payload_crc_calc) ? "OK" : "BAD");
+    GNSS_RAW_LOG_FULL("  gps_week_count : raw=%u\n", eph->gps_week_count);
+    GNSS_RAW_LOG_FULL("  gps_tow_s      : raw=%u s\n", eph->gps_tow_s);
+    GNSS_RAW_LOG_FULL("  bds_satid      : raw=%u\n", eph->bds_satid);
+    GNSS_RAW_LOG_FULL("  bds_sattype    : raw=%u\n", eph->bds_sattype);
+    GNSS_RAW_LOG_FULL("  bds_week       : raw=%u\n", eph->bds_week);
+    GNSS_RAW_LOG_FULL("  bds_toe        : raw=%u s \n", eph->bds_toe);
+    GNSS_RAW_LOG_FULL("  bds_toc        : raw=%u s \n", eph->bds_toc);
+    GNSS_RAW_LOG_FULL("  bds_af0        : =% .12e s\n", eph->bds_af0);
+    GNSS_RAW_LOG_FULL("  bds_af1        : =% .12e s/s\n", eph->bds_af1);
+    GNSS_RAW_LOG_FULL("  bds_af2        : =% .12e s/s^2\n", eph->bds_af2);
+    GNSS_RAW_LOG_FULL("  bds_iode       : raw=%u\n", eph->bds_iode);
+    GNSS_RAW_LOG_FULL("  bds_iodc       : raw=%u\n", eph->bds_iodc);
+    GNSS_RAW_LOG_FULL("  bds_idot       : =% .12e rad/s\n", eph->bds_idot);
+    GNSS_RAW_LOG_FULL("  bds_crs        : =% .12e m\n", eph->bds_crs);
+    GNSS_RAW_LOG_FULL("  bds_crc        : =% .12e m\n", eph->bds_crc);
+    GNSS_RAW_LOG_FULL("  bds_cus        : =% .12e rad\n", eph->bds_cus);
+    GNSS_RAW_LOG_FULL("  bds_cuc        : =% .12e rad\n", eph->bds_cuc);
+    GNSS_RAW_LOG_FULL("  bds_cis        : =% .12e rad\n", eph->bds_cis);
+    GNSS_RAW_LOG_FULL("  bds_cic        : =% .12e rad\n", eph->bds_cic);
+    GNSS_RAW_LOG_FULL("  bds_delta_n0   : =% .12e rad/s\n", eph->bds_delta_n0);
+    GNSS_RAW_LOG_FULL("  bds_delta_n0_dot: =% .12e\n", eph->bds_delta_n0_dot);
+    GNSS_RAW_LOG_FULL("  bds_m0         : =% .12e rad\n", eph->bds_m0);
+    GNSS_RAW_LOG_FULL("  bds_ecc        : =% .12e\n", eph->bds_ecc);
+    GNSS_RAW_LOG_FULL("  bds_deltaA     : =% .12e m\n", eph->bds_deltaA);
+    GNSS_RAW_LOG_FULL("  bds_adot       : =% .12e m/s\n", eph->bds_adot);
+    GNSS_RAW_LOG_FULL("  bds_omega0     : =% .12e rad\n", eph->bds_omega0);
+    GNSS_RAW_LOG_FULL("  bds_i0         : =% .12e rad\n", eph->bds_i0);
+    GNSS_RAW_LOG_FULL("  bds_omega      : =% .12e rad\n", eph->bds_omega);
+    GNSS_RAW_LOG_FULL("  bds_omegadot   : =% .12e rad/s\n", eph->bds_omegadot);
+    GNSS_RAW_LOG_FULL("  bds_tgdb2bI    : =% .12e s\n", eph->bds_tgdb2bI);
+    GNSS_RAW_LOG_FULL("  bds_reserved   : raw=%u\n", eph->bds_reserved);
+    GNSS_RAW_LOG_FULL("  payload_crc24  : raw=%06X calc=%06X [%s]\n",
+                      eph->crc24,
+                      payload_crc_calc,
+                      (eph->crc24 == payload_crc_calc) ? "OK" : "BAD");
 }
 
 void print_gpsephb(const GPSEPHB_Decoded_t *eph, uint32_t payload_crc_calc)
 {
-    printf("GPSEPHB decoded frame:\n");
-    printf("  head: ");
+    GNSS_RAW_LOG_FULL("GPSEPHB decoded frame:\n");
+    GNSS_RAW_LOG_FULL("  head: ");
     for (size_t i = 0; i < sizeof(eph->head); ++i)
     {
-        printf("%02X%s", eph->head[i], (i + 1 == sizeof(eph->head)) ? "" : " ");
+        GNSS_RAW_LOG_FULL("%02X%s", eph->head[i], (i + 1 == sizeof(eph->head)) ? "" : " ");
     }
-    printf("\n");
+    GNSS_RAW_LOG_FULL("\n");
 
-    printf("  gps_week_count   : raw=%u\n", eph->gps_week_count);
-    printf("  gps_tow_s        : raw=%u s\n", eph->gps_tow_s);
-    printf("  gps_satid        : raw=%u\n", eph->gps_satid);
-    printf("  gps_sv_accuracy   : raw=%u m\n", eph->gps_sv_accuracy);
-    printf("  gps_sv_health    : raw=%u\n", eph->gps_sv_health);
-    printf("  gps_week         : raw=%u\n", eph->gps_week);
-    printf("  gps_toe          : raw=%u s\n", eph->gps_toe);
-    printf("  gps_toc          : raw=%u s\n", eph->gps_toc);
-    printf("  gps_af0          : =% .12e s\n", eph->gps_af0);
-    printf("  gps_af1          : =% .12e s/s\n", eph->gps_af1);
-    printf("  gps_af2          : =% .12e s/s^2\n", eph->gps_af2);
-    printf("  gps_iode         : raw=%u\n", eph->gps_iode);
-    printf("  gps_iodc         : raw=%u\n", eph->gps_iodc);
-    printf("  gps_idot         : =% .12e rad/s\n", eph->gps_idot);
-    printf("  gps_crs          : =% .12e m\n", eph->gps_crs);
-    printf("  gps_crc          : =% .12e m\n", eph->gps_crc);
-    printf("  gps_cus          : =% .12e rad\n", eph->gps_cus);
-    printf("  gps_cuc          : =% .12e rad\n", eph->gps_cuc);
-    printf("  gps_cis          : =% .12e rad\n", eph->gps_cis);
-    printf("  gps_cic          : =% .12e rad\n", eph->gps_cic);
-    printf("  gps_delta_n      : =% .12e rad/s\n", eph->gps_delta_n);
-    printf("  gps_m0           : =% .12e rad\n", eph->gps_m0);
-    printf("  gps_ecc          : =% .12e\n", eph->gps_ecc);
-    printf("  gps_a_half       : =% .12e m^1/2\n", eph->gps_a_half);
-    printf("  gps_omega0       : =% .12e rad\n", eph->gps_omega0);
-    printf("  gps_i0           : =% .12e rad\n", eph->gps_i0);
-    printf("  gps_omega        : =% .12e rad\n", eph->gps_omega);
-    printf("  gps_omegadot     : =% .12e rad/s\n", eph->gps_omegadot);
-    printf("  gps_tgd          : =% .12e s\n", eph->gps_tgd);
-    printf("  gps_code_on_l2   : raw=%u (%s)\n", eph->gps_code_on_l2, gps_l2_code_desc(eph->gps_code_on_l2));
-    printf("  gps_l2p_data_flag: raw=%u\n", eph->gps_l2p_data_flag);
-    printf("  gps_fit          : raw=%u (%s)\n", eph->gps_fit, gps_fit_desc(eph->gps_fit));
-    printf("  reserved         : raw=%u\n", eph->reserved);
-    printf("  payload_crc24    : raw=%06X calc=%06X [%s]\n",
-           eph->crc24,
-           payload_crc_calc,
-           (eph->crc24 == payload_crc_calc) ? "OK" : "BAD");
+    GNSS_RAW_LOG_FULL("  gps_week_count   : raw=%u\n", eph->gps_week_count);
+    GNSS_RAW_LOG_FULL("  gps_tow_s        : raw=%u s\n", eph->gps_tow_s);
+    GNSS_RAW_LOG_FULL("  gps_satid        : raw=%u\n", eph->gps_satid);
+    GNSS_RAW_LOG_FULL("  gps_sv_accuracy   : raw=%u m\n", eph->gps_sv_accuracy);
+    GNSS_RAW_LOG_FULL("  gps_sv_health    : raw=%u\n", eph->gps_sv_health);
+    GNSS_RAW_LOG_FULL("  gps_week         : raw=%u\n", eph->gps_week);
+    GNSS_RAW_LOG_FULL("  gps_toe          : raw=%u s\n", eph->gps_toe);
+    GNSS_RAW_LOG_FULL("  gps_toc          : raw=%u s\n", eph->gps_toc);
+    GNSS_RAW_LOG_FULL("  gps_af0          : =% .12e s\n", eph->gps_af0);
+    GNSS_RAW_LOG_FULL("  gps_af1          : =% .12e s/s\n", eph->gps_af1);
+    GNSS_RAW_LOG_FULL("  gps_af2          : =% .12e s/s^2\n", eph->gps_af2);
+    GNSS_RAW_LOG_FULL("  gps_iode         : raw=%u\n", eph->gps_iode);
+    GNSS_RAW_LOG_FULL("  gps_iodc         : raw=%u\n", eph->gps_iodc);
+    GNSS_RAW_LOG_FULL("  gps_idot         : =% .12e rad/s\n", eph->gps_idot);
+    GNSS_RAW_LOG_FULL("  gps_crs          : =% .12e m\n", eph->gps_crs);
+    GNSS_RAW_LOG_FULL("  gps_crc          : =% .12e m\n", eph->gps_crc);
+    GNSS_RAW_LOG_FULL("  gps_cus          : =% .12e rad\n", eph->gps_cus);
+    GNSS_RAW_LOG_FULL("  gps_cuc          : =% .12e rad\n", eph->gps_cuc);
+    GNSS_RAW_LOG_FULL("  gps_cis          : =% .12e rad\n", eph->gps_cis);
+    GNSS_RAW_LOG_FULL("  gps_cic          : =% .12e rad\n", eph->gps_cic);
+    GNSS_RAW_LOG_FULL("  gps_delta_n      : =% .12e rad/s\n", eph->gps_delta_n);
+    GNSS_RAW_LOG_FULL("  gps_m0           : =% .12e rad\n", eph->gps_m0);
+    GNSS_RAW_LOG_FULL("  gps_ecc          : =% .12e\n", eph->gps_ecc);
+    GNSS_RAW_LOG_FULL("  gps_a_half       : =% .12e m^1/2\n", eph->gps_a_half);
+    GNSS_RAW_LOG_FULL("  gps_omega0       : =% .12e rad\n", eph->gps_omega0);
+    GNSS_RAW_LOG_FULL("  gps_i0           : =% .12e rad\n", eph->gps_i0);
+    GNSS_RAW_LOG_FULL("  gps_omega        : =% .12e rad\n", eph->gps_omega);
+    GNSS_RAW_LOG_FULL("  gps_omegadot     : =% .12e rad/s\n", eph->gps_omegadot);
+    GNSS_RAW_LOG_FULL("  gps_tgd          : =% .12e s\n", eph->gps_tgd);
+    GNSS_RAW_LOG_FULL("  gps_code_on_l2   : raw=%u (%s)\n", eph->gps_code_on_l2, gps_l2_code_desc(eph->gps_code_on_l2));
+    GNSS_RAW_LOG_FULL("  gps_l2p_data_flag: raw=%u\n", eph->gps_l2p_data_flag);
+    GNSS_RAW_LOG_FULL("  gps_fit          : raw=%u (%s)\n", eph->gps_fit, gps_fit_desc(eph->gps_fit));
+    GNSS_RAW_LOG_FULL("  reserved         : raw=%u\n", eph->reserved);
+    GNSS_RAW_LOG_FULL("  payload_crc24    : raw=%06X calc=%06X [%s]\n",
+                      eph->crc24,
+                      payload_crc_calc,
+                      (eph->crc24 == payload_crc_calc) ? "OK" : "BAD");
 }
 
 void print_gpsephb_simple(const GPSEPHB_Decoded_t *eph)
 {
-    // printf("%d % .12e % .12e % .12e % .12e % .12e % .12e\n",
+    // GNSS_RAW_LOG_FULL("%d % .12e % .12e % .12e % .12e % .12e % .12e\n",
     //        eph->gps_satid, eph->gps_i0, eph->gps_omega0, eph->gps_ecc, eph->gps_omega, eph->gps_m0, eph->gps_delta_n);
-    // printf("%d %u %u % .12e % .12e % .12e % .12e % .12e % .12e\n\n",
+    // GNSS_RAW_LOG_FULL("%d %u %u % .12e % .12e % .12e % .12e % .12e % .12e\n\n",
     //        eph->gps_satid, eph->gps_toe, eph->gps_toc, eph->gps_cuc, eph->gps_cus, eph->gps_crc, eph->gps_crs, eph->gps_omegadot);
 
-    printf("%d %u %u % .12e % .12e % .12e % .12e % .12e % .12e % .12e % .12e %u % .12e \n",
-           eph->gps_satid, eph->gps_toe, eph->gps_toc, eph->gps_af0, eph->gps_af1, eph->gps_cuc,
-           eph->gps_cus, eph->gps_crc, eph->gps_crs, eph->gps_cic, eph->gps_cis, eph->gps_iodc, eph->gps_omegadot);
-    printf("%d % .12e % .12e % .12e % .12e % .12e % .12e\n\n",
-           eph->gps_satid, eph->gps_i0, eph->gps_omega0, eph->gps_ecc, eph->gps_omega, eph->gps_m0, eph->gps_delta_n);
+    GNSS_RAW_LOG_FULL("%d %u %u % .12e % .12e % .12e % .12e % .12e % .12e % .12e % .12e %u % .12e \n",
+                      eph->gps_satid, eph->gps_toe, eph->gps_toc, eph->gps_af0, eph->gps_af1, eph->gps_cuc,
+                      eph->gps_cus, eph->gps_crc, eph->gps_crs, eph->gps_cic, eph->gps_cis, eph->gps_iodc, eph->gps_omegadot);
+    GNSS_RAW_LOG_FULL("%d % .12e % .12e % .12e % .12e % .12e % .12e\n\n",
+                      eph->gps_satid, eph->gps_i0, eph->gps_omega0, eph->gps_ecc, eph->gps_omega, eph->gps_m0, eph->gps_delta_n);
 }
 
 void print_gloephb(const GLOEPHB_Decoded_t *eph, uint32_t payload_crc_calc)
 {
-    printf("GLOEPHB decoded frame:\n");
-    printf("  head: ");
+    GNSS_RAW_LOG_FULL("GLOEPHB decoded frame:\n");
+    GNSS_RAW_LOG_FULL("  head: ");
     for (size_t i = 0; i < sizeof(eph->head); ++i)
-        printf("%02X%s", eph->head[i], (i + 1 == sizeof(eph->head)) ? "" : " ");
-    printf("\n");
+        GNSS_RAW_LOG_FULL("%02X%s", eph->head[i], (i + 1 == sizeof(eph->head)) ? "" : " ");
+    GNSS_RAW_LOG_FULL("\n");
 
-    printf("  gps_week_count : raw=%u\n", eph->gps_week_count);
-    printf("  gps_tow_s      : raw=%u s\n", eph->gps_tow_s);
-    printf("  glo_satid      : raw=%u\n", eph->glo_satid);
-    printf("  glo_freq       : raw=%u\n", eph->glo_freq);
-    printf("  glo_bn_msb     : raw=%u\n", eph->glo_bn_msb);
-    printf("  glo_n4         : raw=%u (4-year cycles since 1996)\n", eph->glo_n4);
-    printf("  glo_nt         : raw=%u (days since leap-year start)\n", eph->glo_nt);
+    GNSS_RAW_LOG_FULL("  gps_week_count : raw=%u\n", eph->gps_week_count);
+    GNSS_RAW_LOG_FULL("  gps_tow_s      : raw=%u s\n", eph->gps_tow_s);
+    GNSS_RAW_LOG_FULL("  glo_satid      : raw=%u\n", eph->glo_satid);
+    GNSS_RAW_LOG_FULL("  glo_freq       : raw=%u\n", eph->glo_freq);
+    GNSS_RAW_LOG_FULL("  glo_bn_msb     : raw=%u\n", eph->glo_bn_msb);
+    GNSS_RAW_LOG_FULL("  glo_n4         : raw=%u (4-year cycles since 1996)\n", eph->glo_n4);
+    GNSS_RAW_LOG_FULL("  glo_nt         : raw=%u (days since leap-year start)\n", eph->glo_nt);
     /* decode tk into hh:mm:ss */
     uint16_t tk = eph->glo_tk;
     uint8_t tk_hour = (tk >> 7) & 0x1F;
     uint8_t tk_min = (tk >> 1) & 0x3F;
     uint8_t tk_sec = (tk & 0x1) ? 30 : 0;
-    printf("  glo_tk         : raw=%u => %02u:%02u:%02u\n", eph->glo_tk, tk_hour, tk_min, tk_sec);
-    printf("  glo_tb         : raw=%u => %u min (tb*15min)\n", eph->glo_tb, eph->glo_tb * 15);
-    printf("  glo_gamma      : =% .12e\n", eph->glo_gamma);
-    printf("  glo_tau        : =% .12e s\n", eph->glo_tau);
-    printf("  glo_x          : =% .12e km\n", eph->glo_x);
-    printf("  glo_x_dot      : =% .12e km/s\n", eph->glo_x_dot);
-    printf("  glo_x_ddot     : =% .12e km/s^2\n", eph->glo_x_ddot);
-    printf("  glo_y          : =% .12e km\n", eph->glo_y);
-    printf("  glo_y_dot      : =% .12e km/s\n", eph->glo_y_dot);
-    printf("  glo_y_ddot     : =% .12e km/s^2\n", eph->glo_y_ddot);
-    printf("  glo_z          : =% .12e km\n", eph->glo_z);
-    printf("  glo_z_dot      : =% .12e km/s\n", eph->glo_z_dot);
-    printf("  glo_z_ddot     : =% .12e km/s^2\n", eph->glo_z_ddot);
-    printf("  payload_crc24  : raw=%06X calc=%06X [%s]\n",
-           eph->crc24,
-           payload_crc_calc,
-           (eph->crc24 == payload_crc_calc) ? "OK" : "BAD");
+    GNSS_RAW_LOG_FULL("  glo_tk         : raw=%u => %02u:%02u:%02u\n", eph->glo_tk, tk_hour, tk_min, tk_sec);
+    GNSS_RAW_LOG_FULL("  glo_tb         : raw=%u => %u min (tb*15min)\n", eph->glo_tb, eph->glo_tb * 15);
+    GNSS_RAW_LOG_FULL("  glo_gamma      : =% .12e\n", eph->glo_gamma);
+    GNSS_RAW_LOG_FULL("  glo_tau        : =% .12e s\n", eph->glo_tau);
+    GNSS_RAW_LOG_FULL("  glo_x          : =% .12e km\n", eph->glo_x);
+    GNSS_RAW_LOG_FULL("  glo_x_dot      : =% .12e km/s\n", eph->glo_x_dot);
+    GNSS_RAW_LOG_FULL("  glo_x_ddot     : =% .12e km/s^2\n", eph->glo_x_ddot);
+    GNSS_RAW_LOG_FULL("  glo_y          : =% .12e km\n", eph->glo_y);
+    GNSS_RAW_LOG_FULL("  glo_y_dot      : =% .12e km/s\n", eph->glo_y_dot);
+    GNSS_RAW_LOG_FULL("  glo_y_ddot     : =% .12e km/s^2\n", eph->glo_y_ddot);
+    GNSS_RAW_LOG_FULL("  glo_z          : =% .12e km\n", eph->glo_z);
+    GNSS_RAW_LOG_FULL("  glo_z_dot      : =% .12e km/s\n", eph->glo_z_dot);
+    GNSS_RAW_LOG_FULL("  glo_z_ddot     : =% .12e km/s^2\n", eph->glo_z_ddot);
+    GNSS_RAW_LOG_FULL("  payload_crc24  : raw=%06X calc=%06X [%s]\n",
+                      eph->crc24,
+                      payload_crc_calc,
+                      (eph->crc24 == payload_crc_calc) ? "OK" : "BAD");
 }
 
 void print_galephb(const GALEPHB_Decoded_t *eph, uint32_t payload_crc_calc)
 {
-    printf("GALEPHB decoded frame:\n");
-    printf("  head: ");
+    GNSS_RAW_LOG_FULL("GALEPHB decoded frame:\n");
+    GNSS_RAW_LOG_FULL("  head: ");
     for (size_t i = 0; i < sizeof(eph->head); ++i)
-        printf("%02X%s", eph->head[i], (i + 1 == sizeof(eph->head)) ? "" : " ");
-    printf("\n");
+        GNSS_RAW_LOG_FULL("%02X%s", eph->head[i], (i + 1 == sizeof(eph->head)) ? "" : " ");
+    GNSS_RAW_LOG_FULL("\n");
 
-    printf("  gps_week_count : raw=%u\n", eph->gps_week_count);
-    printf("  gps_tow_s      : raw=%u s\n", eph->gps_tow_s);
-    printf("  gal_satid      : raw=%u\n", eph->gal_satid);
-    printf("  gal_sisa       : raw=%u\n", eph->gal_sisa);
-    printf("  gal_e5b_sv_health: raw=%u\n", eph->gal_e5b_sv_health);
-    printf("  gal_e5b_valid  : raw=%u\n", eph->gal_e5b_valid);
-    printf("  gal_e1b_health : raw=%u\n", eph->gal_e1b_health);
-    printf("  gal_e1b_valid  : raw=%u\n", eph->gal_e1b_valid);
-    printf("  gal_week       : raw=%u\n", eph->gal_week);
-    printf("  gal_toe        : raw=%u s \n", eph->gal_toe);
-    printf("  gal_toc        : raw=%u s \n", eph->gal_toc);
-    printf("  gal_af0        : =% .12e s\n", eph->gal_af0);
-    printf("  gal_af1        : =% .12e s/s\n", eph->gal_af1);
-    printf("  gal_af2        : =% .12e s/s^2\n", eph->gal_af2);
-    printf("  gal_iodnav     : raw=%u\n", eph->gal_iodnav);
-    printf("  gal_idot       : =% .12e π/s\n", eph->gal_idot);
-    printf("  gal_crs        : =% .12e m\n", eph->gal_crs);
-    printf("  gal_crc        : =% .12e m\n", eph->gal_crc);
-    printf("  gal_cus        : =% .12e rad\n", eph->gal_cus);
-    printf("  gal_cuc        : =% .12e rad\n", eph->gal_cuc);
-    printf("  gal_cis        : =% .12e rad\n", eph->gal_cis);
-    printf("  gal_cic        : =% .12e rad\n", eph->gal_cic);
-    printf("  gal_delta_n    : =% .12e π/s\n", eph->gal_delta_n);
-    printf("  gal_m0         : =% .12e π\n", eph->gal_m0);
-    printf("  gal_ecc        : =% .12e\n", eph->gal_ecc);
-    printf("  gal_a_half     : =% .12e m^1/2\n", eph->gal_a_half);
-    printf("  gal_omega0     : =% .12e π\n", eph->gal_omega0);
-    printf("  gal_i0         : =% .12e π\n", eph->gal_i0);
-    printf("  gal_omega      : =% .12e π\n", eph->gal_omega);
-    printf("  gal_omegadot   : =% .12e π/s\n", eph->gal_omegadot);
-    printf("  gal_bgd_e5a_e1 : =% .12e s\n", eph->gal_bgd_e5a_e1);
-    printf("  gal_bgd_e5b_e1 : =% .12e s\n", eph->gal_bgd_e5b_e1);
-    printf("  gal_navtype    : raw=%u\n", eph->gal_navtype);
-    printf("  gal_reserved   : raw=%u\n", eph->gal_reserved);
-    printf("  payload_crc24  : raw=%06X calc=%06X [%s]\n",
-           eph->crc24,
-           payload_crc_calc,
-           (eph->crc24 == payload_crc_calc) ? "OK" : "BAD");
+    GNSS_RAW_LOG_FULL("  gps_week_count : raw=%u\n", eph->gps_week_count);
+    GNSS_RAW_LOG_FULL("  gps_tow_s      : raw=%u s\n", eph->gps_tow_s);
+    GNSS_RAW_LOG_FULL("  gal_satid      : raw=%u\n", eph->gal_satid);
+    GNSS_RAW_LOG_FULL("  gal_sisa       : raw=%u\n", eph->gal_sisa);
+    GNSS_RAW_LOG_FULL("  gal_e5b_sv_health: raw=%u\n", eph->gal_e5b_sv_health);
+    GNSS_RAW_LOG_FULL("  gal_e5b_valid  : raw=%u\n", eph->gal_e5b_valid);
+    GNSS_RAW_LOG_FULL("  gal_e1b_health : raw=%u\n", eph->gal_e1b_health);
+    GNSS_RAW_LOG_FULL("  gal_e1b_valid  : raw=%u\n", eph->gal_e1b_valid);
+    GNSS_RAW_LOG_FULL("  gal_week       : raw=%u\n", eph->gal_week);
+    GNSS_RAW_LOG_FULL("  gal_toe        : raw=%u s \n", eph->gal_toe);
+    GNSS_RAW_LOG_FULL("  gal_toc        : raw=%u s \n", eph->gal_toc);
+    GNSS_RAW_LOG_FULL("  gal_af0        : =% .12e s\n", eph->gal_af0);
+    GNSS_RAW_LOG_FULL("  gal_af1        : =% .12e s/s\n", eph->gal_af1);
+    GNSS_RAW_LOG_FULL("  gal_af2        : =% .12e s/s^2\n", eph->gal_af2);
+    GNSS_RAW_LOG_FULL("  gal_iodnav     : raw=%u\n", eph->gal_iodnav);
+    GNSS_RAW_LOG_FULL("  gal_idot       : =% .12e π/s\n", eph->gal_idot);
+    GNSS_RAW_LOG_FULL("  gal_crs        : =% .12e m\n", eph->gal_crs);
+    GNSS_RAW_LOG_FULL("  gal_crc        : =% .12e m\n", eph->gal_crc);
+    GNSS_RAW_LOG_FULL("  gal_cus        : =% .12e rad\n", eph->gal_cus);
+    GNSS_RAW_LOG_FULL("  gal_cuc        : =% .12e rad\n", eph->gal_cuc);
+    GNSS_RAW_LOG_FULL("  gal_cis        : =% .12e rad\n", eph->gal_cis);
+    GNSS_RAW_LOG_FULL("  gal_cic        : =% .12e rad\n", eph->gal_cic);
+    GNSS_RAW_LOG_FULL("  gal_delta_n    : =% .12e π/s\n", eph->gal_delta_n);
+    GNSS_RAW_LOG_FULL("  gal_m0         : =% .12e π\n", eph->gal_m0);
+    GNSS_RAW_LOG_FULL("  gal_ecc        : =% .12e\n", eph->gal_ecc);
+    GNSS_RAW_LOG_FULL("  gal_a_half     : =% .12e m^1/2\n", eph->gal_a_half);
+    GNSS_RAW_LOG_FULL("  gal_omega0     : =% .12e π\n", eph->gal_omega0);
+    GNSS_RAW_LOG_FULL("  gal_i0         : =% .12e π\n", eph->gal_i0);
+    GNSS_RAW_LOG_FULL("  gal_omega      : =% .12e π\n", eph->gal_omega);
+    GNSS_RAW_LOG_FULL("  gal_omegadot   : =% .12e π/s\n", eph->gal_omegadot);
+    GNSS_RAW_LOG_FULL("  gal_bgd_e5a_e1 : =% .12e s\n", eph->gal_bgd_e5a_e1);
+    GNSS_RAW_LOG_FULL("  gal_bgd_e5b_e1 : =% .12e s\n", eph->gal_bgd_e5b_e1);
+    GNSS_RAW_LOG_FULL("  gal_navtype    : raw=%u\n", eph->gal_navtype);
+    GNSS_RAW_LOG_FULL("  gal_reserved   : raw=%u\n", eph->gal_reserved);
+    GNSS_RAW_LOG_FULL("  payload_crc24  : raw=%06X calc=%06X [%s]\n",
+                      eph->crc24,
+                      payload_crc_calc,
+                      (eph->crc24 == payload_crc_calc) ? "OK" : "BAD");
 }
 
 void print_prangeb(const PRANGEB_Decoded_t *d, uint32_t payload_crc_calc)
 {
-    printf("PRANGEB decoded frame:\n");
-    printf("  head: ");
+    GNSS_RAW_LOG_FULL("PRANGEB decoded frame:\n");
+    GNSS_RAW_LOG_FULL("  head: ");
     for (size_t i = 0; i < sizeof(d->head); ++i)
-        printf("%02X%s", d->head[i], (i + 1 == sizeof(d->head)) ? "" : " ");
-    printf("\n");
-    printf("  gps_week_count: %u\n", d->gps_week_count);
-    printf("  gps_tow_s     : %u s\n", d->gps_tow_s);
-    printf("  ms_count      : %u\n", d->ms_count);
-    printf("  sync_flag     : %u\n", d->sync_flag);
-    printf("  system_id     : %u\n", d->system_id);
-    printf("  sat_count     : %u\n", d->sat_count);
+        GNSS_RAW_LOG_FULL("%02X%s", d->head[i], (i + 1 == sizeof(d->head)) ? "" : " ");
+    GNSS_RAW_LOG_FULL("\n");
+    GNSS_RAW_LOG_FULL("  gps_week_count: %u\n", d->gps_week_count);
+    GNSS_RAW_LOG_FULL("  gps_tow_s     : %u s\n", d->gps_tow_s);
+    GNSS_RAW_LOG_FULL("  ms_count      : %u\n", d->ms_count);
+    GNSS_RAW_LOG_FULL("  sync_flag     : %u\n", d->sync_flag);
+    GNSS_RAW_LOG_FULL("  system_id     : %u\n", d->system_id);
+    GNSS_RAW_LOG_FULL("  sat_count     : %u\n", d->sat_count);
 
     for (size_t i = 0; i < d->sat_count; i++)
     {
-        printf("  --- sat %zu ---\n", i);
-        printf("    sat_id          : %u\n", d->sat_info[i].sat_id);
-        printf("    signal_count    : %u\n", d->sat_info[i].signal_count);
-        printf("    apd_ms          : % .12e ms\n", d->sat_info[i].apd_ms);
-        printf("    approx_phase_rate: %d (Sint14 raw)\n", d->sat_info[i].approx_phase_rate);
+        GNSS_RAW_LOG_FULL("  --- sat %zu ---\n", i);
+        GNSS_RAW_LOG_FULL("    sat_id          : %u\n", d->sat_info[i].sat_id);
+        GNSS_RAW_LOG_FULL("    signal_count    : %u\n", d->sat_info[i].signal_count);
+        GNSS_RAW_LOG_FULL("    apd_ms          : % .12e ms\n", d->sat_info[i].apd_ms);
+        GNSS_RAW_LOG_FULL("    approx_phase_rate: %d (Sint14 raw)\n", d->sat_info[i].approx_phase_rate);
         for (size_t j = 0; j < d->sat_info[i].signal_count; j++)
         {
-            printf("      --- signal %zu ---\n", j);
-            printf("        signal_id       : %u\n", d->sat_info[i].signal_info[j].signal_id);
-            printf("        phase_lock_flag : %u\n", d->sat_info[i].signal_info[j].phase_lock_flag);
-            printf("        precise_pr      : % .12e ms\n", d->sat_info[i].signal_info[j].precise_pr);
-            printf("        precise_phase   : % .12e ms\n", d->sat_info[i].signal_info[j].precise_phase);
-            printf("        precise_phase_rate: % .12e m/s\n", d->sat_info[i].signal_info[j].precise_phase_rate);
-            printf("        cn0             : % .12e dB\n", d->sat_info[i].signal_info[j].cn0);
-            printf("        half_cycle      : %u\n", d->sat_info[i].signal_info[j].half_cycle);
+            GNSS_RAW_LOG_FULL("      --- signal %zu ---\n", j);
+            GNSS_RAW_LOG_FULL("        signal_id       : %u\n", d->sat_info[i].signal_info[j].signal_id);
+            GNSS_RAW_LOG_FULL("        phase_lock_flag : %u\n", d->sat_info[i].signal_info[j].phase_lock_flag);
+            GNSS_RAW_LOG_FULL("        precise_pr      : % .12e ms\n", d->sat_info[i].signal_info[j].precise_pr);
+            GNSS_RAW_LOG_FULL("        precise_phase   : % .12e ms\n", d->sat_info[i].signal_info[j].precise_phase);
+            GNSS_RAW_LOG_FULL("        precise_phase_rate: % .12e m/s\n", d->sat_info[i].signal_info[j].precise_phase_rate);
+            GNSS_RAW_LOG_FULL("        cn0             : % .12e dB\n", d->sat_info[i].signal_info[j].cn0);
+            GNSS_RAW_LOG_FULL("        half_cycle      : %u\n", d->sat_info[i].signal_info[j].half_cycle);
         }
     }
 
-    printf("  embedded_crc24  : %06X calc=%06X [%s]\n",
-           d->crc24, payload_crc_calc, (d->crc24 == payload_crc_calc) ? "OK" : "BAD");
+    GNSS_RAW_LOG_FULL("  embedded_crc24  : %06X calc=%06X [%s]\n",
+                      d->crc24, payload_crc_calc, (d->crc24 == payload_crc_calc) ? "OK" : "BAD");
 }
 
 void print_posdatab(const POSDATAB_Decoded_t *pos, uint32_t payload_crc_calc)
 {
-    printf("POSDATAB decoded frame:\n");
-    printf("  head: ");
+    GNSS_RAW_LOG_FULL("POSDATAB decoded frame:\n");
+    GNSS_RAW_LOG_FULL("  head: ");
     for (size_t i = 0; i < sizeof(pos->head); ++i)
-        printf("%02X%s", pos->head[i], (i + 1 == sizeof(pos->head)) ? "" : " ");
-    printf("\n");
+        GNSS_RAW_LOG_FULL("%02X%s", pos->head[i], (i + 1 == sizeof(pos->head)) ? "" : " ");
+    GNSS_RAW_LOG_FULL("\n");
 
-    printf("  time_system     : raw=%u (%s)\n", pos->time_system, pos_time_system_desc(pos->time_system));
-    printf("  week_num        : raw=%u\n", pos->week_num);
-    printf("  sec_in_week     : =% .12e s\n", pos->sec_in_week);
-    printf("  leap_second     : raw=%d s\n", pos->leap_second);
-    printf("  sys_status      : raw=%u (%s)\n", pos->sys_status, pos_sys_status_desc(pos->sys_status));
-    printf("  pos_type        : raw=%u (%s)\n", pos->pos_type, pos_fix_type_desc(pos->pos_type));
-    printf("  azi_type        : raw=%u (%s)\n", pos->azi_type, pos_fix_type_desc(pos->azi_type));
-    printf("  latitude        : =% .12e deg\n", pos->latitude);
-    printf("  longitude       : =% .12e deg\n", pos->longitude);
-    printf("  altitude        : =% .12e m\n", pos->altitude);
-    printf("  east_velocity   : =% .12e m/s\n", pos->east_velocity);
-    printf("  north_velocity  : =% .12e m/s\n", pos->north_velocity);
-    printf("  up_velocity     : =% .12e m/s\n", pos->up_velocity);
-    printf("  pitch           : =% .12e deg\n", pos->pitch);
-    printf("  roll            : =% .12e deg\n", pos->roll);
-    printf("  azimuth         : =% .12e deg\n", pos->azimuth);
-    printf("  lat_sigma       : =% .12e m\n", pos->lat_sigma);
-    printf("  lon_sigma       : =% .12e m\n", pos->lon_sigma);
-    printf("  altitude_sigma  : =% .12e m\n", pos->altitude_sigma);
-    printf("  east_vel_sigma  : =% .12e m/s\n", pos->east_vel_sigma);
-    printf("  north_vel_sigma : =% .12e m/s\n", pos->north_vel_sigma);
-    printf("  up_vel_sigma    : =% .12e m/s\n", pos->up_vel_sigma);
-    printf("  pitch_sigma     : =% .12e deg\n", pos->pitch_sigma);
-    printf("  roll_sigma      : =% .12e deg\n", pos->roll_sigma);
-    printf("  azimuth_sigma   : =% .12e deg\n", pos->azimuth_sigma);
-    printf("  gnss_sat_m      : raw=%u\n", pos->gnss_sat_m);
-    printf("  gnss_sat_s      : raw=%u\n", pos->gnss_sat_s);
-    printf("  diff_age        : =% .12e s\n", pos->diff_age);
-    printf("  odo_flag        : raw=%u\n", pos->odo_flag);
-    printf("  gear            : raw=%u (%s)\n", pos->gear, pos_gear_desc(pos->gear));
-    printf("  fl_wheel_speed  : =% .12e m/s\n", pos->fl_wheel_speed);
-    printf("  fr_wheel_speed  : =% .12e m/s\n", pos->fr_wheel_speed);
-    printf("  rl_wheel_speed  : =% .12e m/s\n", pos->rl_wheel_speed);
-    printf("  rr_wheel_speed  : =% .12e m/s\n", pos->rr_wheel_speed);
-    printf("  reserved0       : raw=%08X\n", pos->reserved0);
-    printf("  reserved1       : raw=%08X\n", pos->reserved1);
-    printf("  payload_crc24   : raw=%06X calc=%06X [%s]\n",
-           pos->crc24,
-           payload_crc_calc,
-           (pos->crc24 == payload_crc_calc) ? "OK" : "BAD");
+    GNSS_RAW_LOG_FULL("  time_system     : raw=%u (%s)\n", pos->time_system, pos_time_system_desc(pos->time_system));
+    GNSS_RAW_LOG_FULL("  week_num        : raw=%u\n", pos->week_num);
+    GNSS_RAW_LOG_FULL("  sec_in_week     : =% .12e s\n", pos->sec_in_week);
+    GNSS_RAW_LOG_FULL("  leap_second     : raw=%d s\n", pos->leap_second);
+    GNSS_RAW_LOG_FULL("  sys_status      : raw=%u (%s)\n", pos->sys_status, pos_sys_status_desc(pos->sys_status));
+    GNSS_RAW_LOG_FULL("  pos_type        : raw=%u (%s)\n", pos->pos_type, pos_fix_type_desc(pos->pos_type));
+    GNSS_RAW_LOG_FULL("  azi_type        : raw=%u (%s)\n", pos->azi_type, pos_fix_type_desc(pos->azi_type));
+    GNSS_RAW_LOG_FULL("  latitude        : =% .12e deg\n", pos->latitude);
+    GNSS_RAW_LOG_FULL("  longitude       : =% .12e deg\n", pos->longitude);
+    GNSS_RAW_LOG_FULL("  altitude        : =% .12e m\n", pos->altitude);
+    GNSS_RAW_LOG_FULL("  east_velocity   : =% .12e m/s\n", pos->east_velocity);
+    GNSS_RAW_LOG_FULL("  north_velocity  : =% .12e m/s\n", pos->north_velocity);
+    GNSS_RAW_LOG_FULL("  up_velocity     : =% .12e m/s\n", pos->up_velocity);
+    GNSS_RAW_LOG_FULL("  pitch           : =% .12e deg\n", pos->pitch);
+    GNSS_RAW_LOG_FULL("  roll            : =% .12e deg\n", pos->roll);
+    GNSS_RAW_LOG_FULL("  azimuth         : =% .12e deg\n", pos->azimuth);
+    GNSS_RAW_LOG_FULL("  lat_sigma       : =% .12e m\n", pos->lat_sigma);
+    GNSS_RAW_LOG_FULL("  lon_sigma       : =% .12e m\n", pos->lon_sigma);
+    GNSS_RAW_LOG_FULL("  altitude_sigma  : =% .12e m\n", pos->altitude_sigma);
+    GNSS_RAW_LOG_FULL("  east_vel_sigma  : =% .12e m/s\n", pos->east_vel_sigma);
+    GNSS_RAW_LOG_FULL("  north_vel_sigma : =% .12e m/s\n", pos->north_vel_sigma);
+    GNSS_RAW_LOG_FULL("  up_vel_sigma    : =% .12e m/s\n", pos->up_vel_sigma);
+    GNSS_RAW_LOG_FULL("  pitch_sigma     : =% .12e deg\n", pos->pitch_sigma);
+    GNSS_RAW_LOG_FULL("  roll_sigma      : =% .12e deg\n", pos->roll_sigma);
+    GNSS_RAW_LOG_FULL("  azimuth_sigma   : =% .12e deg\n", pos->azimuth_sigma);
+    GNSS_RAW_LOG_FULL("  gnss_sat_m      : raw=%u\n", pos->gnss_sat_m);
+    GNSS_RAW_LOG_FULL("  gnss_sat_s      : raw=%u\n", pos->gnss_sat_s);
+    GNSS_RAW_LOG_FULL("  diff_age        : =% .12e s\n", pos->diff_age);
+    GNSS_RAW_LOG_FULL("  odo_flag        : raw=%u\n", pos->odo_flag);
+    GNSS_RAW_LOG_FULL("  gear            : raw=%u (%s)\n", pos->gear, pos_gear_desc(pos->gear));
+    GNSS_RAW_LOG_FULL("  fl_wheel_speed  : =% .12e m/s\n", pos->fl_wheel_speed);
+    GNSS_RAW_LOG_FULL("  fr_wheel_speed  : =% .12e m/s\n", pos->fr_wheel_speed);
+    GNSS_RAW_LOG_FULL("  rl_wheel_speed  : =% .12e m/s\n", pos->rl_wheel_speed);
+    GNSS_RAW_LOG_FULL("  rr_wheel_speed  : =% .12e m/s\n", pos->rr_wheel_speed);
+    GNSS_RAW_LOG_FULL("  reserved0       : raw=%08X\n", pos->reserved0);
+    GNSS_RAW_LOG_FULL("  reserved1       : raw=%08X\n", pos->reserved1);
+    GNSS_RAW_LOG_FULL("  payload_crc24   : raw=%06X calc=%06X [%s]\n",
+                      pos->crc24,
+                      payload_crc_calc,
+                      (pos->crc24 == payload_crc_calc) ? "OK" : "BAD");
 }
 
 #pragma endregion "data print"
@@ -611,15 +624,15 @@ void print_posdatab(const POSDATAB_Decoded_t *pos, uint32_t payload_crc_calc)
 
 #pragma region "file save"
 
-char* gnss_raw_info_file_header(char *type, uint8_t enable)
+char *gnss_raw_info_file_header(char *type, uint8_t enable)
 {
     static char file_path[256];
     char time_str[64];
-    // struct timeval tv; 
+    // struct timeval tv;
     // gettimeofday(&tv, NULL);
-    time_t nowtime ;
+    time_t nowtime;
     time(&nowtime);
-    struct tm *nowtm = localtime(&nowtime);    
+    struct tm *nowtm = localtime(&nowtime);
     strftime(time_str, sizeof(time_str), "%Y-%m-%d_%H-%M-%S", nowtm);
     snprintf(file_path, sizeof(file_path), "/root/%s_%s.csv", type, time_str);
     FILE *fp = NULL;
@@ -701,7 +714,7 @@ char* gnss_raw_info_file_header(char *type, uint8_t enable)
         ephb_file_sw.bd3cnav3ephb.en = enable ? 1 : 0;
     }
     if (fp)
-    fclose(fp);
+        fclose(fp);
     gnss_cfg_dis_enable(gnss_ctrl.fd, type, enable, 1);
     return file_path;
 }

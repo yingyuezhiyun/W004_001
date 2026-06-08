@@ -25,7 +25,13 @@ gnss_ctrl_t gnss_ctrl = {
     .data_nmea = {0},
     .data_nmea_len = 0,
     .data_raw = {0},
-    .data_raw_len = 0};
+    .data_raw_len = 0,
+    .print = {
+        .nmea = GNSS_PRINT_SUMMARY,
+        .raw = GNSS_PRINT_SUMMARY,
+    }
+
+};
 
 static void gnss_handle_nmea_bytes(const uint8_t *buf, size_t len, int require_sentence_start)
 {

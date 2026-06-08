@@ -141,8 +141,8 @@ DEFUN(gnss_mode_cfg,
 
 
 
-DEFUN(gnss_gps_file,
-      gnss_gps_file_cmd,
+DEFUN(gnss_file_cfg,
+      gnss_file_cfg_cmd,
       "gnss file (bdxwephb|gpsephb|bd2ephb|bd3ephb|bd3cnav2ephb|bd3cnav3ephb|gloephb|galephb) (on|off)",
       "gnss file <type> \n"
       "Set gnss file <type>  on or off\n"
@@ -163,6 +163,43 @@ DEFUN(gnss_gps_file,
     }
     return CMD_SUCCESS;
 }
+
+DEFUN(gnss_print_cfg,
+gnss_print_cfg_cmd,
+"gnss print (nmea|raw) (summary|full|none)",
+"gnss print <type> \n"
+"Set gnss print <type> on summary or detail\n"
+"summary | full | none\n"
+)
+{
+    uint8_t print_type = 0;
+    if (strcmp(argv[1], "summary") == 0)
+    {
+        print_type = GNSS_PRINT_SUMMARY;
+    }
+    else if (strcmp(argv[1], "full") == 0)
+    {
+        print_type = GNSS_PRINT_FULL;
+    }
+    else if (strcmp(argv[1], "none") == 0)
+    {
+        print_type = GNSS_PRINT_NONE;
+    }
+   
+
+    if (strcmp(argv[0], "nmea") == 0)
+    {
+        gnss_ctrl.print.nmea = print_type;
+        vty_out(vty, "set gnss print nmea to %s%s", argv[1], VTY_NEWLINE);
+    }
+    else if (strcmp(argv[0], "raw") == 0)
+    {
+        gnss_ctrl.print.raw = print_type;
+        vty_out(vty, "set gnss print raw to %s%s", argv[1], VTY_NEWLINE);
+    }
+    return CMD_SUCCESS;
+}
+
 
 DEFUN(config_radio,
       config_radio_cmd,
@@ -221,7 +258,10 @@ void tty_init(void)
     install_element(RADIO_NODE, &gnss_mode_cfg_cmd);
 
 
-    install_element(ENABLE_NODE, &gnss_gps_file_cmd);
-    install_element(RADIO_NODE, &gnss_gps_file_cmd);
+    install_element(ENABLE_NODE, &gnss_file_cfg_cmd);
+    install_element(RADIO_NODE, &gnss_file_cfg_cmd);
+
+    install_element(ENABLE_NODE, &gnss_print_cfg_cmd);
+    install_element(RADIO_NODE, &gnss_print_cfg_cmd);
 
 }
