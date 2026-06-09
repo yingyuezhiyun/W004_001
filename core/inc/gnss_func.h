@@ -26,7 +26,7 @@ extern "C"
         gnss_DataType_t data_type;
         char data_nmea[MINMEA_MAX_SENTENCE_LENGTH + 16];
         uint16_t data_nmea_len;
-        uint8_t data_raw[1024];
+        uint8_t data_raw[8192];
         uint16_t data_raw_len;
         struct 
         {

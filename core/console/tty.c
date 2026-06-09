@@ -29,6 +29,7 @@
 
 #include "glob_cfg.h"
 #include "gnss_func.h"
+#include "glob_value.h"
 
 #define RADIO_NODE RIP_NODE
 
@@ -47,7 +48,6 @@ struct vty_cfg_s
 };
 
 struct vty_cfg_s *vty_cfg = NULL;
-
 
 DEFUN(gnss_data_type_cfg,
       gnss_data_type_cfg_cmd,
@@ -70,7 +70,7 @@ DEFUN(gnss_data_type_cfg,
     {
         gnss_ctrl.data_type = GNSS_DATA_RAW;
         vty_out(vty, "set gnss data type to raw%s", VTY_NEWLINE);
-    }   
+    }
     return CMD_SUCCESS;
 }
 
@@ -139,8 +139,6 @@ DEFUN(gnss_mode_cfg,
     return CMD_SUCCESS;
 }
 
-
-
 DEFUN(gnss_file_cfg,
       gnss_file_cfg_cmd,
       "gnss file (bdxwephb|gpsephb|bd2ephb|bd3ephb|bd3cnav2ephb|bd3cnav3ephb|gloephb|galephb) (on|off)",
@@ -165,12 +163,11 @@ DEFUN(gnss_file_cfg,
 }
 
 DEFUN(gnss_print_cfg,
-gnss_print_cfg_cmd,
-"gnss print (nmea|raw) (summary|full|none)",
-"gnss print <type> \n"
-"Set gnss print <type> on summary or detail\n"
-"summary | full | none\n"
-)
+      gnss_print_cfg_cmd,
+      "gnss print (nmea|raw) (summary|full|none)",
+      "gnss print <type> \n"
+      "Set gnss print <type> on summary or detail\n"
+      "summary | full | none\n")
 {
     uint8_t print_type = 0;
     if (strcmp(argv[1], "summary") == 0)
@@ -185,7 +182,6 @@ gnss_print_cfg_cmd,
     {
         print_type = GNSS_PRINT_NONE;
     }
-   
 
     if (strcmp(argv[0], "nmea") == 0)
     {
@@ -200,6 +196,51 @@ gnss_print_cfg_cmd,
     return CMD_SUCCESS;
 }
 
+DEFUN(gnss_net_up_cfg,
+      gnss_net_up_cfg_cmd,
+      "gnss net up (bdxwephb|gpsephb|bd2ephb|bd3ephb|bd3cnav2ephb|bd3cnav3ephb|gloephb|galephb) (on|off)",
+      "gnss net up <type> (on|off)\n"
+      "Set gnss net up <type> on or off\n"
+      "on or off\n")
+{
+    uint8_t sw = strcmp(argv[1], "on") == 0;
+    if (strcmp(argv[0], "bdxwephb") == 0)
+    {
+        glob_comm_config.eph_sw.content.bdxw = sw;
+    }
+    else if (strcmp(argv[0], "gpsephb") == 0)
+    {
+        glob_comm_config.eph_sw.content.gps = sw;
+    }
+    else if (strcmp(argv[0], "bd2ephb") == 0)
+    {
+        glob_comm_config.eph_sw.content.bd2 = sw;
+    }
+    else if (strcmp(argv[0], "bd3ephb") == 0)
+    {
+        glob_comm_config.eph_sw.content.bd3 = sw;
+    }
+    else if (strcmp(argv[0], "bd3cnav2ephb") == 0)
+    {
+        glob_comm_config.eph_sw.content.bd3cnav2 = sw;
+    }
+    else if (strcmp(argv[0], "bd3cnav3ephb") == 0)
+    {
+        glob_comm_config.eph_sw.content.bd3cnav3 = sw;
+    }
+    else if (strcmp(argv[0], "gloephb") == 0)
+    {
+        glob_comm_config.eph_sw.content.glo = sw;
+    }
+    else if (strcmp(argv[0], "galephb") == 0)
+    {
+        glob_comm_config.eph_sw.content.gal = sw;
+    }
+
+    vty_out(vty, "set gnss net up %s to %s%s", argv[0], argv[1], VTY_NEWLINE);
+
+    return CMD_SUCCESS;
+}
 
 DEFUN(config_radio,
       config_radio_cmd,
@@ -249,14 +290,11 @@ void tty_init(void)
     install_element(ENABLE_NODE, &gnss_type_on_change_cfg_cmd);
     install_element(RADIO_NODE, &gnss_type_on_change_cfg_cmd);
 
-
     install_element(ENABLE_NODE, &gnss_data_type_cfg_cmd);
     install_element(RADIO_NODE, &gnss_data_type_cfg_cmd);
 
-
     install_element(ENABLE_NODE, &gnss_mode_cfg_cmd);
     install_element(RADIO_NODE, &gnss_mode_cfg_cmd);
-
 
     install_element(ENABLE_NODE, &gnss_file_cfg_cmd);
     install_element(RADIO_NODE, &gnss_file_cfg_cmd);
@@ -264,4 +302,6 @@ void tty_init(void)
     install_element(ENABLE_NODE, &gnss_print_cfg_cmd);
     install_element(RADIO_NODE, &gnss_print_cfg_cmd);
 
+    install_element(ENABLE_NODE, &gnss_net_up_cfg_cmd);
+    install_element(RADIO_NODE, &gnss_net_up_cfg_cmd);
 }

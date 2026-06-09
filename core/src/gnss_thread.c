@@ -263,7 +263,7 @@ void *gnss_thread_func(void *arg)
     // gnss_dev_write(gnss_ctrl.fd, enable_ins, strlen(enable_ins));
     // gnss_cfg_dis_enable(gnss_ctrl.fd, "POSDATAB", 1, 1);//最优定位信息输出
     // gnss_cfg_dis_enable(gnss_ctrl.fd, "BDXWEPHB", 1, 1);
-    char buf[256];
+    char buf[4096];
 
     while (1)
     {
