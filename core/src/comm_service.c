@@ -156,7 +156,7 @@ int net_send_eph(const comm_service_kind_t kind, const EPH_Type_t eph_type, cons
     net_frame_t *frame = (net_frame_t *)send_buf;
     frame->head = NET_FRAME_HEAD_REVERSE;
     frame->cmd = SEND_CMD_EPH_INFO;
-    frame->len = len;
+    frame->len = len + 1;
     frame->id = glob_comm_config.id;
     memcpy(send_buf + 7, &eph_type, 1);
     memcpy(send_buf + 8, data, len);

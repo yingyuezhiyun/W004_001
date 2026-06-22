@@ -204,7 +204,7 @@ int handle_gnss_raw(const uint8_t *data, size_t len)
                         }
                         if (glob_comm_config.eph_sw.content.bd2)
                         {
-                            net_send_eph(COMM_SERVICE_UDP, BD2EPH, (uint8_t *)&eph, sizeof(eph));
+                            net_send_eph(COMM_SERVICE_UDP, BD2EPH, (uint8_t *)&eph + 8, sizeof(eph) - 13);//去掉无用数据
                         }
                     }
                 }
@@ -223,7 +223,7 @@ int handle_gnss_raw(const uint8_t *data, size_t len)
                         }
                         if (glob_comm_config.eph_sw.content.bd3)
                         {
-                            net_send_eph(COMM_SERVICE_UDP, BD3EPH, (uint8_t *)&eph, sizeof(eph));
+                            net_send_eph(COMM_SERVICE_UDP, BD3EPH, (uint8_t *)&eph + 8, sizeof(eph) - 13);//去掉无用数据
                         }
                     }
                 }
@@ -242,7 +242,7 @@ int handle_gnss_raw(const uint8_t *data, size_t len)
                         }
                         if (glob_comm_config.eph_sw.content.bd3cnav2)
                         {
-                            net_send_eph(COMM_SERVICE_UDP, BD3CNAV2EPH, (uint8_t *)&eph, sizeof(eph));
+                            net_send_eph(COMM_SERVICE_UDP, BD3CNAV2EPH, (uint8_t *)&eph + 8, sizeof(eph) - 13);//去掉无用数据
                         }
                     }
                 }
@@ -260,7 +260,7 @@ int handle_gnss_raw(const uint8_t *data, size_t len)
                             bd3cnav3ephb_file_append(&eph);
                         }
                         if (glob_comm_config.eph_sw.content.bd3cnav3)                        {
-                            net_send_eph(COMM_SERVICE_UDP, BD3CNAV3EPH, (uint8_t *)&eph, sizeof(eph));
+                            net_send_eph(COMM_SERVICE_UDP, BD3CNAV3EPH, (uint8_t *)&eph + 8, sizeof(eph) - 16);//去掉无用数据
                         }
                     }
                 }
@@ -279,7 +279,7 @@ int handle_gnss_raw(const uint8_t *data, size_t len)
                         }
                         if (glob_comm_config.eph_sw.content.bdxw)
                         {
-                            net_send_eph(COMM_SERVICE_UDP, BDXWEPH, (uint8_t *)&eph, sizeof(eph));
+                            net_send_eph(COMM_SERVICE_UDP, BDXWEPH, (uint8_t *)&eph + 8, sizeof(eph) - 20);//去掉无用数据
                         }
                     }
                 }
@@ -299,7 +299,7 @@ int handle_gnss_raw(const uint8_t *data, size_t len)
                         }
                         if (glob_comm_config.eph_sw.content.gps)
                         {
-                            net_send_eph(COMM_SERVICE_UDP, GPSEPH, (uint8_t *)&eph, sizeof(eph));
+                            net_send_eph(COMM_SERVICE_UDP, GPSEPH, (uint8_t *)&eph + 8, sizeof(eph) - 13);//去掉无用数据
                         }
                     }
                 }
@@ -318,7 +318,7 @@ int handle_gnss_raw(const uint8_t *data, size_t len)
                         // }
                         if (glob_comm_config.eph_sw.content.glo)
                         {
-                            net_send_eph(COMM_SERVICE_UDP, GLOEPH, (uint8_t *)&eph, sizeof(eph));
+                            net_send_eph(COMM_SERVICE_UDP, GLOEPH, (uint8_t *)&eph + 8, sizeof(eph) - 12);//去掉无用数据
                         }
                     }
                 }
@@ -338,7 +338,7 @@ int handle_gnss_raw(const uint8_t *data, size_t len)
                         // }
                         if (glob_comm_config.eph_sw.content.gal)
                         {
-                            net_send_eph(COMM_SERVICE_UDP, GALEPH, (uint8_t *)&eph, sizeof(eph));
+                            net_send_eph(COMM_SERVICE_UDP, GALEPH, (uint8_t *)&eph + 8, sizeof(eph) - 13);//去掉无用数据
                         }
                     }
                 }

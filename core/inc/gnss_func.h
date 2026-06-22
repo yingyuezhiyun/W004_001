@@ -28,13 +28,13 @@ extern "C"
         uint16_t data_nmea_len;
         uint8_t data_raw[8192];
         uint16_t data_raw_len;
-        struct 
+        struct
         {
             uint8_t nmea;
             uint8_t raw;
-        }print;        
+        } print;
     } gnss_ctrl_t;
-
+#pragma pack(1)
     typedef struct
     {
         uint8_t head[8];
@@ -73,7 +73,9 @@ extern "C"
         uint8_t reserved;          // 占位4；保留；-
         uint32_t crc24;
     } GPSEPHB_Decoded_t;
+#pragma pack()
 
+#pragma pack(1)
     typedef struct
     {
         uint8_t head[8];
@@ -110,7 +112,9 @@ extern "C"
         uint8_t bd2_reserved;    // 保留
         uint32_t crc24;          // 嵌入的 CRC24
     } BD2EPHB_Decoded_t;
+#pragma pack()
 
+#pragma pack(1)
     typedef struct
     {
         uint8_t head[8];
@@ -149,7 +153,9 @@ extern "C"
         uint8_t bd3_reserved;    // 占位2；保留；-
         uint32_t crc24;          // 占位24；校验范围从帧头至有效数据；-
     } BD3EPHB_Decoded_t;
+#pragma pack()
 
+#pragma pack(1)
     typedef struct
     {
         uint8_t head[8];
@@ -175,7 +181,9 @@ extern "C"
         double glo_z_ddot;       // 占位5；用于组成 PZ-90 坐标系下 GLONASS 卫星速度矢量的 Z 分量；km/s2
         uint32_t crc24;          // 占位24；校验范围从帧头至有效数据；-
     } GLOEPHB_Decoded_t;
+#pragma pack()
 
+#pragma pack(1)
     typedef struct
     {
         uint8_t head[8];
@@ -215,7 +223,9 @@ extern "C"
         uint8_t gal_reserved;      // 占位4；保留位；-
         uint32_t crc24;            // 占位24；校验范围从帧头至有效数据；-
     } GALEPHB_Decoded_t;
+#pragma pack()
 
+#pragma pack(1)
     /* BDXWEPHB: XWS/BDXW 星历（根据截图字段顺序与比例因子） */
     typedef struct
     {
@@ -255,7 +265,9 @@ extern "C"
         uint64_t xws_reserved;   // 占位36；保留位
         uint32_t crc24;          // 占位24；CRC24 校验
     } BDXWEPHB_Decoded_t;
+#pragma pack()
 
+#pragma pack(1)
     typedef struct
     {
         uint8_t head[8];
@@ -292,7 +304,9 @@ extern "C"
         uint32_t bds_reserved;   // 占位26；保留；-
         uint32_t crc24;          // 占位24；校验范围从帧头至有效数据；-
     } BD3CNAV3EPHB_Decoded_t;
+#pragma pack()
 
+#pragma pack(1)
     typedef struct
     {
         uint8_t head[8];
@@ -331,7 +345,9 @@ extern "C"
         uint8_t bds_reserved;    // 占位2；保留；-
         uint32_t crc24;          // 占位24；校验范围从帧头至有效数据；-
     } BD3CNAV2EPHB_Decoded_t;
+#pragma pack()
 
+#pragma pack(1)
     typedef struct
     {
         uint8_t head[12];
@@ -352,7 +368,9 @@ extern "C"
         uint32_t reserved1;   // 占位32；保留位，无效时为 0xFFFFFFFF；-
         uint32_t crc24;       // 占位24；CRC24 校验，校验范围从帧头至有效数据；-
     } IMUDATAB_Decoded_t;
+#pragma pack()
 
+#pragma pack(1)
     typedef struct
     {
         uint8_t head[12];
@@ -394,10 +412,11 @@ extern "C"
         uint32_t reserved1;     // 占位32；保留位，无效时为 0xFFFFFFFF；-
         uint32_t crc24;         // 占位24；CRC24 校验，校验范围从帧头至有效数据；-
     } POSDATAB_Decoded_t;
+#pragma pack()
 
 /* PRANGEB: 每卫星伪距/载相/载噪比等观测/粗略信息报文解析结构 */
 #define PRANGEB_MAX_SATS 64
-
+#pragma pack(1)
     typedef struct
     {
         uint8_t head[8];
@@ -429,14 +448,14 @@ extern "C"
         } sat_info[PRANGEB_MAX_SATS];
         uint32_t crc24; // 占位24；校验范围从帧头至有效数据；-
     } PRANGEB_Decoded_t;
-
+#pragma pack()
     typedef struct
     {
         uint8_t en;
         int fd;
         char path[128];
     } File_cfg_t;
-    
+
     typedef struct
     {
         File_cfg_t gpsephb;
