@@ -43,6 +43,10 @@ static void gnss_handle_nmea_bytes(const uint8_t *buf, size_t len, int require_s
         {
             continue;
         }
+        if(require_sentence_start && c == '$')
+        {
+            gnss_ctrl.data_nmea_len = 0;
+        }
 
         if (gnss_ctrl.data_nmea_len == 0)
         {
@@ -267,29 +271,56 @@ void *gnss_thread_func(void *arg)
 
     while (1)
     {
-        int n = read(gnss_ctrl.fd, buf, sizeof(buf) - 1);
-        if (n > 0)
+        int drained = 0;
+
+        while (1)
         {
-            if (gnss_ctrl.data_type == GNSS_DATA_AUTO)
+            int n = read(gnss_ctrl.fd, buf, sizeof(buf));
+            if (n > 0)
             {
-                gnss_handle_raw_bytes((const uint8_t *)buf, (size_t)n);
-                gnss_handle_nmea_bytes((const uint8_t *)buf, (size_t)n, 1);
+                drained = 1;
+
+                if (gnss_ctrl.data_type == GNSS_DATA_AUTO)
+                {
+                    gnss_handle_raw_bytes((const uint8_t *)buf, (size_t)n);
+                    gnss_handle_nmea_bytes((const uint8_t *)buf, (size_t)n, 1);
+                }
+                else if (gnss_ctrl.data_type == GNSS_DATA_NMEA)
+                {
+                    gnss_handle_nmea_bytes((const uint8_t *)buf, (size_t)n, 0);
+                }
+                else
+                {
+                    gnss_handle_raw_bytes((const uint8_t *)buf, (size_t)n);
+                }
+
+                continue;
             }
-            else if (gnss_ctrl.data_type == GNSS_DATA_NMEA)
+
+            if (n < 0 && errno == EINTR)
             {
-                gnss_handle_nmea_bytes((const uint8_t *)buf, (size_t)n, 0);
+                continue;
             }
-            else
+
+            if (n < 0 && (errno == EAGAIN || errno == EWOULDBLOCK))
             {
-                gnss_handle_raw_bytes((const uint8_t *)buf, (size_t)n);
+                break;
             }
-        }
-        else if (n < 0 && errno != EAGAIN && errno != EWOULDBLOCK)
-        {
-            perror("read gnss device");
+
+            if (n < 0)
+            {
+                perror("read gnss device");
+                close(gnss_ctrl.fd);
+                return NULL;
+            }
+
             break;
         }
-        usleep(1000); // Sleep for 1 millisecond
+
+        if (!drained)
+        {
+            usleep(1000); // Sleep briefly when no data is available
+        }
         // struct timespec sleep_time = {0, 1000000L};
         // nanosleep(&sleep_time, NULL);
     }
