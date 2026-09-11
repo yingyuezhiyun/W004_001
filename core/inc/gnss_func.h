@@ -485,6 +485,7 @@ extern "C"
     void gnss_cfg_enable_onchange(int fd, char *type);
     void gnss_cfg_dis_enable(int fd, char *type, uint8_t enable, uint8_t per_second);
     void gnss_cfg_mode(int fd, char *workMode, char *calcType, uint8_t freqCode);
+    void gnss_cfg_sys(char *sys, uint8_t enable);
     int8_t gnss_bdd_enable();
     int8_t gnss_bdd_disable();
 

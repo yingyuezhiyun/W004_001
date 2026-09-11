@@ -101,6 +101,21 @@ DEFUN(gnss_type_on_cfg,
     return CMD_SUCCESS;
 }
 
+DEFUN(gnss_sys_cfg,
+      gnss_sys_cfg_cmd,
+      "gnss sys (bds|gsp|glo|gal|all) (on|off) ",
+      "gnss sys ctrl\n"
+      "Set gnss <sys> on or off\n"
+      "on or off\n")
+{
+
+    uint8_t enable = strcmp(argv[1], "on") == 0;
+    gnss_cfg_sys(argv[0], enable);
+    vty_out(vty, "set gnss sys %s to %s%s", argv[0], enable ? "on" : "off", VTY_NEWLINE);
+    vty_out(vty, "Note: the module will restart after setting mode, please re-enable the desired data output%s", VTY_NEWLINE);
+    return CMD_SUCCESS;
+}
+
 DEFUN(gnss_type_off_cfg,
       gnss_type_off_cfg_cmd,
       "gnss (" GNSS_TYPE "|all) off",
@@ -304,4 +319,7 @@ void tty_init(void)
 
     install_element(ENABLE_NODE, &gnss_net_up_cfg_cmd);
     install_element(RADIO_NODE, &gnss_net_up_cfg_cmd);
+
+    install_element(ENABLE_NODE, &gnss_sys_cfg_cmd);
+    install_element(RADIO_NODE, &gnss_sys_cfg_cmd);
 }

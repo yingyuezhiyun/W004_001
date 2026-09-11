@@ -45,7 +45,7 @@ static void print_coord(const char *label, const struct minmea_float *coord)
         GNSS_NMEA_LOG("%s=nan", label);
         return;
     }
-    GNSS_NMEA_LOG("%s=%.6f", label, value);
+    GNSS_NMEA_LOG("%s=%.7f", label, value);
 }
 
 static void print_float_field(const char *label, const struct minmea_float *value)
@@ -248,7 +248,7 @@ void handle_gnss_nmea(const char *sentence)
             print_coord("lat", &frame.latitude);
             GNSS_NMEA_LOG(" ");
             print_coord("lon", &frame.longitude);
-            GNSS_NMEA_LOG(" speed=%.2fkn(%.2fkm/h) course=%.2f valid=%c date=%02d-%02d-%04d\n",
+            GNSS_NMEA_LOG(" speed=%.2fkn(%.2fkm/h) course=%.2f valid=%c date=%02d-%02d-%02d\n",
                           speed_knots,
                           speed_kph,
                           minmea_tofloat(&frame.course),

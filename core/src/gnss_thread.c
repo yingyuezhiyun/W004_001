@@ -159,12 +159,12 @@ void gnss_cfg_dis_enable(int fd, char *type, uint8_t enable, uint8_t per_second)
     int result = 0;
     if (enable)
     {
-        snprintf(buff, sizeof(buff), "CSHG OPEN COM3 %s ONTIME %d \r\n", type, per_second);
+        snprintf(buff, sizeof(buff), "CSHG OPEN COM1 %s ONTIME %d \r\n", type, per_second);
         result = gnss_dev_write(fd, buff, strlen(buff));
     }
     else
     {
-        snprintf(buff, sizeof(buff), "CSHG CLOSE COM3 %s \r\n", type);
+        snprintf(buff, sizeof(buff), "CSHG CLOSE COM1 %s \r\n", type);
         result = gnss_dev_write(fd, buff, strlen(buff));
     }
     if (result < 0)
@@ -182,7 +182,7 @@ void gnss_cfg_enable_onchange(int fd, char *type)
 
     char buff[128];
     int result = 0;
-    snprintf(buff, sizeof(buff), "CSHG ONCHANGE COM3 %s ONCHANGED \r\n", type);
+    snprintf(buff, sizeof(buff), "CSHG ONCHANGE COM1 %s ONCHANGED \r\n", type);
     result = gnss_dev_write(fd, buff, strlen(buff));
     if (result < 0)
     {
@@ -194,10 +194,36 @@ void gnss_cfg_enable_onchange(int fd, char *type)
     }
 }
 
+
+void gnss_cfg_sys(char *sys, uint8_t enable)
+{
+    char buff[128];
+    int result = 0;
+    if (enable)
+    {
+        snprintf(buff, sizeof(buff), "CSHG SYSEN %s ON \r\n", sys);
+        result = gnss_dev_write(gnss_ctrl.fd, buff, strlen(buff));
+    }
+    else
+    {
+        snprintf(buff, sizeof(buff), "CSHG SYSEN %s OFF \r\n", sys);
+        result = gnss_dev_write(gnss_ctrl.fd, buff, strlen(buff));
+    }
+    if (result < 0)
+    {
+        perror("write gnss device");
+    }
+    else
+    {
+        printf("GNSS: %s %s\n", enable ? "enabled" : "disabled", sys);
+    }
+}
+
+
 void gnss_cfg_disable_all(int fd)
 {
     char buff[128];
-    snprintf(buff, sizeof(buff), "CSHG CLOSEALL COM3 \r\n");
+    snprintf(buff, sizeof(buff), "CSHG CLOSEALL COM1 \r\n");
     int result = gnss_dev_write(fd, buff, strlen(buff));
 }
 
