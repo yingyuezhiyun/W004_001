@@ -32,35 +32,40 @@ dbb_ctrl_t dbb_ctrl = {
     .sms_send_once_done = 0,
     .downlink_raw_len = 0,
     .downlink_text = {0},
-    .cfg_once_done = 0,
+    .print = {
+        .info = DBB_PRINT_OFF,
+        .err = DBB_PRINT_ON,
+    }
+
 };
 
 void dbb_debug_err(const char *fmt, ...)
 {
-#if DBB_DEBUG_ERR
+    if (dbb_ctrl.print.err == DBB_PRINT_OFF)
+    {
+        return;
+    }
     va_list args;
     va_start(args, fmt);
     fprintf(stderr, "[DBB][ERROR] ");
     vfprintf(stderr, fmt, args);
     fprintf(stderr, "\n");
     va_end(args);
-#else
-    (void)fmt;
-#endif
 }
 
 void dbb_debug_info(const char *fmt, ...)
 {
-#if DBB_DEBUG_INFO
+
+    if (dbb_ctrl.print.info == DBB_PRINT_OFF)
+    {
+        return;
+    }
     va_list args;
     va_start(args, fmt);
     fprintf(stdout, "[DBB][INFO] ");
     vfprintf(stdout, fmt, args);
     fprintf(stdout, "\n");
     va_end(args);
-#else
-    (void)fmt;
-#endif
 }
 
 void dbb_close_device(void)
@@ -121,10 +126,6 @@ int dbb_write_all(const char *buf, size_t count)
 
 static int dbb_cfg_once(void)
 {
-    if (dbb_ctrl.cfg_once_done)
-    {
-        return 0;
-    }
 
     dbb_at_expect("CFG", "AT^PLMNSELMODE=1", NULL);
     dbb_at_expect("CFG", "AT^AUTHKEY=\"00112233445566778899AABBCCDDEEFF\"", NULL);
@@ -142,16 +143,11 @@ static int dbb_cfg_once(void)
     dbb_at_expect("CFG", "AT^MISWITCH=1", NULL);
     dbb_at_expect("CFG", "AT^BMCARDSWITCH=1", NULL);
 
-    dbb_ctrl.cfg_once_done = 1;
     return 0;
 }
 
 static int dbb_cfg_broadcast_once(void)
 {
-    if (dbb_ctrl.cfg_once_done)
-    {
-        return 0;
-    }
 
     if (dbb_at_expect("disable satellite service", "AT^MISWITCH=0", "OK") < 0 ||
         dbb_at_expect("disable BM card", "AT^BMCARDSWITCH=0", "OK") < 0 ||
@@ -170,7 +166,6 @@ static int dbb_cfg_broadcast_once(void)
     }
     sleep(5);
 
-    dbb_ctrl.cfg_once_done = 1;
     return 0;
 }
 
@@ -215,7 +210,7 @@ static void dbb_online_broadcast_service(void)
     }
 }
 
-void dbb_online_func(void)
+static void dbb_online_func(void)
 {
     char response[DBB_MAX_RESPONSE];
 

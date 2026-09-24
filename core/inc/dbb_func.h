@@ -30,6 +30,12 @@ extern "C"
 
     typedef enum
     {
+        DBB_PRINT_OFF,
+        DBB_PRINT_ON,
+    } dbb_PrintType_t;
+
+    typedef enum
+    {
         DEV_DBB_IDLE,
         DEV_DBB_INIT,
         DEV_DBB_POWER_ON,
@@ -65,8 +71,12 @@ extern "C"
         uint8_t downlink_raw[DBB_MAX_UL_DATA_RAW];
         size_t downlink_raw_len;
         char downlink_text[DBB_MAX_UL_DATA_RAW + 1];
+        struct
+        {
+            uint8_t info;
+            uint8_t err;
+        } print;
 
-        uint8_t cfg_once_done;
     } dbb_ctrl_t;
 
     extern dbb_ctrl_t dbb_ctrl;
@@ -74,7 +84,10 @@ extern "C"
     int dbb_at_expect(const char *name, const char *cmd, const char *expect);
     void dbb_dump_response(const char *response);
     int dbb_capture_response(const char *cmd, char *response, size_t response_size, int timeout_ms);
+
     void dbb_debug_info(const char *fmt, ...);
+    void dbb_debug_err(const char *fmt, ...);
+
     void dbb_handle_urc_blob(const char *urc);
     int dbb_send_uplink(const uint8_t *raw_payload, size_t raw_payload_len, dbb_data_codec_t codec);
     int dbb_send_sms(const char *target, const char *text);

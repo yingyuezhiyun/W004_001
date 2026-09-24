@@ -19,6 +19,8 @@
 #include "comm_service.h"
 #include "stdarg.h"
 
+
+
 typedef struct
 {
     double longitude;   // 经度

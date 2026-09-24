@@ -468,6 +468,16 @@ extern "C"
         File_cfg_t bd3cnav3ephb;
     } EPHB_File_sw_t;
 
+    typedef struct
+    {
+    File_cfg_t rmc;
+    File_cfg_t gga;
+    File_cfg_t gsa;
+    File_cfg_t gsv;
+    File_cfg_t gll;
+
+    } NMEA_File_sw_t;
+
     void decode_gpsephb(const uint8_t *payload, size_t payload_len, GPSEPHB_Decoded_t *out);
     void decode_bd2ephb(const uint8_t *payload, size_t payload_len, BD2EPHB_Decoded_t *out);
     void decode_bd3ephb(const uint8_t *payload, size_t payload_len, BD3EPHB_Decoded_t *out);

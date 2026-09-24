@@ -29,6 +29,7 @@
 
 #include "glob_cfg.h"
 #include "gnss_func.h"
+#include "dbb_func.h"
 #include "glob_value.h"
 
 #define RADIO_NODE RIP_NODE
@@ -211,6 +212,30 @@ DEFUN(gnss_print_cfg,
     return CMD_SUCCESS;
 }
 
+DEFUN(dbb_print_cfg,
+      dbb_print_cfg_cmd,
+      "dbb print (info|err) (on|off)",
+      "dbb print <type> \n"
+      "Set dbb print <type> on or off\n"
+      "on or off\n")
+{
+    uint8_t enable = strcmp(argv[1], "on") == 0;
+    if (strcmp(argv[0], "info") == 0)
+    {
+        dbb_ctrl.print.info = enable ? DBB_PRINT_ON : DBB_PRINT_OFF;
+        vty_out(vty, "set dbb print info to %s%s", argv[1], VTY_NEWLINE);
+    }
+    else if (strcmp(argv[0], "err") == 0)
+    {
+        dbb_ctrl.print.err = enable ? DBB_PRINT_ON : DBB_PRINT_OFF;
+        vty_out(vty, "set dbb print err to %s%s", argv[1], VTY_NEWLINE);
+    }
+    return CMD_SUCCESS;
+}
+
+
+
+
 DEFUN(gnss_net_up_cfg,
       gnss_net_up_cfg_cmd,
       "gnss net up (bdxwephb|gpsephb|bd2ephb|bd3ephb|bd3cnav2ephb|bd3cnav3ephb|gloephb|galephb) (on|off)",
@@ -322,4 +347,8 @@ void tty_init(void)
 
     install_element(ENABLE_NODE, &gnss_sys_cfg_cmd);
     install_element(RADIO_NODE, &gnss_sys_cfg_cmd);
+
+
+    install_element(ENABLE_NODE, &dbb_print_cfg_cmd);
+    install_element(RADIO_NODE, &dbb_print_cfg_cmd);
 }
