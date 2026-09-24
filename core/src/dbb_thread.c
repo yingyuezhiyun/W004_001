@@ -16,14 +16,15 @@
 #include <unistd.h>
 
 #include "glob_cfg.h"
+#include "gnss_func.h"
 #include "src_io.h"
 #include "src_tty.h"
 #include "src_led.h"
 
-#define DBB_DEBUG_INFO (1)
-#define DBB_DEBUG_ERR (1)
+#define DBB_DEBUG_INFO (0)
+#define DBB_DEBUG_ERR (0)
 
-#define DBB_MAX_RESPONSE 2048
+#define DBB_MAX_RESPONSE 4096
 #define DBB_AT_TIMEOUT_MS 2000
 #define DBB_WAIT_EVENT_TIMEOUT_MS 30000
 #define DBB_MONITOR_INTERVAL_SEC 1
@@ -59,6 +60,7 @@ typedef enum
     DEV_DBB_WAIT_CREV,
     DEV_DBB_WAIT_CIREG,
     DEV_DBB_ONLINE,
+    DEV_DBB_ONLINE_BROADCAST,
     DEV_DBB_POWER_OFF,
 } dbb_status_t;
 
@@ -568,6 +570,33 @@ static int dbb_cfg_once(void)
     dbb_at_expect("CFG", "AT^AUTODEREGREGCLOSE=1", NULL);
     dbb_at_expect("CFG", "AT^MISWITCH=1", NULL);
     dbb_at_expect("CFG", "AT^BMCARDSWITCH=1", NULL);
+
+    dbb_ctrl.cfg_once_done = 1;
+    return 0;
+}
+
+static int dbb_cfg_broadcast_once(void)
+{
+    if (dbb_ctrl.cfg_once_done)
+    {
+        return 0;
+    }
+
+    if (dbb_at_expect("disable satellite service", "AT^MISWITCH=0", "OK") < 0 ||
+        dbb_at_expect("disable BM card", "AT^BMCARDSWITCH=0", "OK") < 0 ||
+        dbb_at_expect("enable dummy USIM", "AT^DUMMYUSIM=1", "OK") < 0 /* ||
+        dbb_at_expect("restart DBB for broadcast mode", "AT+CFUN=1", "OK") < 0 */)
+    {
+        return -1;
+    }
+    dbb_at_expect("enable BBIC reset", "AT^BBICRSTSW=1", NULL);
+    sleep(1);
+    if (dbb_at_expect("enable SSR broadcast report", "AT^SSRINFOXW=1", "OK") < 0 ||
+        dbb_at_expect("restart DBB after broadcast setup", "AT+CFUN=1", "OK") < 0)
+    {
+        return -1;
+    }
+    sleep(5);
 
     dbb_ctrl.cfg_once_done = 1;
     return 0;
@@ -1203,6 +1232,70 @@ static void dbb_handle_dlnetdata(const char *urc)
     }
 }
 
+static void dbb_handle_ssrinfoxw(const char *urc)
+{
+    const char *line;
+    const char *payload_start;
+    const char *payload_end;
+    size_t payload_len;
+    size_t raw_len = 0;
+    uint8_t raw[DBB_MAX_RESPONSE];
+
+    line = strstr(urc, "^SSRINFOXW:");
+    if (line == NULL)
+    {
+        return;
+    }
+
+    payload_start = strchr(line, '"');
+    if (payload_start == NULL)
+    {
+        debug_err_dbb("parse ^SSRINFOXW failed: missing opening quote");
+        return;
+    }
+    payload_start++;
+
+    payload_end = strchr(payload_start, '"');
+    if (payload_end == NULL)
+    {
+        debug_err_dbb("parse ^SSRINFOXW failed: missing closing quote");
+        return;
+    }
+
+    payload_len = (size_t)(payload_end - payload_start);
+    if (payload_len == 0 || payload_len >= DBB_MAX_RESPONSE)
+    {
+        debug_err_dbb("invalid ^SSRINFOXW payload length: %zu", payload_len);
+        return;
+    }
+
+    {
+        char payload[DBB_MAX_RESPONSE];
+        memcpy(payload, payload_start, payload_len);
+        payload[payload_len] = '\0';
+
+        if (hex_to_bytes(payload, raw, sizeof(raw), &raw_len) < 0)
+        {
+            debug_err_dbb("decode ^SSRINFOXW hex payload failed");
+            return;
+        }
+    }
+
+    if (gnss_ctrl.fd < 0)
+    {
+        debug_err_dbb("drop ^SSRINFOXW payload: GNSS device is not open");
+        return;
+    }
+
+    if (gnss_dev_write(gnss_ctrl.fd, raw, raw_len) != (int)raw_len)
+    {
+        debug_err_dbb("forward ^SSRINFOXW payload to GNSS failed: %zu bytes", raw_len);
+        return;
+    }
+
+    debug_info_dbb("forwarded ^SSRINFOXW payload to GNSS: %zu bytes", raw_len);
+}
+
 static void dbb_handle_cgev(const char *urc)
 {
     const char *p = strstr(urc, "+CGEV:");
@@ -1220,6 +1313,7 @@ static void dbb_handle_urc_blob(const char *urc)
     }
 
     dbb_handle_dlnetdata(urc);
+    dbb_handle_ssrinfoxw(urc);
     dbb_handle_sms_cmt(urc);
     dbb_handle_cgev(urc);
 }
@@ -1256,6 +1350,18 @@ static void dbb_online_service(void)
     }
 }
 
+
+static void dbb_online_broadcast_service(void)
+{
+    char response[DBB_MAX_RESPONSE];  
+    if (dbb_capture_response(NULL, response, sizeof(response), DBB_MONITOR_INTERVAL_SEC * 1000) == 0)
+    {
+        dbb_dump_response(response);
+        dbb_handle_urc_blob(response);
+    }
+}
+
+
 void dbb_online_func(void)
 {
     char response[DBB_MAX_RESPONSE];
@@ -1267,15 +1373,22 @@ void dbb_online_func(void)
         sleep(1);
         break;
     case DEV_DBB_INIT:
-        if (dbb_open_device() == 0)
+        dbb_open_device();
+        if (DBB_RECEIVE_MODE == DBB_RECEIVE_MODE_BROADCAST)
         {
-            dbb_ctrl.status = DEV_DBB_POWER_ON;
-            set_led(DEV_DBB_LED, 0);
+            if (dbb_cfg_broadcast_once() == 0)
+            {
+                dbb_ctrl.status = DEV_DBB_ONLINE_BROADCAST;
+                set_led(DEV_DBB_LED, 1);
+            }
+            else
+            {
+                sleep(1);
+            }
+            break;
         }
-        else
-        {
-            sleep(1);
-        }
+        dbb_ctrl.status = DEV_DBB_POWER_ON;
+        set_led(DEV_DBB_LED, 0);    
         break;
     case DEV_DBB_POWER_ON:
         if (dbb_at_expect("query SIM", "AT+CIMI", "OK") == 0)
@@ -1363,6 +1476,9 @@ void dbb_online_func(void)
     case DEV_DBB_ONLINE:
         dbb_online_service();
         break;
+       case DEV_DBB_ONLINE_BROADCAST:
+        dbb_online_broadcast_service();
+        break;  
     case DEV_DBB_POWER_OFF:
         dbb_ctrl.status = DEV_DBB_IDLE;
         break;
@@ -1403,11 +1519,14 @@ void *dbb_thread_func(void *arg)
 
     // return NULL;
     (void)arg;
-    sleep(5); // Sleep for 5 seconds before starting DBB operations
+    sleep(10); // Sleep for 10 seconds before starting DBB operations
     dbb_ctrl.enabled = 1;
     dbb_ctrl.status = DEV_DBB_INIT;
     dbb_close_device();
-    dbb_cfg_once();
+    // if (DBB_RECEIVE_MODE == DBB_RECEIVE_MODE_CARD)
+    // {
+    //     dbb_cfg_once();
+    // }
 
     while (1)
     {

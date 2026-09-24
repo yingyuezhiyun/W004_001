@@ -481,6 +481,7 @@ extern "C"
 
     void handle_gnss_nmea(const char *sentence);
     int handle_gnss_raw(const uint8_t *data, size_t len);
+    int gnss_dev_write(int fd, const void *buf, size_t count);
     void gnss_cfg_disable_all(int fd);
     void gnss_cfg_enable_onchange(int fd, char *type);
     void gnss_cfg_dis_enable(int fd, char *type, uint8_t enable, uint8_t per_second);

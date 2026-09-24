@@ -7,6 +7,11 @@ extern "C"
 // 窄带通信
 #define DEV_DBB "/dev/ttyS2"
 
+// DBB 广播信息接收模式：插卡入网，或无卡接收卫星广播。
+#define DBB_RECEIVE_MODE_CARD (0)
+#define DBB_RECEIVE_MODE_BROADCAST (1)
+#define DBB_RECEIVE_MODE DBB_RECEIVE_MODE_BROADCAST
+
 // 定位
 #define DEV_GNSS "/dev/ttyS3"
 
