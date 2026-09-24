@@ -343,6 +343,54 @@ core/src/comm_udp.c.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/ok3506_demo.dir/build.make CMakeFiles/ok3506_demo.dir/core/src/comm_udp.c.s
 .PHONY : core/src/comm_udp.c.s
 
+core/src/dbb_at_response.o: core/src/dbb_at_response.c.o
+.PHONY : core/src/dbb_at_response.o
+
+# target to build an object file
+core/src/dbb_at_response.c.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/ok3506_demo.dir/build.make CMakeFiles/ok3506_demo.dir/core/src/dbb_at_response.c.o
+.PHONY : core/src/dbb_at_response.c.o
+
+core/src/dbb_at_response.i: core/src/dbb_at_response.c.i
+.PHONY : core/src/dbb_at_response.i
+
+# target to preprocess a source file
+core/src/dbb_at_response.c.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/ok3506_demo.dir/build.make CMakeFiles/ok3506_demo.dir/core/src/dbb_at_response.c.i
+.PHONY : core/src/dbb_at_response.c.i
+
+core/src/dbb_at_response.s: core/src/dbb_at_response.c.s
+.PHONY : core/src/dbb_at_response.s
+
+# target to generate assembly for a file
+core/src/dbb_at_response.c.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/ok3506_demo.dir/build.make CMakeFiles/ok3506_demo.dir/core/src/dbb_at_response.c.s
+.PHONY : core/src/dbb_at_response.c.s
+
+core/src/dbb_handle.o: core/src/dbb_handle.c.o
+.PHONY : core/src/dbb_handle.o
+
+# target to build an object file
+core/src/dbb_handle.c.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/ok3506_demo.dir/build.make CMakeFiles/ok3506_demo.dir/core/src/dbb_handle.c.o
+.PHONY : core/src/dbb_handle.c.o
+
+core/src/dbb_handle.i: core/src/dbb_handle.c.i
+.PHONY : core/src/dbb_handle.i
+
+# target to preprocess a source file
+core/src/dbb_handle.c.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/ok3506_demo.dir/build.make CMakeFiles/ok3506_demo.dir/core/src/dbb_handle.c.i
+.PHONY : core/src/dbb_handle.c.i
+
+core/src/dbb_handle.s: core/src/dbb_handle.c.s
+.PHONY : core/src/dbb_handle.s
+
+# target to generate assembly for a file
+core/src/dbb_handle.c.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/ok3506_demo.dir/build.make CMakeFiles/ok3506_demo.dir/core/src/dbb_handle.c.s
+.PHONY : core/src/dbb_handle.c.s
+
 core/src/dbb_thread.o: core/src/dbb_thread.c.o
 .PHONY : core/src/dbb_thread.o
 
@@ -689,6 +737,12 @@ help:
 	@echo "... core/src/comm_udp.o"
 	@echo "... core/src/comm_udp.i"
 	@echo "... core/src/comm_udp.s"
+	@echo "... core/src/dbb_at_response.o"
+	@echo "... core/src/dbb_at_response.i"
+	@echo "... core/src/dbb_at_response.s"
+	@echo "... core/src/dbb_handle.o"
+	@echo "... core/src/dbb_handle.i"
+	@echo "... core/src/dbb_handle.s"
 	@echo "... core/src/dbb_thread.o"
 	@echo "... core/src/dbb_thread.i"
 	@echo "... core/src/dbb_thread.s"
