@@ -157,7 +157,7 @@ DEFUN(gnss_mode_cfg,
 
 DEFUN(gnss_file_cfg,
       gnss_file_cfg_cmd,
-      "gnss file (bdxwephb|gpsephb|bd2ephb|bd3ephb|bd3cnav2ephb|bd3cnav3ephb|gloephb|galephb) (on|off)",
+      "gnss file (gbs|gga|gll|gsa|gst|gsv|rmc|vtg|zda|bdxwephb|gpsephb|bd2ephb|bd3ephb|bd3cnav2ephb|bd3cnav3ephb|gloephb|galephb) (on|off)",
       "gnss file <type> \n"
       "Set gnss file <type>  on or off\n"
       "on or off\n")
@@ -166,7 +166,19 @@ DEFUN(gnss_file_cfg,
     uint8_t sw = strcmp(argv[1], "on") == 0;
     // gnss_cfg_disable_all(gnss_ctrl.fd);
     usleep(100000);
-    char *file_path = gnss_raw_info_file_header(argv[0], sw);
+    char *file_path;
+    if (strcmp(argv[0], "gbs") == 0 || strcmp(argv[0], "gga") == 0 ||
+        strcmp(argv[0], "gll") == 0 || strcmp(argv[0], "gsa") == 0 ||
+        strcmp(argv[0], "gst") == 0 || strcmp(argv[0], "gsv") == 0 ||
+        strcmp(argv[0], "rmc") == 0 || strcmp(argv[0], "vtg") == 0 ||
+        strcmp(argv[0], "zda") == 0)
+    {
+        file_path = gnss_nmea_file_header(argv[0], sw);
+    }
+    else
+    {
+        file_path = gnss_raw_info_file_header(argv[0], sw);
+    }
     if (sw)
     {
         vty_out(vty, "set gnss file %s to on, file path: %s %s", argv[0], file_path, VTY_NEWLINE);

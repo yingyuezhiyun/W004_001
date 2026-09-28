@@ -29,8 +29,9 @@ gnss_ctrl_t gnss_ctrl = {
     .print = {
         .nmea = GNSS_PRINT_SUMMARY,
         .raw = GNSS_PRINT_SUMMARY,
-    }
-
+    },
+    .ephb_file_sw = {.gpsephb = {0}, .bd2ephb = {0}, .bd3ephb = {0}, .gloephb = {0}, .galephb = {0}, .bdxwephb = {0}, .bd3cnav2ephb = {0}, .bd3cnav3ephb = {0}},
+    .nmea_file_sw = {.gbs = {0}, .gga = {0}, .gll = {0}, .gsa = {0}, .gst = {0}, .gsv = {0}, .rmc = {0}, .vtg = {0}, .zda = {0}},
 };
 
 static void gnss_handle_nmea_bytes(const uint8_t *buf, size_t len, int require_sentence_start)

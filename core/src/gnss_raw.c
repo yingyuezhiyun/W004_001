@@ -16,15 +16,6 @@
 #include "comm_service.h"
 #include "stdarg.h"
 
-EPHB_File_sw_t ephb_file_sw = {
-    .gpsephb = 0,
-    .bd2ephb = 0,
-    .bd3ephb = 0,
-    .gloephb = 0,
-    .galephb = 0,
-    .bdxwephb = 0,
-    .bd3cnav2ephb = 0,
-    .bd3cnav3ephb = 0};
 
 
 
@@ -166,6 +157,7 @@ void GNSS_RAW_LOG_SUMMARY(const char *format, ...)
 int handle_gnss_raw(const uint8_t *data, size_t len)
 {
     int handle_cnt = 0;
+    EPHB_File_sw_t *ephb_file_sw = &gnss_ctrl.ephb_file_sw;
     if (len < sizeof(gns_raw_data1_packet_t))
     {
         return handle_cnt;
@@ -198,7 +190,7 @@ int handle_gnss_raw(const uint8_t *data, size_t len)
                         decode_bd2ephb((uint8_t *)packet, packet->length, &eph);
                         GNSS_RAW_LOG_SUMMARY("date:%s BDS-2 EPHB: satid=%u \n", gps_week_sec_to_utc(eph.gps_week_count, eph.gps_tow_s), eph.bd2_satid);
                         print_bd2ephb(&eph, crc_calculated);
-                        if (ephb_file_sw.bd2ephb.en)
+                        if (ephb_file_sw->bd2ephb.en)
                         {
                             bd2ephb_file_append(&eph);  
                         }
@@ -217,7 +209,7 @@ int handle_gnss_raw(const uint8_t *data, size_t len)
                         decode_bd3ephb((uint8_t *)packet, packet->length, &eph);
                         GNSS_RAW_LOG_SUMMARY("date:%s BDS-3 EPHB: satid=%u \n", gps_week_sec_to_utc(eph.gps_week_count, eph.gps_tow_s), eph.bd3_satid);
                         print_bd3ephb(&eph, crc_calculated);
-                        if (ephb_file_sw.bd3ephb.en)
+                        if (ephb_file_sw->bd3ephb.en)
                         {
                             bd3ephb_file_append(&eph);
                         }
@@ -236,7 +228,7 @@ int handle_gnss_raw(const uint8_t *data, size_t len)
                         decode_bd3cnav2ephb((uint8_t *)packet, packet->length, &eph);
                         GNSS_RAW_LOG_SUMMARY("date:%s BDS-3 CNAV2 Ephemeris: satid=%u \n", gps_week_sec_to_utc(eph.gps_week_count, eph.gps_tow_s), eph.bds_satid);
                         print_bd3cnav2ephb(&eph, crc_calculated);
-                        if (ephb_file_sw.bd3cnav2ephb.en)
+                        if (ephb_file_sw->bd3cnav2ephb.en)
                         {
                             bd3cnav2ephb_file_append(&eph);
                         }
@@ -255,7 +247,7 @@ int handle_gnss_raw(const uint8_t *data, size_t len)
                         decode_bd3cnav3ephb((uint8_t *)packet, packet->length, &eph);
                         GNSS_RAW_LOG_SUMMARY("date:%s BDS-3 CNAV3 Ephemeris: satid=%u \n", gps_week_sec_to_utc(eph.gps_week_count, eph.gps_tow_s), eph.bds_satid);
                         print_bd3cnav3ephb(&eph, crc_calculated);
-                        if (ephb_file_sw.bd3cnav3ephb.en)
+                        if (ephb_file_sw->bd3cnav3ephb.en)
                         {
                             bd3cnav3ephb_file_append(&eph);
                         }
@@ -273,7 +265,7 @@ int handle_gnss_raw(const uint8_t *data, size_t len)
                         decode_bdxwephb((uint8_t *)packet, packet->length, &eph);
                         print_bdxwephb(&eph, crc_calculated);
                         GNSS_RAW_LOG_SUMMARY("date:%s BDXW EPHB: satid=%u \n", gps_week_sec_to_utc(eph.gps_week_count, eph.gps_tow_s), eph.xws_satid);
-                        if (ephb_file_sw.bdxwephb.en)
+                        if (ephb_file_sw->bdxwephb.en)
                         {
                             bdxwephb_file_append(&eph);
                         }
@@ -293,7 +285,7 @@ int handle_gnss_raw(const uint8_t *data, size_t len)
                         print_gpsephb(&eph, crc_calculated);
                         // print_gpsephb_simple(&eph);                    
                         GNSS_RAW_LOG_SUMMARY("date:%s GPS Ephemeris: satid=%u \n", gps_week_sec_to_utc(eph.gps_week_count, eph.gps_tow_s), eph.gps_satid);
-                        if (ephb_file_sw.gpsephb.en)
+                        if (ephb_file_sw->gpsephb.en)
                         {
                             gpsephb_file_append(&eph);
                         }

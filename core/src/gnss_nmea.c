@@ -28,15 +28,124 @@ typedef struct
     uint64_t timestamp; // 时间戳，单位毫秒
 } pos_info_t;
 
+// NMEA_File_sw_t nmea_file_sw = {0};
+
+static enum minmea_sentence_id nmea_file_type = MINMEA_UNKNOWN;
+
+static File_cfg_t *nmea_file_config(enum minmea_sentence_id type)
+{
+    NMEA_File_sw_t *nmea_file_sw = &gnss_ctrl.nmea_file_sw;
+    switch (type)
+    {
+    case MINMEA_SENTENCE_GBS:
+        return &nmea_file_sw->gbs;
+    case MINMEA_SENTENCE_GGA:
+        return &nmea_file_sw->gga;
+    case MINMEA_SENTENCE_GLL:
+        return &nmea_file_sw->gll;
+    case MINMEA_SENTENCE_GSA:
+        return &nmea_file_sw->gsa;
+    case MINMEA_SENTENCE_GST:
+        return &nmea_file_sw->gst;
+    case MINMEA_SENTENCE_GSV:
+        return &nmea_file_sw->gsv;
+    case MINMEA_SENTENCE_RMC:
+        return &nmea_file_sw->rmc;
+    case MINMEA_SENTENCE_VTG:
+        return &nmea_file_sw->vtg;
+    case MINMEA_SENTENCE_ZDA:
+        return &nmea_file_sw->zda;
+    default:
+        return NULL;
+    }
+}
+
 void GNSS_NMEA_LOG(const char *format, ...)
 {
+    File_cfg_t *file_config = nmea_file_config(nmea_file_type);
+    va_list args;
+    va_start(args, format);
+
     if (gnss_ctrl.print.nmea != GNSS_PRINT_NONE)
     {
-        va_list args;
-        va_start(args, format);
-        vprintf(format, args);
-        va_end(args);
+        va_list print_args;
+        va_copy(print_args, args);
+        vprintf(format, print_args);
+        va_end(print_args);
     }
+
+    if (file_config != NULL && file_config->en)
+    {
+        FILE *fp = fopen(file_config->path, "a");
+        if (fp != NULL)
+        {
+            va_list file_args;
+            va_copy(file_args, args);
+            vfprintf(fp, format, file_args);
+            va_end(file_args);
+            fclose(fp);
+        }
+    }
+
+    va_end(args);
+}
+
+static enum minmea_sentence_id nmea_file_type_from_name(const char *name)
+{
+    if (strcmp(name, "gbs") == 0)
+        return MINMEA_SENTENCE_GBS;
+    if (strcmp(name, "gga") == 0)
+        return MINMEA_SENTENCE_GGA;
+    if (strcmp(name, "gll") == 0)
+        return MINMEA_SENTENCE_GLL;
+    if (strcmp(name, "gsa") == 0)
+        return MINMEA_SENTENCE_GSA;
+    if (strcmp(name, "gst") == 0)
+        return MINMEA_SENTENCE_GST;
+    if (strcmp(name, "gsv") == 0)
+        return MINMEA_SENTENCE_GSV;
+    if (strcmp(name, "rmc") == 0)
+        return MINMEA_SENTENCE_RMC;
+    if (strcmp(name, "vtg") == 0)
+        return MINMEA_SENTENCE_VTG;
+    if (strcmp(name, "zda") == 0)
+        return MINMEA_SENTENCE_ZDA;
+    return MINMEA_UNKNOWN;
+}
+
+char *gnss_nmea_file_header(char *type, uint8_t enable)
+{
+    static char file_path[128];
+    char time_str[64];
+    time_t nowtime = time(NULL);
+    struct tm *nowtm = localtime(&nowtime);
+    enum minmea_sentence_id sentence_type;
+    File_cfg_t *file_config;
+
+    sentence_type = nmea_file_type_from_name(type);
+    file_config = nmea_file_config(sentence_type);
+    if (file_config == NULL)
+    {
+        return file_path;
+    }
+
+    strftime(time_str, sizeof(time_str), "%Y-%m-%d_%H-%M-%S", nowtm);
+    snprintf(file_path, sizeof(file_path), "/root/%s_%s.txt", type, time_str);
+
+    if (enable)
+    {
+        FILE *fp = fopen(file_path, "w");
+        if (fp == NULL)
+        {
+            file_config->en = 0;
+            return file_path;
+        }
+        fclose(fp);
+        snprintf(file_config->path, sizeof(file_config->path), "%s", file_path);
+    }
+
+    file_config->en = enable ? 1 : 0;
+    return file_path;
 }
 
 static void print_coord(const char *label, const struct minmea_float *coord)
@@ -188,7 +297,7 @@ void handle_gnss_nmea(const char *sentence)
     {
         return;
     }
-
+    nmea_file_type = minmea_sentence_id(sentence, false);
     switch (minmea_sentence_id(sentence, false))
     {
     case MINMEA_SENTENCE_RMC:
@@ -451,4 +560,6 @@ void handle_gnss_nmea(const char *sentence)
     default:
         break;
     }
+
+    nmea_file_type = MINMEA_UNKNOWN;
 }

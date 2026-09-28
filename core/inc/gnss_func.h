@@ -22,6 +22,39 @@ extern "C"
 
     typedef struct
     {
+        uint8_t en;
+        int fd;
+        char path[128];
+    } File_cfg_t;
+
+    typedef struct
+    {
+        File_cfg_t gpsephb;
+        File_cfg_t bd2ephb;
+        File_cfg_t bd3ephb;
+        File_cfg_t gloephb;
+        File_cfg_t galephb;
+        File_cfg_t bdxwephb;
+        File_cfg_t bd3cnav2ephb;
+        File_cfg_t bd3cnav3ephb;
+    } EPHB_File_sw_t;
+
+    typedef struct
+    {
+        File_cfg_t gbs;
+        File_cfg_t gga;
+        File_cfg_t gll;
+        File_cfg_t gsa;
+        File_cfg_t gst;
+        File_cfg_t gsv;
+        File_cfg_t rmc;
+        File_cfg_t vtg;
+        File_cfg_t zda;
+
+    } NMEA_File_sw_t;
+
+    typedef struct
+    {
         int fd;
         gnss_DataType_t data_type;
         char data_nmea[MINMEA_MAX_SENTENCE_LENGTH + 16];
@@ -33,6 +66,8 @@ extern "C"
             uint8_t nmea;
             uint8_t raw;
         } print;
+        EPHB_File_sw_t ephb_file_sw;
+        NMEA_File_sw_t nmea_file_sw;
     } gnss_ctrl_t;
 #pragma pack(1)
     typedef struct
@@ -449,34 +484,6 @@ extern "C"
         uint32_t crc24; // 占位24；校验范围从帧头至有效数据；-
     } PRANGEB_Decoded_t;
 #pragma pack()
-    typedef struct
-    {
-        uint8_t en;
-        int fd;
-        char path[128];
-    } File_cfg_t;
-
-    typedef struct
-    {
-        File_cfg_t gpsephb;
-        File_cfg_t bd2ephb;
-        File_cfg_t bd3ephb;
-        File_cfg_t gloephb;
-        File_cfg_t galephb;
-        File_cfg_t bdxwephb;
-        File_cfg_t bd3cnav2ephb;
-        File_cfg_t bd3cnav3ephb;
-    } EPHB_File_sw_t;
-
-    typedef struct
-    {
-    File_cfg_t rmc;
-    File_cfg_t gga;
-    File_cfg_t gsa;
-    File_cfg_t gsv;
-    File_cfg_t gll;
-
-    } NMEA_File_sw_t;
 
     void decode_gpsephb(const uint8_t *payload, size_t payload_len, GPSEPHB_Decoded_t *out);
     void decode_bd2ephb(const uint8_t *payload, size_t payload_len, BD2EPHB_Decoded_t *out);
@@ -518,6 +525,7 @@ extern "C"
     void print_prangeb(const PRANGEB_Decoded_t *prange, uint32_t payload_crc_calc);
 
     char *gnss_raw_info_file_header(char *type, uint8_t enable);
+    char *gnss_nmea_file_header(char *type, uint8_t enable);
     void bd2ephb_file_append(const BD2EPHB_Decoded_t *eph);
     void bd3ephb_file_append(const BD3EPHB_Decoded_t *eph);
     void bd3cnav2ephb_file_append(const BD3CNAV2EPHB_Decoded_t *eph);
@@ -526,7 +534,6 @@ extern "C"
     void gpsephb_file_append(const GPSEPHB_Decoded_t *eph);
 
     extern gnss_ctrl_t gnss_ctrl;
-    extern EPHB_File_sw_t ephb_file_sw;
 
 #ifdef __cplusplus
 }
