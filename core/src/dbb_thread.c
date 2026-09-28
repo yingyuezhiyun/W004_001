@@ -35,8 +35,8 @@ dbb_ctrl_t dbb_ctrl = {
     .print = {
         .info = DBB_PRINT_OFF,
         .err = DBB_PRINT_ON,
-    }
-
+    },
+    .mode = DBB_MODE_BROADCAST,    
 };
 
 void dbb_debug_err(const char *fmt, ...)
@@ -124,7 +124,7 @@ int dbb_write_all(const char *buf, size_t count)
     return 0;
 }
 
-static int dbb_cfg_once(void)
+int dbb_cfg_once(void)
 {
 
     dbb_at_expect("CFG", "AT^PLMNSELMODE=1", NULL);
@@ -146,7 +146,7 @@ static int dbb_cfg_once(void)
     return 0;
 }
 
-static int dbb_cfg_broadcast_once(void)
+static int dbb_cfg_broadcast_mode(void)
 {
 
     if (dbb_at_expect("disable satellite service", "AT^MISWITCH=0", "OK") < 0 ||
@@ -165,7 +165,20 @@ static int dbb_cfg_broadcast_once(void)
         return -1;
     }
     sleep(5);
+    return 0;
+}
 
+static int dbb_cfg_normal_mode(void)
+{
+    if (dbb_at_expect("enable satellite service", "AT^MISWITCH=1", "OK") < 0 ||
+        dbb_at_expect("enable BM card", "AT^BMCARDSWITCH=1", "OK") < 0 /*  ||
+         dbb_at_expect("disable dummy USIM", "AT^DUMMYUSIM=0", "OK") < 0 */
+    )
+    {
+        return -1;
+    }
+    dbb_at_expect("disable BBIC reset", "AT^BBICRSTSW=0", NULL);
+    sleep(1);
     return 0;
 }
 
@@ -214,17 +227,28 @@ static void dbb_online_func(void)
 {
     char response[DBB_MAX_RESPONSE];
 
-    switch (dbb_ctrl.status)
+    if (dbb_ctrl.mode == DBB_MODE_BROADCAST)
     {
-    case DEV_DBB_IDLE:
-        set_led(DEV_DBB_LED, 0);
-        sleep(1);
-        break;
-    case DEV_DBB_INIT:
-        dbb_open_device();
-        if (DBB_RECEIVE_MODE == DBB_RECEIVE_MODE_BROADCAST)
+        switch (dbb_ctrl.status)
         {
-            if (dbb_cfg_broadcast_once() == 0)
+        case DEV_DBB_IDLE:
+            set_led(DEV_DBB_LED, 0);
+            sleep(1);
+            break;
+        case DEV_DBB_INIT:
+        case DEV_DBB_POWER_ON:
+        case DEV_DBB_SIM_READY:
+        case DEV_DBB_CFUN_OK:
+        case DEV_DBB_CREG_OK:
+        case DEV_DBB_CNMI_OK:
+        case DEV_DBB_DSCI_OK:
+        case DEV_DBB_CGDCONT_OK:
+        case DEV_DBB_WAIT_CREGXW:
+        case DEV_DBB_WAIT_CREV:
+        case DEV_DBB_WAIT_CIREG:
+        case DEV_DBB_ONLINE:
+            dbb_open_device();
+            if (dbb_cfg_broadcast_mode() == 0)
             {
                 dbb_ctrl.status = DEV_DBB_ONLINE_BROADCAST;
                 set_led(DEV_DBB_LED, 1);
@@ -234,105 +258,133 @@ static void dbb_online_func(void)
                 sleep(1);
             }
             break;
+        case DEV_DBB_ONLINE_BROADCAST:
+            dbb_online_broadcast_service();
+            break;
+        case DEV_DBB_POWER_OFF:
+            dbb_ctrl.status = DEV_DBB_IDLE;
+            break;
+        default:
+            dbb_ctrl.status = DEV_DBB_INIT;
+            break;
         }
-        dbb_ctrl.status = DEV_DBB_POWER_ON;
-        set_led(DEV_DBB_LED, 0);
-        break;
-    case DEV_DBB_POWER_ON:
-        if (dbb_at_expect("query SIM", "AT+CIMI", "OK") == 0)
+    }
+    else
+    {
+        switch (dbb_ctrl.status)
         {
-            dbb_ctrl.status = DEV_DBB_SIM_READY;
-            dbb_debug_info("dbb module is online");
-        }
-        break;
-    case DEV_DBB_SIM_READY:
-        if (dbb_at_expect("activate SIM", "AT+CFUN=5", "OK") == 0)
-        {
-            dbb_ctrl.status = DEV_DBB_CFUN_OK;
-        }
-        break;
-    case DEV_DBB_CFUN_OK:
-        if (dbb_at_expect("enable network registration report", "AT+CREG=1", "OK") == 0)
-        {
-            dbb_ctrl.status = DEV_DBB_CREG_OK;
-        }
-        break;
-    case DEV_DBB_CREG_OK:
-        if (dbb_at_expect("enable sms report", "AT+CNMI=2,2,0,1,0", "OK") == 0)
-        {
-            dbb_ctrl.status = DEV_DBB_CNMI_OK;
-        }
-        break;
-    case DEV_DBB_CNMI_OK:
-        if (dbb_at_expect("enable voice report", "AT+DSCI=1", "OK") == 0)
-        {
-            dbb_ctrl.status = DEV_DBB_DSCI_OK;
-        }
-        break;
-    case DEV_DBB_DSCI_OK:
-        if (dbb_at_expect("set packet data context", "AT+CGDCONT=1,\"IP\"", "OK") == 0)
-        {
-            dbb_ctrl.status = DEV_DBB_CGDCONT_OK;
-        }
-        break;
-    case DEV_DBB_CGDCONT_OK:
-        if (dbb_at_expect("enable AT ip transport", "AT^PSDATA=2", "OK") == 0)
-        {
-            // if (dbb_wait_for_text("+CREGXW: 1", response, sizeof(response), DBB_WAIT_EVENT_TIMEOUT_MS) < 0)
-            // {
-            //     dbb_debug_err("wait +CREGXW: 1 failed");
-            //     return;
-            // }
-            // dbb_dump_response(response);
+        case DEV_DBB_IDLE:
+            set_led(DEV_DBB_LED, 0);
+            sleep(1);
+            break;
+        case DEV_DBB_ONLINE_BROADCAST: // 处在广播模式时，切换到普通模式时，先关闭广播模式
+            if (dbb_cfg_normal_mode() == 0)
+            {
+                dbb_ctrl.status = DEV_DBB_INIT;
+            }
+            else
+            {
+                sleep(1);
+            }
+            break;
+        case DEV_DBB_INIT:
+            dbb_open_device();
+            dbb_ctrl.status = DEV_DBB_POWER_ON;
+            set_led(DEV_DBB_LED, 0);
+            break;
+        case DEV_DBB_POWER_ON:
+            if (dbb_at_expect("query SIM", "AT+CIMI", "OK") == 0)
+            {
+                dbb_ctrl.status = DEV_DBB_SIM_READY;
+                dbb_debug_info("dbb module is online");
+            }
+            break;
+        case DEV_DBB_SIM_READY:
+            if (dbb_at_expect("activate SIM", "AT+CFUN=5", "OK") == 0)
+            {
+                dbb_ctrl.status = DEV_DBB_CFUN_OK;
+            }
+            break;
+        case DEV_DBB_CFUN_OK:
+            if (dbb_at_expect("enable network registration report", "AT+CREG=1", "OK") == 0)
+            {
+                dbb_ctrl.status = DEV_DBB_CREG_OK;
+            }
+            break;
+        case DEV_DBB_CREG_OK:
+            if (dbb_at_expect("enable sms report", "AT+CNMI=2,2,0,1,0", "OK") == 0)
+            {
+                dbb_ctrl.status = DEV_DBB_CNMI_OK;
+            }
+            break;
+        case DEV_DBB_CNMI_OK:
+            if (dbb_at_expect("enable voice report", "AT+DSCI=1", "OK") == 0)
+            {
+                dbb_ctrl.status = DEV_DBB_DSCI_OK;
+            }
+            break;
+        case DEV_DBB_DSCI_OK:
+            if (dbb_at_expect("set packet data context", "AT+CGDCONT=1,\"IP\"", "OK") == 0)
+            {
+                dbb_ctrl.status = DEV_DBB_CGDCONT_OK;
+            }
+            break;
+        case DEV_DBB_CGDCONT_OK:
+            if (dbb_at_expect("enable AT ip transport", "AT^PSDATA=2", "OK") == 0)
+            {
+                // if (dbb_wait_for_text("+CREGXW: 1", response, sizeof(response), DBB_WAIT_EVENT_TIMEOUT_MS) < 0)
+                // {
+                //     dbb_debug_err("wait +CREGXW: 1 failed");
+                //     return;
+                // }
+                // dbb_dump_response(response);
 
-            // if (dbb_wait_for_text("+CREV: ME PDN ACT 1", response, sizeof(response), DBB_WAIT_EVENT_TIMEOUT_MS) < 0)
-            // {
-            //     dbb_debug_err("wait +CREV: ME PDN ACT 1 failed");
-            //     return;
-            // }
-            // dbb_dump_response(response);
+                // if (dbb_wait_for_text("+CREV: ME PDN ACT 1", response, sizeof(response), DBB_WAIT_EVENT_TIMEOUT_MS) < 0)
+                // {
+                //     dbb_debug_err("wait +CREV: ME PDN ACT 1 failed");
+                //     return;
+                // }
+                // dbb_dump_response(response);
 
-            // if (dbb_wait_for_text("+CIREG: 1", response, sizeof(response), DBB_WAIT_EVENT_TIMEOUT_MS) < 0)
-            // {
-            //     dbb_debug_err("wait +CIREG: 1 failed");
-            //     return;
-            // }
-            // dbb_dump_response(response);
-            dbb_ctrl.status = DEV_DBB_WAIT_CREGXW;
+                // if (dbb_wait_for_text("+CIREG: 1", response, sizeof(response), DBB_WAIT_EVENT_TIMEOUT_MS) < 0)
+                // {
+                //     dbb_debug_err("wait +CIREG: 1 failed");
+                //     return;
+                // }
+                // dbb_dump_response(response);
+                dbb_ctrl.status = DEV_DBB_WAIT_CREGXW;
+            }
+            break;
+        case DEV_DBB_WAIT_CREGXW:
+            if (dbb_at_expect("wait for CREGXW", "AT+CREGXW?", "+CREGXW:1") == 0)
+            {
+                dbb_ctrl.status = DEV_DBB_WAIT_CREV;
+            }
+            break;
+        case DEV_DBB_WAIT_CREV:
+            if (dbb_wait_for_text("+CREV: ME PDN ACT 1", response, sizeof(response), DBB_WAIT_EVENT_TIMEOUT_MS) == 0)
+            {
+                dbb_dump_response(response);
+                dbb_ctrl.status = DEV_DBB_WAIT_CIREG;
+            }
+            break;
+        case DEV_DBB_WAIT_CIREG:
+            if (dbb_at_expect("wait for CIREG", "AT+CIREG?", "+CIREG:1") == 0)
+            {
+                dbb_ctrl.status = DEV_DBB_ONLINE;
+                set_led(DEV_DBB_LED, 1);
+            }
+            break;
+        case DEV_DBB_ONLINE:
+            dbb_online_service();
+            break;
+        case DEV_DBB_POWER_OFF:
+            dbb_ctrl.status = DEV_DBB_IDLE;
+            break;
+        default:
+            dbb_ctrl.status = DEV_DBB_INIT;
+            break;
         }
-        break;
-    case DEV_DBB_WAIT_CREGXW:
-        if (dbb_at_expect("wait for CREGXW", "AT+CREGXW?", "+CREGXW:1") == 0)
-        {
-            dbb_ctrl.status = DEV_DBB_WAIT_CREV;
-        }
-        break;
-    case DEV_DBB_WAIT_CREV:
-        if (dbb_wait_for_text("+CREV: ME PDN ACT 1", response, sizeof(response), DBB_WAIT_EVENT_TIMEOUT_MS) == 0)
-        {
-            dbb_dump_response(response);
-            dbb_ctrl.status = DEV_DBB_WAIT_CIREG;
-        }
-        break;
-    case DEV_DBB_WAIT_CIREG:
-        if (dbb_at_expect("wait for CIREG", "AT+CIREG?", "+CIREG:1") == 0)
-        {
-            dbb_ctrl.status = DEV_DBB_ONLINE;
-            set_led(DEV_DBB_LED, 1);
-        }
-        break;
-    case DEV_DBB_ONLINE:
-        dbb_online_service();
-        break;
-    case DEV_DBB_ONLINE_BROADCAST:
-        dbb_online_broadcast_service();
-        break;
-    case DEV_DBB_POWER_OFF:
-        dbb_ctrl.status = DEV_DBB_IDLE;
-        break;
-    default:
-        dbb_ctrl.status = DEV_DBB_INIT;
-        break;
     }
 }
 
@@ -371,10 +423,7 @@ void *dbb_thread_func(void *arg)
     dbb_ctrl.enabled = 1;
     dbb_ctrl.status = DEV_DBB_INIT;
     dbb_close_device();
-    // if (DBB_RECEIVE_MODE == DBB_RECEIVE_MODE_CARD)
-    // {
-    //     dbb_cfg_once();
-    // }
+
 
     while (1)
     {

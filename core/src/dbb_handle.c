@@ -15,11 +15,6 @@
 #include "dbb_func.h"
 #include "gnss_func.h"
 
-
-
-
-
-
 static int dbb_hex_encode(const uint8_t *input, size_t input_len, char *output, size_t output_size)
 {
     static const char lut[] = "0123456789ABCDEF";
@@ -191,9 +186,6 @@ static int dbb_base64_decode(const char *input, uint8_t *output, size_t output_s
     *output_len = len;
     return 0;
 }
-
-
-
 
 static int hex_char_to_nibble(char c)
 {
@@ -616,7 +608,6 @@ static int dbb_decode_sms_deliver_pdu(const char *pdu_hex, char *from, size_t fr
     return 0;
 }
 
-
 int dbb_send_sms(const char *target, const char *text)
 {
     char pdu_hex[DBB_MAX_SMS_PDU_HEX];
@@ -674,9 +665,6 @@ int dbb_send_sms(const char *target, const char *text)
     return 0;
 }
 
-
-
-
 static int dbb_data_prepare_uplink(const uint8_t *raw_input,
                                    size_t raw_input_len,
                                    dbb_data_codec_t codec,
@@ -716,9 +704,6 @@ static int dbb_data_prepare_uplink(const uint8_t *raw_input,
     return -1;
 }
 
-
-
-
 int dbb_send_uplink(const uint8_t *raw_payload, size_t raw_payload_len, dbb_data_codec_t codec)
 {
     char command[DBB_MAX_UL_DATA_HEX + 64];
@@ -745,9 +730,6 @@ int dbb_send_uplink(const uint8_t *raw_payload, size_t raw_payload_len, dbb_data
     dbb_debug_info("uplink sent: %zu bytes via %s", bytes_len, chset);
     return 0;
 }
-
-
-
 
 static void dbb_handle_sms_cmt(const char *urc)
 {
@@ -923,19 +905,21 @@ static void dbb_handle_ssrinfoxw(const char *urc)
         }
     }
 
-    if (gnss_ctrl.fd < 0)
+    if (gnss_ctrl.fd == GNSS_CALC_DPPP)
     {
-        dbb_debug_err("drop ^SSRINFOXW payload: GNSS device is not open");
-        return;
+        if (gnss_ctrl.fd < 0)
+        {
+            dbb_debug_err("drop ^SSRINFOXW payload: GNSS device is not open");
+            return;
+        }
+        if (gnss_dev_write(gnss_ctrl.fd, raw, raw_len) != (int)raw_len)
+        {
+            dbb_debug_err("forward ^SSRINFOXW payload to GNSS failed: %zu bytes", raw_len);
+            return;
+        }
+        dbb_debug_info("forwarded ^SSRINFOXW payload to GNSS: %zu bytes", raw_len);
     }
-
-    if (gnss_dev_write(gnss_ctrl.fd, raw, raw_len) != (int)raw_len)
-    {
-        dbb_debug_err("forward ^SSRINFOXW payload to GNSS failed: %zu bytes", raw_len);
-        return;
-    }
-
-    dbb_debug_info("forwarded ^SSRINFOXW payload to GNSS: %zu bytes", raw_len);
+    
 }
 
 static void dbb_handle_cgev(const char *urc)
@@ -959,5 +943,3 @@ void dbb_handle_urc_blob(const char *urc)
     dbb_handle_sms_cmt(urc);
     dbb_handle_cgev(urc);
 }
-
-

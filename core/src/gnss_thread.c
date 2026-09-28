@@ -18,6 +18,7 @@
 #include "src_led.h"
 #include <time.h>
 #include <sys/time.h>
+#include "string.h"
 
 gnss_ctrl_t gnss_ctrl = {
     .fd = -1,
@@ -242,6 +243,29 @@ void gnss_cfg_mode(int fd, char *workMode, char *calcType, uint8_t freqCode)
     {
         perror("write gnss device");
     }
+    else
+    {
+        if (strcasecmp(calcType, "ppp") == 0)
+        {
+            gnss_ctrl.calc_type = GNSS_CALC_PPP;
+        }
+        else if (strcasecmp(calcType, "fppp") == 0)
+        {
+            gnss_ctrl.calc_type = GNSS_CALC_FPPP;
+        }
+        else if (strcasecmp(calcType, "rtk") == 0)
+        {
+            gnss_ctrl.calc_type = GNSS_CALC_RTK;
+        }
+        else if (strcasecmp(calcType, "rtd") == 0)
+        {
+            gnss_ctrl.calc_type = GNSS_CALC_RTD;
+        }
+        else if (strcasecmp(calcType, "dppp") == 0)
+        {
+            gnss_ctrl.calc_type = GNSS_CALC_DPPP;
+        }
+    }
 }
 
 void *gnss_thread_func(void *arg)
@@ -270,7 +294,8 @@ void *gnss_thread_func(void *arg)
     usleep(100000); // Sleep for 100 milliseconds
 
     gnss_ctrl.data_type = GNSS_DATA_AUTO;
-
+    gnss_cfg_mode(gnss_ctrl.fd, "ROVER", "FPPP", 13);
+    sleep(2); 
     gnss_cfg_dis_enable(gnss_ctrl.fd, "RMC", 1, 1);
     // usleep(100000); // Sleep for 100 milliseconds
     // gnss_cfg_dis_enable(gnss_ctrl.fd, "GGA", 1, 1);

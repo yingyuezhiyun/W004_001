@@ -20,6 +20,15 @@ extern "C"
         GNSS_PRINT_SUMMARY,
     } gnss_PrintType_t;
 
+    typedef enum
+    {
+        GNSS_CALC_PPP,
+        GNSS_CALC_FPPP,
+        GNSS_CALC_RTK,
+        GNSS_CALC_RTD,
+        GNSS_CALC_DPPP,
+    }gnss_CalcType_t;
+
     typedef struct
     {
         uint8_t en;
@@ -61,6 +70,7 @@ extern "C"
         uint16_t data_nmea_len;
         uint8_t data_raw[8192];
         uint16_t data_raw_len;
+        gnss_CalcType_t calc_type;
         struct
         {
             uint8_t nmea;

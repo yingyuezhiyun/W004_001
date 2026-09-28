@@ -36,6 +36,12 @@ extern "C"
 
     typedef enum
     {
+        DBB_MODE_NORMAL,
+        DBB_MODE_BROADCAST,
+    }dbb_WorkMode_t;
+
+    typedef enum
+    {
         DEV_DBB_IDLE,
         DEV_DBB_INIT,
         DEV_DBB_POWER_ON,
@@ -76,7 +82,7 @@ extern "C"
             uint8_t info;
             uint8_t err;
         } print;
-
+        dbb_WorkMode_t mode;
     } dbb_ctrl_t;
 
     extern dbb_ctrl_t dbb_ctrl;
