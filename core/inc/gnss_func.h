@@ -6,11 +6,12 @@ extern "C"
 #endif
 
 #include "third_party/minmea.h"
+#include <pthread.h>
     typedef enum
     {
         GNSS_DATA_AUTO,
         GNSS_DATA_NMEA,
-        GNSS_DATA_RAW,
+        GNSS_DATA_EPHB,
     } gnss_DataType_t;
 
     typedef enum
@@ -27,7 +28,7 @@ extern "C"
         GNSS_CALC_RTK,
         GNSS_CALC_RTD,
         GNSS_CALC_DPPP,
-    }gnss_CalcType_t;
+    } gnss_CalcType_t;
 
     typedef struct
     {
@@ -36,31 +37,7 @@ extern "C"
         char path[128];
     } File_cfg_t;
 
-    typedef struct
-    {
-        File_cfg_t gpsephb;
-        File_cfg_t bd2ephb;
-        File_cfg_t bd3ephb;
-        File_cfg_t gloephb;
-        File_cfg_t galephb;
-        File_cfg_t bdxwephb;
-        File_cfg_t bd3cnav2ephb;
-        File_cfg_t bd3cnav3ephb;
-    } EPHB_File_sw_t;
-
-    typedef struct
-    {
-        File_cfg_t gbs;
-        File_cfg_t gga;
-        File_cfg_t gll;
-        File_cfg_t gsa;
-        File_cfg_t gst;
-        File_cfg_t gsv;
-        File_cfg_t rmc;
-        File_cfg_t vtg;
-        File_cfg_t zda;
-
-    } NMEA_File_sw_t;
+ 
 
     typedef struct
     {
@@ -73,11 +50,32 @@ extern "C"
         gnss_CalcType_t calc_type;
         struct
         {
-            uint8_t nmea;
-            uint8_t raw;
+            gnss_PrintType_t nmea;
+            gnss_PrintType_t nmea_raw;
+            gnss_PrintType_t ephb;
         } print;
-        EPHB_File_sw_t ephb_file_sw;
-        NMEA_File_sw_t nmea_file_sw;
+        struct
+        {
+            File_cfg_t gpsephb;
+            File_cfg_t bd2ephb;
+            File_cfg_t bd3ephb;
+            File_cfg_t gloephb;
+            File_cfg_t galephb;
+            File_cfg_t bdxwephb;
+            File_cfg_t bd3cnav2ephb;
+            File_cfg_t bd3cnav3ephb;
+
+            File_cfg_t gbs;
+            File_cfg_t gga;
+            File_cfg_t gll;
+            File_cfg_t gsa;
+            File_cfg_t gst;
+            File_cfg_t gsv;
+            File_cfg_t rmc;
+            File_cfg_t vtg;
+            File_cfg_t zda;
+        } file;
+        pthread_mutex_t fd_mutex;
     } gnss_ctrl_t;
 #pragma pack(1)
     typedef struct
@@ -508,11 +506,11 @@ extern "C"
 
     void handle_gnss_nmea(const char *sentence);
     int handle_gnss_raw(const uint8_t *data, size_t len);
-    int gnss_dev_write(int fd, const void *buf, size_t count);
-    void gnss_cfg_disable_all(int fd);
-    void gnss_cfg_enable_onchange(int fd, char *type);
-    void gnss_cfg_dis_enable(int fd, char *type, uint8_t enable, uint8_t per_second);
-    void gnss_cfg_mode(int fd, char *workMode, char *calcType, uint8_t freqCode);
+    int gnss_dev_write(const void *buf, size_t count);
+    void gnss_cfg_disable_all();
+    void gnss_cfg_enable_onchange(char *type);
+    void gnss_cfg_dis_enable(char *type, uint8_t enable, uint8_t per_second);
+    void gnss_cfg_mode(char *workMode, char *calcType, uint8_t freqCode);
     void gnss_cfg_sys(char *sys, uint8_t enable);
     int8_t gnss_bdd_enable();
     int8_t gnss_bdd_disable();
@@ -534,7 +532,7 @@ extern "C"
     void print_posdatab(const POSDATAB_Decoded_t *pos, uint32_t payload_crc_calc);
     void print_prangeb(const PRANGEB_Decoded_t *prange, uint32_t payload_crc_calc);
 
-    char *gnss_raw_info_file_header(char *type, uint8_t enable);
+    char *gnss_ephb_info_file_header(char *type, uint8_t enable);
     char *gnss_nmea_file_header(char *type, uint8_t enable);
     void bd2ephb_file_append(const BD2EPHB_Decoded_t *eph);
     void bd3ephb_file_append(const BD3EPHB_Decoded_t *eph);

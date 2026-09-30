@@ -29,10 +29,11 @@ gnss_ctrl_t gnss_ctrl = {
     .data_raw_len = 0,
     .print = {
         .nmea = GNSS_PRINT_SUMMARY,
-        .raw = GNSS_PRINT_SUMMARY,
+        .ephb = GNSS_PRINT_SUMMARY,
+        .nmea_raw = GNSS_PRINT_NONE,
     },
-    .ephb_file_sw = {.gpsephb = {0}, .bd2ephb = {0}, .bd3ephb = {0}, .gloephb = {0}, .galephb = {0}, .bdxwephb = {0}, .bd3cnav2ephb = {0}, .bd3cnav3ephb = {0}},
-    .nmea_file_sw = {.gbs = {0}, .gga = {0}, .gll = {0}, .gsa = {0}, .gst = {0}, .gsv = {0}, .rmc = {0}, .vtg = {0}, .zda = {0}},
+    .file = {.gpsephb = {0}, .bd2ephb = {0}, .bd3ephb = {0}, .gloephb = {0}, .galephb = {0}, .bdxwephb = {0}, .bd3cnav2ephb = {0}, .bd3cnav3ephb = {0}, .gbs = {0}, .gga = {0}, .gll = {0}, .gsa = {0}, .gst = {0}, .gsv = {0}, .rmc = {0}, .vtg = {0}, .zda = {0}},
+    .fd_mutex = PTHREAD_MUTEX_INITIALIZER,
 };
 
 static void gnss_handle_nmea_bytes(const uint8_t *buf, size_t len, int require_sentence_start)
@@ -45,7 +46,7 @@ static void gnss_handle_nmea_bytes(const uint8_t *buf, size_t len, int require_s
         {
             continue;
         }
-        if(require_sentence_start && c == '$')
+        if (require_sentence_start && c == '$')
         {
             gnss_ctrl.data_nmea_len = 0;
         }
@@ -89,7 +90,7 @@ static void gnss_handle_raw_bytes(const uint8_t *buf, size_t len)
 {
     if (gnss_ctrl.data_raw_len == sizeof(gnss_ctrl.data_raw))
     {
-        fprintf(stderr, "GNSS raw data buffer overflow, dropping data\n");
+        fprintf(stderr, "GNSS ephb data buffer overflow, dropping data\n");
         gnss_ctrl.data_raw_len = 0;
     }
 
@@ -134,19 +135,23 @@ int8_t gnss_bdd_disable()
     return 0;
 }
 
-int gnss_dev_write(int fd, const void *buf, size_t count)
+int gnss_dev_write(const void *buf, size_t count)
 {
-    if (fd < 0)
+    pthread_mutex_lock(&gnss_ctrl.fd_mutex);
+    if (gnss_ctrl.fd < 0)
     {
         fprintf(stderr, "Invalid file descriptor\n");
+        pthread_mutex_unlock(&gnss_ctrl.fd_mutex);
         return -1;
     }
-    ssize_t result = write(fd, buf, count);
+    ssize_t result = write(gnss_ctrl.fd, buf, count);
     if (result < 0)
     {
         perror("write gnss device");
+        pthread_mutex_unlock(&gnss_ctrl.fd_mutex);
         return -1;
     }
+    pthread_mutex_unlock(&gnss_ctrl.fd_mutex);
     return result;
 }
 
@@ -154,7 +159,7 @@ int gnss_dev_write(int fd, const void *buf, size_t count)
 /// @param type NMEA sentence type, e.g. "RMC", "GGA", "GLL", "GSA", "GST", "GSV", "VTG", "ZDA" , "GBS" ,"HDT", "NTR", "ORI", "ROT", "TRA", "DTM"
 /// @param enable 0 to disable, 1 to enable
 /// @param per_second > 0 , number of sentences to output per second
-void gnss_cfg_dis_enable(int fd, char *type, uint8_t enable, uint8_t per_second)
+void gnss_cfg_dis_enable(char *type, uint8_t enable, uint8_t per_second)
 {
 
     char buff[128];
@@ -162,12 +167,12 @@ void gnss_cfg_dis_enable(int fd, char *type, uint8_t enable, uint8_t per_second)
     if (enable)
     {
         snprintf(buff, sizeof(buff), "CSHG OPEN COM1 %s ONTIME %d \r\n", type, per_second);
-        result = gnss_dev_write(fd, buff, strlen(buff));
+        result = gnss_dev_write(buff, strlen(buff));
     }
     else
     {
         snprintf(buff, sizeof(buff), "CSHG CLOSE COM1 %s \r\n", type);
-        result = gnss_dev_write(fd, buff, strlen(buff));
+        result = gnss_dev_write(buff, strlen(buff));
     }
     if (result < 0)
     {
@@ -179,13 +184,13 @@ void gnss_cfg_dis_enable(int fd, char *type, uint8_t enable, uint8_t per_second)
     }
 }
 
-void gnss_cfg_enable_onchange(int fd, char *type)
+void gnss_cfg_enable_onchange(char *type)
 {
 
     char buff[128];
     int result = 0;
     snprintf(buff, sizeof(buff), "CSHG ONCHANGE COM1 %s ONCHANGED \r\n", type);
-    result = gnss_dev_write(fd, buff, strlen(buff));
+    result = gnss_dev_write(buff, strlen(buff));
     if (result < 0)
     {
         perror("write gnss device");
@@ -196,7 +201,6 @@ void gnss_cfg_enable_onchange(int fd, char *type)
     }
 }
 
-
 void gnss_cfg_sys(char *sys, uint8_t enable)
 {
     char buff[128];
@@ -204,12 +208,12 @@ void gnss_cfg_sys(char *sys, uint8_t enable)
     if (enable)
     {
         snprintf(buff, sizeof(buff), "CSHG SYSEN %s ON \r\n", sys);
-        result = gnss_dev_write(gnss_ctrl.fd, buff, strlen(buff));
+        result = gnss_dev_write(buff, strlen(buff));
     }
     else
     {
         snprintf(buff, sizeof(buff), "CSHG SYSEN %s OFF \r\n", sys);
-        result = gnss_dev_write(gnss_ctrl.fd, buff, strlen(buff));
+        result = gnss_dev_write(buff, strlen(buff));
     }
     if (result < 0)
     {
@@ -221,24 +225,22 @@ void gnss_cfg_sys(char *sys, uint8_t enable)
     }
 }
 
-
-void gnss_cfg_disable_all(int fd)
+void gnss_cfg_disable_all()
 {
     char buff[128];
     snprintf(buff, sizeof(buff), "CSHG CLOSEALL COM1 \r\n");
-    int result = gnss_dev_write(fd, buff, strlen(buff));
+    int result = gnss_dev_write(buff, strlen(buff));
 }
 
 /// @brief 设置GNSS工作模式，设置模式后，模块会重启，需要再次开启相关协议数据输出
-/// @param fd
 /// @param workMode 工作模式 BASE:基准站模式 ROVER:流动站模式
 /// @param calcType 解算类型 RTD/RTK/PPP/DPPP/FPPP
 /// @param freqCode 工作频点代码 1：全频点模式  2：低功耗模式 10：高性能模式 13：导航增强模式
-void gnss_cfg_mode(int fd, char *workMode, char *calcType, uint8_t freqCode)
+void gnss_cfg_mode(char *workMode, char *calcType, uint8_t freqCode)
 {
     char buff[128];
     snprintf(buff, sizeof(buff), "CSHG MODE %s %s %d \r\n", workMode, calcType, freqCode);
-    int result = gnss_dev_write(fd, buff, strlen(buff));
+    int result = gnss_dev_write(buff, strlen(buff));
     if (result < 0)
     {
         perror("write gnss device");
@@ -282,43 +284,48 @@ void *gnss_thread_func(void *arg)
         return NULL;
     }
     sleep(2); // Sleep for 2 seconds to allow the BDD to power up
+
+    pthread_mutex_lock(&gnss_ctrl.fd_mutex);
     gnss_ctrl.fd = open(DEV_GNSS, O_RDWR | O_NOCTTY | O_NDELAY);
     if (gnss_ctrl.fd < 0)
     {
         perror("open gnss device");
+        pthread_mutex_unlock(&gnss_ctrl.fd_mutex);
         return NULL;
     }
     set_opt(gnss_ctrl.fd, 115200, 8, 'N', 1);
+    pthread_mutex_unlock(&gnss_ctrl.fd_mutex);
+
     usleep(100000); // Sleep for 100 milliseconds to allow the device to initialize
-    // gnss_cfg_disable_all(gnss_ctrl.fd);
+    // gnss_cfg_disable_all();
     usleep(100000); // Sleep for 100 milliseconds
 
     gnss_ctrl.data_type = GNSS_DATA_AUTO;
-    gnss_cfg_mode(gnss_ctrl.fd, "ROVER", "FPPP", 13);
-    sleep(2); 
-    gnss_cfg_dis_enable(gnss_ctrl.fd, "RMC", 1, 1);
+    gnss_cfg_mode("ROVER", "FPPP", 13);
+    sleep(2);
+    gnss_cfg_dis_enable("RMC", 1, 1);
     // usleep(100000); // Sleep for 100 milliseconds
-    // gnss_cfg_dis_enable(gnss_ctrl.fd, "GGA", 1, 1);
+    // gnss_cfg_dis_enable( "GGA", 1, 1);
     // usleep(100000); // Sleep for 100 milliseconds
-    // gnss_cfg_dis_enable(gnss_ctrl.fd, "GSA", 1, 1);
+    // gnss_cfg_dis_enable( "GSA", 1, 1);
     // usleep(100000); // Sleep for 100 milliseconds
-    // gnss_cfg_dis_enable(gnss_ctrl.fd, "GST", 1, 1);
+    // gnss_cfg_dis_enable( "GST", 1, 1);
 
-    // gnss_cfg_enable_onchange(gnss_ctrl.fd, "GPSEPHB");
-    // gnss_cfg_dis_enable(gnss_ctrl.fd, "GPSEPHB", 1, 1);
+    // gnss_cfg_enable_onchange("GPSEPHB");
+    // gnss_cfg_dis_enable( "GPSEPHB", 1, 1);
     // gpsephb_file_header();
-    // gnss_cfg_dis_enable(gnss_ctrl.fd, "BD2EPHB", 1, 1);
-    // gnss_cfg_dis_enable(gnss_ctrl.fd, "BD3EPHB", 1, 1);
-    // gnss_cfg_dis_enable(gnss_ctrl.fd, "GLOEPHB", 1, 1);//todo 无数据
-    // gnss_cfg_dis_enable(gnss_ctrl.fd, "GALEPHB", 1, 1);
-    // gnss_cfg_dis_enable(gnss_ctrl.fd, "BD3CANV1EPHB", 1, 1); // todo 无数据
-    // gnss_cfg_dis_enable(gnss_ctrl.fd, "BD3CANV2EPHB", 1, 1);//todo 无数据
-    // gnss_cfg_dis_enable(gnss_ctrl.fd, "BD3CNAV3EPHB", 1, 1);//todo 无数据 解析错误
-    // gnss_cfg_dis_enable(gnss_ctrl.fd, "PRANGEB", 1, 1);//
+    // gnss_cfg_dis_enable( "BD2EPHB", 1, 1);
+    // gnss_cfg_dis_enable( "BD3EPHB", 1, 1);
+    // gnss_cfg_dis_enable( "GLOEPHB", 1, 1);//todo 无数据
+    // gnss_cfg_dis_enable( "GALEPHB", 1, 1);
+    // gnss_cfg_dis_enable( "BD3CANV1EPHB", 1, 1); // todo 无数据
+    // gnss_cfg_dis_enable( "BD3CANV2EPHB", 1, 1);//todo 无数据
+    // gnss_cfg_dis_enable( "BD3CNAV3EPHB", 1, 1);//todo 无数据 解析错误
+    // gnss_cfg_dis_enable( "PRANGEB", 1, 1);//
     // char *enable_ins = "CSHG INS ON\r\n"; // 启用组合导航功能
-    // gnss_dev_write(gnss_ctrl.fd, enable_ins, strlen(enable_ins));
-    // gnss_cfg_dis_enable(gnss_ctrl.fd, "POSDATAB", 1, 1);//最优定位信息输出
-    // gnss_cfg_dis_enable(gnss_ctrl.fd, "BDXWEPHB", 1, 1);
+    // gnss_dev_write(enable_ins, strlen(enable_ins));
+    // gnss_cfg_dis_enable("POSDATAB", 1, 1);//最优定位信息输出
+    // gnss_cfg_dis_enable("BDXWEPHB", 1, 1);
     char buf[4096];
 
     while (1)
@@ -327,7 +334,9 @@ void *gnss_thread_func(void *arg)
 
         while (1)
         {
+            pthread_mutex_lock(&gnss_ctrl.fd_mutex);
             int n = read(gnss_ctrl.fd, buf, sizeof(buf));
+            pthread_mutex_unlock(&gnss_ctrl.fd_mutex);
             if (n > 0)
             {
                 drained = 1;
@@ -362,13 +371,13 @@ void *gnss_thread_func(void *arg)
             if (n < 0)
             {
                 perror("read gnss device");
+                pthread_mutex_lock(&gnss_ctrl.fd_mutex);
                 close(gnss_ctrl.fd);
+                pthread_mutex_unlock(&gnss_ctrl.fd_mutex);
                 return NULL;
             }
-
             break;
         }
-
         if (!drained)
         {
             usleep(1000); // Sleep briefly when no data is available
@@ -378,6 +387,5 @@ void *gnss_thread_func(void *arg)
     }
 
     close(gnss_ctrl.fd);
-
     return NULL;
 }

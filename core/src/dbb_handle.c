@@ -905,21 +905,16 @@ static void dbb_handle_ssrinfoxw(const char *urc)
         }
     }
 
-    if (gnss_ctrl.fd == GNSS_CALC_DPPP)
+    if (gnss_ctrl.calc_type == GNSS_CALC_DPPP)
     {
-        if (gnss_ctrl.fd < 0)
-        {
-            dbb_debug_err("drop ^SSRINFOXW payload: GNSS device is not open");
-            return;
-        }
-        if (gnss_dev_write(gnss_ctrl.fd, raw, raw_len) != (int)raw_len)
+        
+        if (gnss_dev_write(raw, raw_len) != (int)raw_len)
         {
             dbb_debug_err("forward ^SSRINFOXW payload to GNSS failed: %zu bytes", raw_len);
             return;
         }
         dbb_debug_info("forwarded ^SSRINFOXW payload to GNSS: %zu bytes", raw_len);
     }
-    
 }
 
 static void dbb_handle_cgev(const char *urc)

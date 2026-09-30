@@ -28,33 +28,33 @@ typedef struct
     uint64_t timestamp; // 时间戳，单位毫秒
 } pos_info_t;
 
-// NMEA_File_sw_t nmea_file_sw = {0};
+
 
 static enum minmea_sentence_id nmea_file_type = MINMEA_UNKNOWN;
 
 static File_cfg_t *nmea_file_config(enum minmea_sentence_id type)
 {
-    NMEA_File_sw_t *nmea_file_sw = &gnss_ctrl.nmea_file_sw;
+    
     switch (type)
     {
     case MINMEA_SENTENCE_GBS:
-        return &nmea_file_sw->gbs;
+        return &gnss_ctrl.file.gbs;
     case MINMEA_SENTENCE_GGA:
-        return &nmea_file_sw->gga;
+        return &gnss_ctrl.file.gga;
     case MINMEA_SENTENCE_GLL:
-        return &nmea_file_sw->gll;
+        return &gnss_ctrl.file.gll;
     case MINMEA_SENTENCE_GSA:
-        return &nmea_file_sw->gsa;
+        return &gnss_ctrl.file.gsa;
     case MINMEA_SENTENCE_GST:
-        return &nmea_file_sw->gst;
+        return &gnss_ctrl.file.gst;
     case MINMEA_SENTENCE_GSV:
-        return &nmea_file_sw->gsv;
+        return &gnss_ctrl.file.gsv;
     case MINMEA_SENTENCE_RMC:
-        return &nmea_file_sw->rmc;
+        return &gnss_ctrl.file.rmc;
     case MINMEA_SENTENCE_VTG:
-        return &nmea_file_sw->vtg;
+        return &gnss_ctrl.file.vtg;
     case MINMEA_SENTENCE_ZDA:
-        return &nmea_file_sw->zda;
+        return &gnss_ctrl.file.zda;
     default:
         return NULL;
     }
@@ -298,6 +298,11 @@ void handle_gnss_nmea(const char *sentence)
         return;
     }
     nmea_file_type = minmea_sentence_id(sentence, false);
+    if (nmea_file_type != MINMEA_UNKNOWN && gnss_ctrl.print.nmea_raw != GNSS_PRINT_NONE)
+    {
+        printf("%s\n", sentence);
+    }
+
     switch (minmea_sentence_id(sentence, false))
     {
     case MINMEA_SENTENCE_RMC:

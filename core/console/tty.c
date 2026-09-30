@@ -52,10 +52,10 @@ struct vty_cfg_s *vty_cfg = NULL;
 
 DEFUN(gnss_data_type_cfg,
       gnss_data_type_cfg_cmd,
-      "gnss data type (auto|nmea|raw)",
+      "gnss data type (auto|nmea|ephb)",
       "gnss ctrl\n"
       "Set gnss data type\n"
-      "auto, nmea or raw\n")
+      "auto, nmea or ephb\n")
 {
     if (strcmp(argv[0], "auto") == 0)
     {
@@ -67,10 +67,10 @@ DEFUN(gnss_data_type_cfg,
         gnss_ctrl.data_type = GNSS_DATA_NMEA;
         vty_out(vty, "set gnss data type to nmea%s", VTY_NEWLINE);
     }
-    else if (strcmp(argv[0], "raw") == 0)
+    else if (strcmp(argv[0], "ephb") == 0)
     {
-        gnss_ctrl.data_type = GNSS_DATA_RAW;
-        vty_out(vty, "set gnss data type to raw%s", VTY_NEWLINE);
+        gnss_ctrl.data_type = GNSS_DATA_EPHB;
+        vty_out(vty, "set gnss data type to ephb%s", VTY_NEWLINE);
     }
     return CMD_SUCCESS;
 }
@@ -82,7 +82,7 @@ DEFUN(gnss_type_on_change_cfg,
       "Set gnss <type> on or off\n"
       "on or off\n")
 {
-    gnss_cfg_enable_onchange(gnss_ctrl.fd, argv[0]);
+    gnss_cfg_enable_onchange(argv[0]);
     vty_out(vty, "set gnss type %s to onchange%s", argv[0], VTY_NEWLINE);
     return CMD_SUCCESS;
 }
@@ -96,7 +96,7 @@ DEFUN(gnss_type_on_cfg,
 {
 
     int per_second = atoi(argv[1]);
-    gnss_cfg_dis_enable(gnss_ctrl.fd, argv[0], 1, per_second);
+    gnss_cfg_dis_enable(argv[0], 1, per_second);
     vty_out(vty, "set gnss type %s to on %d/s%s", argv[0], per_second, VTY_NEWLINE);
 
     return CMD_SUCCESS;
@@ -126,12 +126,12 @@ DEFUN(gnss_type_off_cfg,
 {
     if (strcmp(argv[0], "all") == 0)
     {
-        gnss_cfg_disable_all(gnss_ctrl.fd);
+        gnss_cfg_disable_all();
         vty_out(vty, "set gnss all type to off%s", VTY_NEWLINE);
     }
     else
     {
-        gnss_cfg_dis_enable(gnss_ctrl.fd, argv[0], 0, 0);
+        gnss_cfg_dis_enable(argv[0], 0, 0);
         vty_out(vty, "set gnss type %s to off%s", argv[0], VTY_NEWLINE);
     }
     return CMD_SUCCESS;
@@ -149,7 +149,7 @@ DEFUN(gnss_mode_cfg,
     char *workMode = argv[0];
     char *calcType = argv[1];
     uint8_t freqCode = atoi(argv[2]);
-    gnss_cfg_mode(gnss_ctrl.fd, workMode, calcType, freqCode);
+    gnss_cfg_mode(workMode, calcType, freqCode);
     vty_out(vty, "set gnss mode to %s %s freq code %d%s", workMode, calcType, freqCode, VTY_NEWLINE);
     vty_out(vty, "Note: the module will restart after setting mode, please re-enable the desired data output%s", VTY_NEWLINE);
     return CMD_SUCCESS;
@@ -164,7 +164,7 @@ DEFUN(gnss_file_cfg,
 {
     gnss_ctrl.data_type = GNSS_DATA_AUTO;
     uint8_t sw = strcmp(argv[1], "on") == 0;
-    // gnss_cfg_disable_all(gnss_ctrl.fd);
+    // gnss_cfg_disable_all();
     usleep(100000);
     char *file_path;
     if (strcmp(argv[0], "gbs") == 0 || strcmp(argv[0], "gga") == 0 ||
@@ -177,7 +177,7 @@ DEFUN(gnss_file_cfg,
     }
     else
     {
-        file_path = gnss_raw_info_file_header(argv[0], sw);
+        file_path = gnss_ephb_info_file_header(argv[0], sw);
     }
     if (sw)
     {
@@ -192,7 +192,7 @@ DEFUN(gnss_file_cfg,
 
 DEFUN(gnss_print_cfg,
       gnss_print_cfg_cmd,
-      "gnss print (nmea|raw) (summary|full|none)",
+      "gnss print (nmea|nmea_raw|ephb) (summary|full|none)",
       "gnss print <type> \n"
       "Set gnss print <type> on summary or detail\n"
       "summary | full | none\n")
@@ -216,11 +216,16 @@ DEFUN(gnss_print_cfg,
         gnss_ctrl.print.nmea = print_type;
         vty_out(vty, "set gnss print nmea to %s%s", argv[1], VTY_NEWLINE);
     }
-    else if (strcmp(argv[0], "raw") == 0)
+    else if (strcmp(argv[0], "ephb") == 0)
     {
-        gnss_ctrl.print.raw = print_type;
-        vty_out(vty, "set gnss print raw to %s%s", argv[1], VTY_NEWLINE);
+        gnss_ctrl.print.ephb = print_type;
+        vty_out(vty, "set gnss print ephb to %s%s", argv[1], VTY_NEWLINE);
     }
+    else if (strcmp(argv[0], "nmea_raw") == 0)
+    {
+        gnss_ctrl.print.nmea_raw = print_type;
+        vty_out(vty, "set gnss print nmea_raw to %s%s", argv[1], VTY_NEWLINE);
+    }   
     return CMD_SUCCESS;
 }
 
@@ -244,9 +249,6 @@ DEFUN(dbb_print_cfg,
     }
     return CMD_SUCCESS;
 }
-
-
-
 
 DEFUN(gnss_net_up_cfg,
       gnss_net_up_cfg_cmd,
@@ -359,7 +361,6 @@ void tty_init(void)
 
     install_element(ENABLE_NODE, &gnss_sys_cfg_cmd);
     install_element(RADIO_NODE, &gnss_sys_cfg_cmd);
-
 
     install_element(ENABLE_NODE, &dbb_print_cfg_cmd);
     install_element(RADIO_NODE, &dbb_print_cfg_cmd);

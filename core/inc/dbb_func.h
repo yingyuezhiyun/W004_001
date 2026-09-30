@@ -4,7 +4,7 @@
 extern "C"
 {
 #endif
-
+#include <pthread.h>
 #define DBB_DEBUG_INFO (0)
 #define DBB_DEBUG_ERR (0)
 
@@ -38,7 +38,7 @@ extern "C"
     {
         DBB_MODE_NORMAL,
         DBB_MODE_BROADCAST,
-    }dbb_WorkMode_t;
+    } dbb_WorkMode_t;
 
     typedef enum
     {
@@ -83,6 +83,7 @@ extern "C"
             uint8_t err;
         } print;
         dbb_WorkMode_t mode;
+        pthread_mutex_t fd_mutex;
     } dbb_ctrl_t;
 
     extern dbb_ctrl_t dbb_ctrl;

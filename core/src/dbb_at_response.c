@@ -15,11 +15,6 @@
 #include "dbb_func.h"
 #include "gnss_func.h"
 
-
-
-
-
-
 int dbb_capture_response(const char *cmd, char *response, size_t response_size, int timeout_ms)
 {
     if (response == NULL || response_size == 0)
@@ -29,11 +24,6 @@ int dbb_capture_response(const char *cmd, char *response, size_t response_size, 
     }
 
     response[0] = '\0';
-
-    if (dbb_open_device() < 0)
-    {
-        return -1;
-    }
 
     if (cmd != NULL)
     {
@@ -54,7 +44,7 @@ int dbb_capture_response(const char *cmd, char *response, size_t response_size, 
     size_t used = 0;
     int idle_ms = 0;
     int total_ms = 0;
-
+    pthread_mutex_lock(&dbb_ctrl.fd_mutex);
     while (total_ms < timeout_ms && used + 1 < response_size)
     {
         fd_set read_fds;
@@ -74,6 +64,7 @@ int dbb_capture_response(const char *cmd, char *response, size_t response_size, 
                 continue;
             }
             perror("select dbb response");
+            pthread_mutex_unlock(&dbb_ctrl.fd_mutex);
             return -1;
         }
 
@@ -99,6 +90,7 @@ int dbb_capture_response(const char *cmd, char *response, size_t response_size, 
                 continue;
             }
             perror("read dbb response");
+            pthread_mutex_unlock(&dbb_ctrl.fd_mutex);
             return -1;
         }
 
@@ -111,10 +103,9 @@ int dbb_capture_response(const char *cmd, char *response, size_t response_size, 
         response[used] = '\0';
         idle_ms = 0;
     }
-
+    pthread_mutex_unlock(&dbb_ctrl.fd_mutex);
     return used > 0 ? 0 : -1;
 }
-
 
 int dbb_at_expect(const char *name, const char *cmd, const char *expect)
 {
@@ -144,7 +135,6 @@ int dbb_at_expect(const char *name, const char *cmd, const char *expect)
     return 0;
 }
 
-
 int dbb_wait_for_text(const char *expect, char *response, size_t response_size, int timeout_ms)
 {
     if (expect == NULL || expect[0] == '\0')
@@ -166,8 +156,6 @@ int dbb_wait_for_text(const char *expect, char *response, size_t response_size, 
     return 0;
 }
 
-
-
 void dbb_dump_response(const char *response)
 {
     if (response == NULL || response[0] == '\0')
@@ -176,4 +164,3 @@ void dbb_dump_response(const char *response)
     }
     dbb_debug_info("%s", response);
 }
-

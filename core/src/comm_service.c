@@ -180,82 +180,82 @@ void update_eph_sw()
 {
     if (glob_comm_config.eph_sw.content.bdxw)
     {
-        gnss_cfg_dis_enable(gnss_ctrl.fd, "BDXWEPHB", 1, glob_comm_config.output_freq);
+        gnss_cfg_dis_enable( "BDXWEPHB", 1, glob_comm_config.output_freq);
         usleep(50000); // Sleep for 50 milliseconds
     }
     else
     {
-        gnss_cfg_dis_enable(gnss_ctrl.fd, "BDXWEPHB", 0, glob_comm_config.output_freq);
+        gnss_cfg_dis_enable("BDXWEPHB", 0, glob_comm_config.output_freq);
         usleep(50000); // Sleep for 50 milliseconds
     }
     if (glob_comm_config.eph_sw.content.bd2)
     {
-        gnss_cfg_dis_enable(gnss_ctrl.fd, "BD2EPHB", 1, glob_comm_config.output_freq);
+        gnss_cfg_dis_enable( "BD2EPHB", 1, glob_comm_config.output_freq);
         usleep(50000); // Sleep for 50 milliseconds
     }
     else
     {
-        gnss_cfg_dis_enable(gnss_ctrl.fd, "BD2EPHB", 0, glob_comm_config.output_freq);
+        gnss_cfg_dis_enable( "BD2EPHB", 0, glob_comm_config.output_freq);
         usleep(50000); // Sleep for 50 milliseconds
     }
     if (glob_comm_config.eph_sw.content.bd3)
     {
-        gnss_cfg_dis_enable(gnss_ctrl.fd, "BD3EPHB", 1, glob_comm_config.output_freq);
+        gnss_cfg_dis_enable( "BD3EPHB", 1, glob_comm_config.output_freq);
         usleep(50000); // Sleep for 50 milliseconds
     }
     else
     {
-        gnss_cfg_dis_enable(gnss_ctrl.fd, "BD3EPHB", 0, glob_comm_config.output_freq);
+        gnss_cfg_dis_enable( "BD3EPHB", 0, glob_comm_config.output_freq);
         usleep(50000); // Sleep for 50 milliseconds
     }
     if (glob_comm_config.eph_sw.content.gps)
     {
-        gnss_cfg_dis_enable(gnss_ctrl.fd, "GPSEPHB", 1, glob_comm_config.output_freq);
+        gnss_cfg_dis_enable( "GPSEPHB", 1, glob_comm_config.output_freq);
         usleep(50000); // Sleep for 50 milliseconds
     }
     else
     {
-        gnss_cfg_dis_enable(gnss_ctrl.fd, "GPSEPHB", 0, glob_comm_config.output_freq);
+        gnss_cfg_dis_enable( "GPSEPHB", 0, glob_comm_config.output_freq);
         usleep(50000); // Sleep for 50 milliseconds
     }
     if (glob_comm_config.eph_sw.content.gal)
     {
-        gnss_cfg_dis_enable(gnss_ctrl.fd, "GALEPHB", 1, glob_comm_config.output_freq);
+        gnss_cfg_dis_enable("GALEPHB", 1, glob_comm_config.output_freq);
         usleep(50000); // Sleep for 50 milliseconds
     }
     else
     {
-        gnss_cfg_dis_enable(gnss_ctrl.fd, "GALEPHB", 0, glob_comm_config.output_freq);
+        gnss_cfg_dis_enable( "GALEPHB", 0, glob_comm_config.output_freq);
         usleep(50000); // Sleep for 50 milliseconds
     }
     if (glob_comm_config.eph_sw.content.glo)
     {
-        gnss_cfg_dis_enable(gnss_ctrl.fd, "GLOEPHB", 1, glob_comm_config.output_freq);
+        gnss_cfg_dis_enable( "GLOEPHB", 1, glob_comm_config.output_freq);
         usleep(50000); // Sleep for 50 milliseconds
     }
     else
     {
-        gnss_cfg_dis_enable(gnss_ctrl.fd, "GLOEPHB", 0, glob_comm_config.output_freq);
+        gnss_cfg_dis_enable( "GLOEPHB", 0, glob_comm_config.output_freq);
         usleep(50000); // Sleep for 50 milliseconds
     }
     if (glob_comm_config.eph_sw.content.bd3cnav2)
     {
-        gnss_cfg_dis_enable(gnss_ctrl.fd, "BD3CANV2EPHB", 1, glob_comm_config.output_freq);
+        gnss_cfg_dis_enable( "BD3CANV2EPHB", 1, glob_comm_config.output_freq);
         usleep(50000); // Sleep for 50 milliseconds
     }
     else
     {
-        gnss_cfg_dis_enable(gnss_ctrl.fd, "BD3CANV2EPHB", 0, glob_comm_config.output_freq);
+        gnss_cfg_dis_enable( "BD3CANV2EPHB", 0, glob_comm_config.output_freq);
         usleep(50000); // Sleep for 50 milliseconds
     }
     if (glob_comm_config.eph_sw.content.bd3cnav3)
     {
-        gnss_cfg_dis_enable(gnss_ctrl.fd, "BD3CNAV3EPHB", 1, glob_comm_config.output_freq);
+        gnss_cfg_dis_enable( "BD3CNAV3EPHB", 1, glob_comm_config.output_freq);
         usleep(50000); // Sleep for 50 milliseconds
     }
     else
     {
-        gnss_cfg_dis_enable(gnss_ctrl.fd, "BD3CNAV3EPHB", 0, glob_comm_config.output_freq);
+        gnss_cfg_dis_enable( "BD3CNAV3EPHB", 0, glob_comm_config.output_freq);
         usleep(50000); // Sleep for 50 milliseconds
     }
 }

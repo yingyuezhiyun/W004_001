@@ -36,7 +36,8 @@ dbb_ctrl_t dbb_ctrl = {
         .info = DBB_PRINT_OFF,
         .err = DBB_PRINT_ON,
     },
-    .mode = DBB_MODE_BROADCAST,    
+    .mode = DBB_MODE_BROADCAST,
+    .fd_mutex = PTHREAD_MUTEX_INITIALIZER,
 };
 
 void dbb_debug_err(const char *fmt, ...)
@@ -70,17 +71,21 @@ void dbb_debug_info(const char *fmt, ...)
 
 void dbb_close_device(void)
 {
+    pthread_mutex_lock(&dbb_ctrl.fd_mutex);
     if (dbb_ctrl.fd >= 0)
     {
         close(dbb_ctrl.fd);
         dbb_ctrl.fd = -1;
     }
+    pthread_mutex_unlock(&dbb_ctrl.fd_mutex);
 }
 
 int dbb_open_device(void)
 {
+    pthread_mutex_lock(&dbb_ctrl.fd_mutex);
     if (dbb_ctrl.fd >= 0)
     {
+        pthread_mutex_unlock(&dbb_ctrl.fd_mutex);
         return 0;
     }
 
@@ -88,24 +93,27 @@ int dbb_open_device(void)
     if (dbb_ctrl.fd < 0)
     {
         perror("open dbb device");
+        pthread_mutex_unlock(&dbb_ctrl.fd_mutex);
         return -1;
     }
 
     if (set_opt(dbb_ctrl.fd, 115200, 8, 'N', 1) < 0)
     {
         perror("configure dbb device");
+        pthread_mutex_unlock(&dbb_ctrl.fd_mutex);
         dbb_close_device();
         return -1;
     }
 
     tcflush(dbb_ctrl.fd, TCIOFLUSH);
+    pthread_mutex_unlock(&dbb_ctrl.fd_mutex);
     return 0;
 }
 
 int dbb_write_all(const char *buf, size_t count)
 {
     size_t offset = 0;
-
+    pthread_mutex_lock(&dbb_ctrl.fd_mutex);
     while (offset < count)
     {
         ssize_t n = write(dbb_ctrl.fd, buf + offset, count - offset);
@@ -116,11 +124,13 @@ int dbb_write_all(const char *buf, size_t count)
                 continue;
             }
             perror("write dbb device");
+            pthread_mutex_unlock(&dbb_ctrl.fd_mutex);
             return -1;
         }
         offset += (size_t)n;
     }
 
+    pthread_mutex_unlock(&dbb_ctrl.fd_mutex);
     return 0;
 }
 
@@ -247,7 +257,6 @@ static void dbb_online_func(void)
         case DEV_DBB_WAIT_CREV:
         case DEV_DBB_WAIT_CIREG:
         case DEV_DBB_ONLINE:
-            dbb_open_device();
             if (dbb_cfg_broadcast_mode() == 0)
             {
                 dbb_ctrl.status = DEV_DBB_ONLINE_BROADCAST;
@@ -288,7 +297,6 @@ static void dbb_online_func(void)
             }
             break;
         case DEV_DBB_INIT:
-            dbb_open_device();
             dbb_ctrl.status = DEV_DBB_POWER_ON;
             set_led(DEV_DBB_LED, 0);
             break;
@@ -423,7 +431,7 @@ void *dbb_thread_func(void *arg)
     dbb_ctrl.enabled = 1;
     dbb_ctrl.status = DEV_DBB_INIT;
     dbb_close_device();
-
+    dbb_open_device();
 
     while (1)
     {

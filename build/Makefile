@@ -439,6 +439,78 @@ core/src/eth_4g.c.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/ok3506_demo.dir/build.make CMakeFiles/ok3506_demo.dir/core/src/eth_4g.c.s
 .PHONY : core/src/eth_4g.c.s
 
+core/src/gnss_ephb.o: core/src/gnss_ephb.c.o
+.PHONY : core/src/gnss_ephb.o
+
+# target to build an object file
+core/src/gnss_ephb.c.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/ok3506_demo.dir/build.make CMakeFiles/ok3506_demo.dir/core/src/gnss_ephb.c.o
+.PHONY : core/src/gnss_ephb.c.o
+
+core/src/gnss_ephb.i: core/src/gnss_ephb.c.i
+.PHONY : core/src/gnss_ephb.i
+
+# target to preprocess a source file
+core/src/gnss_ephb.c.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/ok3506_demo.dir/build.make CMakeFiles/ok3506_demo.dir/core/src/gnss_ephb.c.i
+.PHONY : core/src/gnss_ephb.c.i
+
+core/src/gnss_ephb.s: core/src/gnss_ephb.c.s
+.PHONY : core/src/gnss_ephb.s
+
+# target to generate assembly for a file
+core/src/gnss_ephb.c.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/ok3506_demo.dir/build.make CMakeFiles/ok3506_demo.dir/core/src/gnss_ephb.c.s
+.PHONY : core/src/gnss_ephb.c.s
+
+core/src/gnss_ephb_decode.o: core/src/gnss_ephb_decode.c.o
+.PHONY : core/src/gnss_ephb_decode.o
+
+# target to build an object file
+core/src/gnss_ephb_decode.c.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/ok3506_demo.dir/build.make CMakeFiles/ok3506_demo.dir/core/src/gnss_ephb_decode.c.o
+.PHONY : core/src/gnss_ephb_decode.c.o
+
+core/src/gnss_ephb_decode.i: core/src/gnss_ephb_decode.c.i
+.PHONY : core/src/gnss_ephb_decode.i
+
+# target to preprocess a source file
+core/src/gnss_ephb_decode.c.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/ok3506_demo.dir/build.make CMakeFiles/ok3506_demo.dir/core/src/gnss_ephb_decode.c.i
+.PHONY : core/src/gnss_ephb_decode.c.i
+
+core/src/gnss_ephb_decode.s: core/src/gnss_ephb_decode.c.s
+.PHONY : core/src/gnss_ephb_decode.s
+
+# target to generate assembly for a file
+core/src/gnss_ephb_decode.c.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/ok3506_demo.dir/build.make CMakeFiles/ok3506_demo.dir/core/src/gnss_ephb_decode.c.s
+.PHONY : core/src/gnss_ephb_decode.c.s
+
+core/src/gnss_ephb_info.o: core/src/gnss_ephb_info.c.o
+.PHONY : core/src/gnss_ephb_info.o
+
+# target to build an object file
+core/src/gnss_ephb_info.c.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/ok3506_demo.dir/build.make CMakeFiles/ok3506_demo.dir/core/src/gnss_ephb_info.c.o
+.PHONY : core/src/gnss_ephb_info.c.o
+
+core/src/gnss_ephb_info.i: core/src/gnss_ephb_info.c.i
+.PHONY : core/src/gnss_ephb_info.i
+
+# target to preprocess a source file
+core/src/gnss_ephb_info.c.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/ok3506_demo.dir/build.make CMakeFiles/ok3506_demo.dir/core/src/gnss_ephb_info.c.i
+.PHONY : core/src/gnss_ephb_info.c.i
+
+core/src/gnss_ephb_info.s: core/src/gnss_ephb_info.c.s
+.PHONY : core/src/gnss_ephb_info.s
+
+# target to generate assembly for a file
+core/src/gnss_ephb_info.c.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/ok3506_demo.dir/build.make CMakeFiles/ok3506_demo.dir/core/src/gnss_ephb_info.c.s
+.PHONY : core/src/gnss_ephb_info.c.s
+
 core/src/gnss_nmea.o: core/src/gnss_nmea.c.o
 .PHONY : core/src/gnss_nmea.o
 
@@ -462,78 +534,6 @@ core/src/gnss_nmea.s: core/src/gnss_nmea.c.s
 core/src/gnss_nmea.c.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/ok3506_demo.dir/build.make CMakeFiles/ok3506_demo.dir/core/src/gnss_nmea.c.s
 .PHONY : core/src/gnss_nmea.c.s
-
-core/src/gnss_raw.o: core/src/gnss_raw.c.o
-.PHONY : core/src/gnss_raw.o
-
-# target to build an object file
-core/src/gnss_raw.c.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/ok3506_demo.dir/build.make CMakeFiles/ok3506_demo.dir/core/src/gnss_raw.c.o
-.PHONY : core/src/gnss_raw.c.o
-
-core/src/gnss_raw.i: core/src/gnss_raw.c.i
-.PHONY : core/src/gnss_raw.i
-
-# target to preprocess a source file
-core/src/gnss_raw.c.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/ok3506_demo.dir/build.make CMakeFiles/ok3506_demo.dir/core/src/gnss_raw.c.i
-.PHONY : core/src/gnss_raw.c.i
-
-core/src/gnss_raw.s: core/src/gnss_raw.c.s
-.PHONY : core/src/gnss_raw.s
-
-# target to generate assembly for a file
-core/src/gnss_raw.c.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/ok3506_demo.dir/build.make CMakeFiles/ok3506_demo.dir/core/src/gnss_raw.c.s
-.PHONY : core/src/gnss_raw.c.s
-
-core/src/gnss_raw_decode.o: core/src/gnss_raw_decode.c.o
-.PHONY : core/src/gnss_raw_decode.o
-
-# target to build an object file
-core/src/gnss_raw_decode.c.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/ok3506_demo.dir/build.make CMakeFiles/ok3506_demo.dir/core/src/gnss_raw_decode.c.o
-.PHONY : core/src/gnss_raw_decode.c.o
-
-core/src/gnss_raw_decode.i: core/src/gnss_raw_decode.c.i
-.PHONY : core/src/gnss_raw_decode.i
-
-# target to preprocess a source file
-core/src/gnss_raw_decode.c.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/ok3506_demo.dir/build.make CMakeFiles/ok3506_demo.dir/core/src/gnss_raw_decode.c.i
-.PHONY : core/src/gnss_raw_decode.c.i
-
-core/src/gnss_raw_decode.s: core/src/gnss_raw_decode.c.s
-.PHONY : core/src/gnss_raw_decode.s
-
-# target to generate assembly for a file
-core/src/gnss_raw_decode.c.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/ok3506_demo.dir/build.make CMakeFiles/ok3506_demo.dir/core/src/gnss_raw_decode.c.s
-.PHONY : core/src/gnss_raw_decode.c.s
-
-core/src/gnss_raw_info.o: core/src/gnss_raw_info.c.o
-.PHONY : core/src/gnss_raw_info.o
-
-# target to build an object file
-core/src/gnss_raw_info.c.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/ok3506_demo.dir/build.make CMakeFiles/ok3506_demo.dir/core/src/gnss_raw_info.c.o
-.PHONY : core/src/gnss_raw_info.c.o
-
-core/src/gnss_raw_info.i: core/src/gnss_raw_info.c.i
-.PHONY : core/src/gnss_raw_info.i
-
-# target to preprocess a source file
-core/src/gnss_raw_info.c.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/ok3506_demo.dir/build.make CMakeFiles/ok3506_demo.dir/core/src/gnss_raw_info.c.i
-.PHONY : core/src/gnss_raw_info.c.i
-
-core/src/gnss_raw_info.s: core/src/gnss_raw_info.c.s
-.PHONY : core/src/gnss_raw_info.s
-
-# target to generate assembly for a file
-core/src/gnss_raw_info.c.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/ok3506_demo.dir/build.make CMakeFiles/ok3506_demo.dir/core/src/gnss_raw_info.c.s
-.PHONY : core/src/gnss_raw_info.c.s
 
 core/src/gnss_thread.o: core/src/gnss_thread.c.o
 .PHONY : core/src/gnss_thread.o
@@ -749,18 +749,18 @@ help:
 	@echo "... core/src/eth_4g.o"
 	@echo "... core/src/eth_4g.i"
 	@echo "... core/src/eth_4g.s"
+	@echo "... core/src/gnss_ephb.o"
+	@echo "... core/src/gnss_ephb.i"
+	@echo "... core/src/gnss_ephb.s"
+	@echo "... core/src/gnss_ephb_decode.o"
+	@echo "... core/src/gnss_ephb_decode.i"
+	@echo "... core/src/gnss_ephb_decode.s"
+	@echo "... core/src/gnss_ephb_info.o"
+	@echo "... core/src/gnss_ephb_info.i"
+	@echo "... core/src/gnss_ephb_info.s"
 	@echo "... core/src/gnss_nmea.o"
 	@echo "... core/src/gnss_nmea.i"
 	@echo "... core/src/gnss_nmea.s"
-	@echo "... core/src/gnss_raw.o"
-	@echo "... core/src/gnss_raw.i"
-	@echo "... core/src/gnss_raw.s"
-	@echo "... core/src/gnss_raw_decode.o"
-	@echo "... core/src/gnss_raw_decode.i"
-	@echo "... core/src/gnss_raw_decode.s"
-	@echo "... core/src/gnss_raw_info.o"
-	@echo "... core/src/gnss_raw_info.i"
-	@echo "... core/src/gnss_raw_info.s"
 	@echo "... core/src/gnss_thread.o"
 	@echo "... core/src/gnss_thread.i"
 	@echo "... core/src/gnss_thread.s"
