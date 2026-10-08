@@ -14,47 +14,8 @@
 #include "glob_cfg.h"
 #include "src_io.h"
 #include "src_tty.h"
+#include "eth_4g.h"
 
-#define ETH_4G_DEBUG_INFO (0)
-#define ETH_4G_DEBUG_ERR (1)
-
-#define ETH_4G_DEFAULT_APN "internet"
-#define ETH_4G_DEFAULT_NET_IF "usb0"
-#define ETH_4G_DEFAULT_PING_HOST "1.1.1.1"
-#define ETH_4G_MAX_RESPONSE 2048
-#define ETH_4G_MONITOR_INTERVAL_SEC 10
-#define ETH_4G_STARTUP_RETRY_COUNT 3
-
-typedef enum
-{
-    DEV_4G_IDLE,
-    DEV_4G_INIT,
-    DEV_4G_POWER_ON,
-    DEV_4G_AT_READY,
-    DEV_4G_SIM_READY,
-    DEV_4G_SIGNAL_OK,
-    DEV_4G_CFUN_OK,
-    DEV_4G_REGISTERED,
-    DEV_4G_APN_OK,
-    DEV_4G_ATTACHED,
-    DEV_4G_IFACE_UP,
-    DEV_4G_LINK_UP,
-    DEV_4G_DHCP_OK,
-    DEV_4G_IP_OK,
-    DEV_4G_ONLINE,
-    DEV_4G_POWER_OFF,
-} eth_4g_Status_t;
-
-typedef struct
-{
-    uint8_t enabled;
-    int fd;
-    eth_4g_Status_t status;
-    char device[64];
-    char apn[64];
-    char net_if[32];
-    char ping_host[64];
-} eth_4g_ctrl_t;
 
 eth_4g_ctrl_t eth_4g_ctrl = {
     .enabled = 0,
@@ -63,30 +24,40 @@ eth_4g_ctrl_t eth_4g_ctrl = {
     .apn = ETH_4G_DEFAULT_APN,
     .net_if = ETH_4G_DEFAULT_NET_IF,
     .ping_host = ETH_4G_DEFAULT_PING_HOST,
-    .device = DEV_4G};
+    .device = DEV_4G,
+    .print = {
+        .info = ETH_4G_PRINT_OFF,
+        .err = ETH_4G_PRINT_ON,
+    },
+};
 
 void debug_err_4g(char *fmt, ...)
 {
-#if ETH_4G_DEBUG_ERR
+    if (eth_4g_ctrl.print.err==ETH_4G_PRINT_OFF)
+    {
+       return;
+    }    
     va_list args;
     va_start(args, fmt);
-    fprintf(stderr, "[4G][ERROR] ");
+    fprintf(stderr, "\033[1;31m[4G][ERROR] ");
     vfprintf(stderr, fmt, args);
-    fprintf(stderr, "\n");
+    fprintf(stderr, "\n\033[0m");
     va_end(args);
-#endif
+
 }
 
 void debug_info_4g(char *fmt, ...)
 {
-#if ETH_4G_DEBUG_INFO
+    if (eth_4g_ctrl.print.info==ETH_4G_PRINT_OFF)
+    {
+       return;
+    }
     va_list args;
     va_start(args, fmt);
     fprintf(stdout, "[4G][INFO] ");
     vfprintf(stdout, fmt, args);
     fprintf(stdout, "\n");
     va_end(args);
-#endif
 }
 
 /// @brief Load environment variables for 4G configuration
@@ -273,7 +244,7 @@ static void eth_4g_dump_response(const char *response)
     {
         return;
     }
-    debug_info_4g("%s", response);
+    debug_info_4g("\033[34m%s\033[0m", response);
 }
 
 /// @brief Expect a specific response to an AT command

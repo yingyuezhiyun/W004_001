@@ -31,6 +31,7 @@
 #include "gnss_func.h"
 #include "dbb_func.h"
 #include "glob_value.h"
+#include "eth_4g.h"
 
 #define RADIO_NODE RIP_NODE
 
@@ -102,6 +103,56 @@ DEFUN(gnss_datatype_cfg,
     return CMD_SUCCESS;
 }
 
+
+DEFUN(gnss_datatype_off_cfg,
+      gnss_datatype_off_cfg_cmd,
+      "gnss (" GNSS_TYPE "|all) off",
+      "gnss ctrl\n"
+      "Set gnss <type> on or off\n"
+      "on or off\n")
+{
+    if (strcmp(argv[0], "all") == 0)
+    {
+        gnss_cfg_disable_out();
+        vty_out(vty, "set gnss all type to off%s", VTY_NEWLINE);
+    }
+    else
+    {
+        gnss_cfg_dataType(argv[0], 0, 0);
+        vty_out(vty, "set gnss type %s to off%s", argv[0], VTY_NEWLINE);
+    }
+    return CMD_SUCCESS;
+}
+
+DEFUN(show_gnss_datatype,
+      show_gnss_datatype_cmd,
+      "show gnss data type",
+      SHOW_STR
+      "gnss ctrl\n"
+      "Show gnss data type\n")
+{
+    vty_out(vty, "gnss data type: %s", VTY_NEWLINE);
+    vty_out(vty,"\tgbs: \t\t%s%s", gnss_ctrl.dataType.nmea.gbs ? "on" : "off", VTY_NEWLINE);
+    vty_out(vty, "\tgga: \t\t%s%s", gnss_ctrl.dataType.nmea.gga ? "on" : "off", VTY_NEWLINE);
+    vty_out(vty, "\tgll: \t\t%s%s", gnss_ctrl.dataType.nmea.gll ? "on" : "off", VTY_NEWLINE);
+    vty_out(vty, "\tgsa: \t\t%s%s", gnss_ctrl.dataType.nmea.gsa ? "on" : "off", VTY_NEWLINE);
+    vty_out(vty, "\tgst: \t\t%s%s", gnss_ctrl.dataType.nmea.gst ? "on" : "off", VTY_NEWLINE);
+    vty_out(vty, "\tgsv: \t\t%s%s", gnss_ctrl.dataType.nmea.gsv ? "on" : "off", VTY_NEWLINE);
+    vty_out(vty, "\trmc: \t\t%s%s", gnss_ctrl.dataType.nmea.rmc ? "on" : "off", VTY_NEWLINE);
+    vty_out(vty, "\tvtg: \t\t%s%s", gnss_ctrl.dataType.nmea.vtg ? "on" : "off", VTY_NEWLINE);
+    vty_out(vty, "\tzda: \t\t%s%s", gnss_ctrl.dataType.nmea.zda ? "on" : "off", VTY_NEWLINE);
+    vty_out(vty, "\tbdxwephb: \t%s%s", gnss_ctrl.dataType.ephb.bdxw ? "on" : "off", VTY_NEWLINE);
+    vty_out(vty, "\tgpsephb: \t%s%s", gnss_ctrl.dataType.ephb.gps ? "on" : "off", VTY_NEWLINE);
+    vty_out(vty, "\tbd2ephb: \t%s%s", gnss_ctrl.dataType.ephb.bd2 ? "on" : "off", VTY_NEWLINE);
+    vty_out(vty, "\tbd3ephb: \t%s%s", gnss_ctrl.dataType.ephb.bd3 ? "on" : "off", VTY_NEWLINE);
+    vty_out(vty, "\tbd3cnav2ephb: \t%s%s", gnss_ctrl.dataType.ephb.bd3cnav2 ? "on" : "off", VTY_NEWLINE);
+    vty_out(vty, "\tbd3cnav3ephb: \t%s%s", gnss_ctrl.dataType.ephb.bd3cnav3 ? "on" : "off", VTY_NEWLINE);
+    vty_out(vty, "\tgloephb: \t%s%s", gnss_ctrl.dataType.ephb.glo ? "on" : "off", VTY_NEWLINE);
+    vty_out(vty, "\tgalephb: \t%s%s", gnss_ctrl.dataType.ephb.gal ? "on" : "off", VTY_NEWLINE);
+    return CMD_SUCCESS;
+}
+
+
 DEFUN(gnss_sys_cfg,
       gnss_sys_cfg_cmd,
       "gnss sys (on|off) {all|bds|gsp|glo|gal}",
@@ -124,27 +175,22 @@ DEFUN(gnss_sys_cfg,
     gnss_cfg_sys(sys, enable);
 
     vty_out(vty, "set gnss sys %s to %s%s", sys, enable ? "on" : "off", VTY_NEWLINE);
-    vty_out(vty, "Note: the module will restart after setting mode, please re-enable the desired data output%s", VTY_NEWLINE);
+    vty_out(vty, "\033[1;33mNote: the module will restart after setting mode, please re-enable the desired data output%s\033[0m", VTY_NEWLINE);
     return CMD_SUCCESS;
 }
 
-DEFUN(gnss_type_off_cfg,
-      gnss_type_off_cfg_cmd,
-      "gnss (" GNSS_TYPE "|all) off",
-      "gnss ctrl\n"
-      "Set gnss <type> on or off\n"
-      "on or off\n")
+DEFUN(show_gnss_sys_cfg,
+      show_gnss_sys_cfg_cmd,
+      "show gnss sys",
+      SHOW_STR
+      "gnss sys ctrl\n"
+      "Show gnss sys\n")
 {
-    if (strcmp(argv[0], "all") == 0)
-    {
-        gnss_cfg_disable_out();
-        vty_out(vty, "set gnss all type to off%s", VTY_NEWLINE);
-    }
-    else
-    {
-        gnss_cfg_dataType(argv[0], 0, 0);
-        vty_out(vty, "set gnss type %s to off%s", argv[0], VTY_NEWLINE);
-    }
+    vty_out(vty, "gnss sys: %s", VTY_NEWLINE);
+    vty_out(vty, "\tbds: \t\t%s%s", gnss_ctrl.sysType.content.bds ? "on" : "off", VTY_NEWLINE);
+    vty_out(vty, "\tgps: \t\t%s%s", gnss_ctrl.sysType.content.gps ? "on" : "off", VTY_NEWLINE);
+    vty_out(vty, "\tglo: \t\t%s%s", gnss_ctrl.sysType.content.glo ? "on" : "off", VTY_NEWLINE);
+    vty_out(vty, "\tgal: \t\t%s%s", gnss_ctrl.sysType.content.gal ? "on" : "off", VTY_NEWLINE);
     return CMD_SUCCESS;
 }
 
@@ -162,7 +208,7 @@ DEFUN(gnss_mode_cfg,
     uint8_t freqCode = atoi(argv[2]);
     gnss_cfg_mode(workMode, calcType, freqCode);
     vty_out(vty, "set gnss mode to %s %s freq code %d%s", workMode, calcType, freqCode, VTY_NEWLINE);
-    vty_out(vty, "Note: the module will restart after setting mode, please re-enable the desired data output%s", VTY_NEWLINE);
+    vty_out(vty, "\033[1;33mNote: the module will restart after setting mode, please re-enable the desired data output%s\033[0m", VTY_NEWLINE);
     return CMD_SUCCESS;
 }
 
@@ -258,6 +304,49 @@ DEFUN(dbb_print_cfg,
         dbb_ctrl.print.err = enable ? DBB_PRINT_ON : DBB_PRINT_OFF;
         vty_out(vty, "set dbb print err to %s%s", argv[1], VTY_NEWLINE);
     }
+    return CMD_SUCCESS;
+}
+
+DEFUN(eth_4g_print_cfg,
+      eth_4g_print_cfg_cmd,
+      "eth_4g print (info|err) (on|off)",
+      "eth_4g print <type> \n"
+      "Set eth_4g print <type> on or off\n"
+      "on or off\n")
+{
+    uint8_t enable = strcmp(argv[1], "on") == 0;
+    if (strcmp(argv[0], "info") == 0)
+    {
+        eth_4g_ctrl.print.info = enable ? ETH_4G_PRINT_ON : ETH_4G_PRINT_OFF;
+        vty_out(vty, "set eth_4g print info to %s%s", argv[1], VTY_NEWLINE);
+    }
+    else if (strcmp(argv[0], "err") == 0)
+    {
+        eth_4g_ctrl.print.err = enable ? ETH_4G_PRINT_ON : ETH_4G_PRINT_OFF;
+        vty_out(vty, "set eth_4g print err to %s%s", argv[1], VTY_NEWLINE);
+    }
+    return CMD_SUCCESS;
+}
+
+DEFUN(gnss_freset,
+      gnss_freset_cmd,
+      "gnss reset",
+      "gnss reset\n"
+      "Reset gnss module\n")
+{
+    gnss_reset();
+    vty_out(vty, "gnss module reset%s", VTY_NEWLINE);
+    return CMD_SUCCESS;
+}
+
+DEFUN(gnss_cfgSave,
+      gnss_cfgSave_cmd,
+      "gnss cfg save",
+      "gnss cfg save\n"
+      "Save gnss module config\n")
+{
+    gnss_cfg_save();
+    vty_out(vty, "gnss module config saved%s", VTY_NEWLINE);
     return CMD_SUCCESS;
 }
 
@@ -357,14 +446,16 @@ void tty_init(void)
     install_node(&vty_node, config_write_vty);
     install_element(CONFIG_NODE, &config_radio_cmd);
 
-    install_element(ENABLE_NODE, &gnss_type_off_cfg_cmd);
-    install_element(RADIO_NODE, &gnss_type_off_cfg_cmd);
+    install_element(ENABLE_NODE, &gnss_datatype_off_cfg_cmd);
+    install_element(RADIO_NODE, &gnss_datatype_off_cfg_cmd);
 
     install_element(ENABLE_NODE, &gnss_datatype_cfg_cmd);
     install_element(RADIO_NODE, &gnss_datatype_cfg_cmd);
 
     install_element(ENABLE_NODE, &gnss_datatype_onchange_cfg_cmd);
     install_element(RADIO_NODE, &gnss_datatype_onchange_cfg_cmd);
+
+    install_element(ENABLE_NODE, &show_gnss_datatype_cmd);
 
     install_element(ENABLE_NODE, &gnss_parse_data_type_cfg_cmd);
     install_element(RADIO_NODE, &gnss_parse_data_type_cfg_cmd);
@@ -384,8 +475,16 @@ void tty_init(void)
     install_element(ENABLE_NODE, &gnss_sys_cfg_cmd);
     install_element(RADIO_NODE, &gnss_sys_cfg_cmd);
 
+    install_element(ENABLE_NODE, &show_gnss_sys_cfg_cmd);
+
+    install_element(ENABLE_NODE, &gnss_freset_cmd);
+    install_element(ENABLE_NODE, &gnss_cfgSave_cmd);
+
     install_element(ENABLE_NODE, &dbb_print_cfg_cmd);
     install_element(RADIO_NODE, &dbb_print_cfg_cmd);
+
+    install_element(ENABLE_NODE, &eth_4g_print_cfg_cmd);
+    install_element(RADIO_NODE, &eth_4g_print_cfg_cmd);
 
     install_element(ENABLE_NODE, &test_opt_cmd);
 }

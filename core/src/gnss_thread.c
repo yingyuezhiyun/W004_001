@@ -170,7 +170,7 @@ void gnss_reset()
     }
     else
     {
-        printf("GNSS:  reset\n");
+        printf("\033[32mGNSS:  reset\n\033[0m");
     }
 }
 
@@ -189,7 +189,7 @@ void gnss_cfg_save()
     }
     else
     {
-        printf("GNSS:  save\n");
+        printf("\033[32mGNSS:  save\n\033[0m");
     }
 }
 
@@ -256,7 +256,7 @@ void gnss_cfg_dataType(char *type, uint8_t enable, uint8_t per_second)
     }
     else
     {
-        printf("GNSS: %s %s %d/s\n", enable ? "enabled" : "disabled", type, per_second);
+        printf("\033[32mGNSS: %s %s %d/s\n\033[0m", enable ? "enabled" : "disabled", type, per_second);
         CfgdataType_from_name(type, enable);
     }
 }
@@ -276,7 +276,7 @@ void gnss_cfg_dataType_onchange(char *type)
     }
     else
     {
-        printf("GNSS: %s on change enabled\n", type);
+        printf("\033[32mGNSS: %s on change enabled\n\033[0m", type);
         CfgdataType_from_name(type, 1);
     }
 }

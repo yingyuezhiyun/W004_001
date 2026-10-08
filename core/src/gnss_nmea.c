@@ -300,7 +300,7 @@ void handle_gnss_nmea(const char *sentence)
     nmea_file_type = minmea_sentence_id(sentence, false);
     if (nmea_file_type != MINMEA_UNKNOWN && gnss_ctrl.print.nmea_raw != GNSS_PRINT_NONE)
     {
-        printf("%s\n", sentence);
+        printf("\033[34m%s\033[0m\n", sentence);
     }
 
     switch (minmea_sentence_id(sentence, false))

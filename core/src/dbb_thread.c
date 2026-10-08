@@ -48,9 +48,9 @@ void dbb_debug_err(const char *fmt, ...)
     }
     va_list args;
     va_start(args, fmt);
-    fprintf(stderr, "[DBB][ERROR] ");
+    fprintf(stderr, "\033[1;31m[DBB][ERROR] ");
     vfprintf(stderr, fmt, args);
-    fprintf(stderr, "\n");
+    fprintf(stderr, "\n\033[0m");
     va_end(args);
 }
 

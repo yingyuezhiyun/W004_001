@@ -79,8 +79,8 @@ extern "C"
         char downlink_text[DBB_MAX_UL_DATA_RAW + 1];
         struct
         {
-            uint8_t info;
-            uint8_t err;
+            dbb_PrintType_t info;
+            dbb_PrintType_t err;
         } print;
         dbb_WorkMode_t mode;
         pthread_mutex_t fd_mutex;

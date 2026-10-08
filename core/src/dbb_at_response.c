@@ -162,5 +162,5 @@ void dbb_dump_response(const char *response)
     {
         return;
     }
-    dbb_debug_info("%s", response);
+    dbb_debug_info("\033[34m%s\033[0m", response);
 }
