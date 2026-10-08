@@ -12,7 +12,7 @@ extern "C"
         GNSS_DATA_AUTO,
         GNSS_DATA_NMEA,
         GNSS_DATA_EPHB,
-    } gnss_DataType_t;
+    } gnss_ParseDataType_t;
 
     typedef enum
     {
@@ -37,23 +37,68 @@ extern "C"
         char path[128];
     } File_cfg_t;
 
- 
+    typedef union
+    {
+        struct
+        {
+            uint8_t bdxw : 1;
+            uint8_t bd2 : 1;
+            uint8_t bd3 : 1;
+            uint8_t bd3cnav2 : 1;
+            uint8_t bd3cnav3 : 1;
+            uint8_t gps : 1;
+            uint8_t gal : 1;
+            uint8_t glo : 1;
+            uint8_t remain1;
+            uint8_t remain2;
+            uint8_t remain3;
+        } ephb;
+        struct
+        {
+            uint8_t remain1;
+            uint8_t remain2;
+            uint8_t gbs : 1;
+            uint8_t gga : 1;
+            uint8_t gll : 1;
+            uint8_t gsa : 1;
+            uint8_t gst : 1;
+            uint8_t gsv : 1;
+            uint8_t rmc : 1;
+            uint8_t vtg : 1;
+            uint8_t zda : 1;
+        } nmea;
+        uint32_t value;
+    } gnss_DataType_t;
+
+    typedef union
+    {
+        struct
+        {
+            uint8_t bds : 1;
+            uint8_t gps : 1;
+            uint8_t gal : 1;
+            uint8_t glo : 1;
+        } content;
+        uint8_t value;
+    } gnss_SysType_t;
 
     typedef struct
     {
-        int fd;
-        gnss_DataType_t data_type;
-        char data_nmea[MINMEA_MAX_SENTENCE_LENGTH + 16];
-        uint16_t data_nmea_len;
-        uint8_t data_raw[8192];
-        uint16_t data_raw_len;
-        gnss_CalcType_t calc_type;
+        int fd;                                          //
+        gnss_ParseDataType_t parseDataType;              // 解析数据类型
+        char data_nmea[MINMEA_MAX_SENTENCE_LENGTH + 16]; //
+        uint16_t data_nmea_len;                          //
+        uint8_t data_raw[8192];                          //
+        uint16_t data_raw_len;                           //
+        gnss_CalcType_t calcType;                        // 定位解算类型
+        gnss_DataType_t dataType;                        // 数据类型
+        gnss_SysType_t sysType;                          // 卫星系统类型
         struct
         {
             gnss_PrintType_t nmea;
             gnss_PrintType_t nmea_raw;
             gnss_PrintType_t ephb;
-        } print;
+        } print; // 打印输出控制
         struct
         {
             File_cfg_t gpsephb;
@@ -74,7 +119,7 @@ extern "C"
             File_cfg_t rmc;
             File_cfg_t vtg;
             File_cfg_t zda;
-        } file;
+        } file; // 文件存储控制
         pthread_mutex_t fd_mutex;
     } gnss_ctrl_t;
 #pragma pack(1)
@@ -507,11 +552,13 @@ extern "C"
     void handle_gnss_nmea(const char *sentence);
     int handle_gnss_raw(const uint8_t *data, size_t len);
     int gnss_dev_write(const void *buf, size_t count);
-    void gnss_cfg_disable_all();
-    void gnss_cfg_enable_onchange(char *type);
-    void gnss_cfg_dis_enable(char *type, uint8_t enable, uint8_t per_second);
+    void gnss_cfg_disable_out();
+    void gnss_cfg_dataType_onchange(char *type);
+    void gnss_cfg_dataType(char *type, uint8_t enable, uint8_t per_second);
     void gnss_cfg_mode(char *workMode, char *calcType, uint8_t freqCode);
     void gnss_cfg_sys(char *sys, uint8_t enable);
+    void gnss_reset();
+    void gnss_cfg_save();
     int8_t gnss_bdd_enable();
     int8_t gnss_bdd_disable();
 

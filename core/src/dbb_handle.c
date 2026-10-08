@@ -905,7 +905,7 @@ static void dbb_handle_ssrinfoxw(const char *urc)
         }
     }
 
-    if (gnss_ctrl.calc_type == GNSS_CALC_DPPP)
+    if (gnss_ctrl.calcType == GNSS_CALC_DPPP)
     {
         
         if (gnss_dev_write(raw, raw_len) != (int)raw_len)

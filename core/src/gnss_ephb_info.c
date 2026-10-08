@@ -725,7 +725,7 @@ char *gnss_ephb_info_file_header(char *type, uint8_t enable)
     }
     if (fp)
         fclose(fp);
-    gnss_cfg_dis_enable( type, enable, 1);
+    gnss_cfg_dataType( type, enable, 1);
     return file_path;
 }
 

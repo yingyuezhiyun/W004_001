@@ -22,7 +22,7 @@
 
 gnss_ctrl_t gnss_ctrl = {
     .fd = -1,
-    .data_type = GNSS_DATA_AUTO,
+    .parseDataType = GNSS_DATA_AUTO,
     .data_nmea = {0},
     .data_nmea_len = 0,
     .data_raw = {0},
@@ -155,11 +155,87 @@ int gnss_dev_write(const void *buf, size_t count)
     return result;
 }
 
-/// @brief
+/// @brief Reset the GNSS module
+void gnss_reset()
+{
+    char buff[128];
+    int result = 0;
+
+    snprintf(buff, sizeof(buff), "CSHG FRESET\r\n");
+    result = gnss_dev_write(buff, strlen(buff));
+
+    if (result < 0)
+    {
+        perror("write gnss device");
+    }
+    else
+    {
+        printf("GNSS:  reset\n");
+    }
+}
+
+/// @brief Save the GNSS module configuration
+void gnss_cfg_save()
+{
+    char buff[128];
+    int result = 0;
+
+    snprintf(buff, sizeof(buff), "CSHG SAVECONFIG\r\n");
+    result = gnss_dev_write(buff, strlen(buff));
+
+    if (result < 0)
+    {
+        perror("write gnss device");
+    }
+    else
+    {
+        printf("GNSS:  save\n");
+    }
+}
+
+void CfgdataType_from_name(char *type, uint8_t enable)
+{
+    if (strcasecmp(type, "gbs") == 0)
+        gnss_ctrl.dataType.nmea.gbs = enable;
+    else if (strcasecmp(type, "gga") == 0)
+        gnss_ctrl.dataType.nmea.gga = enable;
+    else if (strcasecmp(type, "gll") == 0)
+        gnss_ctrl.dataType.nmea.gll = enable;
+    else if (strcasecmp(type, "gsa") == 0)
+        gnss_ctrl.dataType.nmea.gsa = enable;
+    else if (strcasecmp(type, "gst") == 0)
+        gnss_ctrl.dataType.nmea.gst = enable;
+    else if (strcasecmp(type, "gsv") == 0)
+        gnss_ctrl.dataType.nmea.gsv = enable;
+    else if (strcasecmp(type, "rmc") == 0)
+        gnss_ctrl.dataType.nmea.rmc = enable;
+    else if (strcasecmp(type, "vtg") == 0)
+        gnss_ctrl.dataType.nmea.vtg = enable;
+    else if (strcasecmp(type, "zda") == 0)
+        gnss_ctrl.dataType.nmea.zda = enable;
+    else if (strcasecmp(type, "bdxwephb") == 0)
+        gnss_ctrl.dataType.ephb.bdxw = enable;
+    else if (strcasecmp(type, "gpsephb") == 0)
+        gnss_ctrl.dataType.ephb.gps = enable;
+    else if (strcasecmp(type, "bd2ephb") == 0)
+        gnss_ctrl.dataType.ephb.bd2 = enable;
+    else if (strcasecmp(type, "bd3ephb") == 0)
+        gnss_ctrl.dataType.ephb.bd3 = enable;
+    else if (strcasecmp(type, "bd3cnav2ephb") == 0)
+        gnss_ctrl.dataType.ephb.bd3cnav2 = enable;
+    else if (strcasecmp(type, "bd3cnav3ephb") == 0)
+        gnss_ctrl.dataType.ephb.bd3cnav3 = enable;
+    else if (strcasecmp(type, "gloephb") == 0)
+        gnss_ctrl.dataType.ephb.glo = enable;
+    else if (strcasecmp(type, "galephb") == 0)
+        gnss_ctrl.dataType.ephb.gal = enable;
+}
+
+/// @brief 配置GNSS模块输出数据类型和频率
 /// @param type NMEA sentence type, e.g. "RMC", "GGA", "GLL", "GSA", "GST", "GSV", "VTG", "ZDA" , "GBS" ,"HDT", "NTR", "ORI", "ROT", "TRA", "DTM"
 /// @param enable 0 to disable, 1 to enable
 /// @param per_second > 0 , number of sentences to output per second
-void gnss_cfg_dis_enable(char *type, uint8_t enable, uint8_t per_second)
+void gnss_cfg_dataType(char *type, uint8_t enable, uint8_t per_second)
 {
 
     char buff[128];
@@ -181,10 +257,13 @@ void gnss_cfg_dis_enable(char *type, uint8_t enable, uint8_t per_second)
     else
     {
         printf("GNSS: %s %s %d/s\n", enable ? "enabled" : "disabled", type, per_second);
+        CfgdataType_from_name(type, enable);
     }
 }
 
-void gnss_cfg_enable_onchange(char *type)
+/// @brief 配置GNSS模块输出数据类型的变化触发事件
+/// @param type 
+void gnss_cfg_dataType_onchange(char *type)
 {
 
     char buff[128];
@@ -198,9 +277,32 @@ void gnss_cfg_enable_onchange(char *type)
     else
     {
         printf("GNSS: %s on change enabled\n", type);
+        CfgdataType_from_name(type, 1);
     }
 }
 
+void CfgsysType_from_name(char *sys, uint8_t enable)
+{
+    if (strcasecmp(sys, "bds") == 0)
+        gnss_ctrl.sysType.content.bds = enable;
+    else if (strcasecmp(sys, "gps") == 0)
+        gnss_ctrl.sysType.content.gps = enable;
+    else if (strcasecmp(sys, "gal") == 0)
+        gnss_ctrl.sysType.content.gal = enable;
+    else if (strcasecmp(sys, "glo") == 0)
+        gnss_ctrl.sysType.content.glo = enable;
+    else if (strcasecmp(sys, "all") == 0)
+    {
+        gnss_ctrl.sysType.content.bds = enable;
+        gnss_ctrl.sysType.content.gps = enable;
+        gnss_ctrl.sysType.content.gal = enable;
+        gnss_ctrl.sysType.content.glo = enable;
+    }   
+}
+
+/// @brief 配置GNSS的卫星系统
+/// @param sys 
+/// @param enable 
 void gnss_cfg_sys(char *sys, uint8_t enable)
 {
     char buff[128];
@@ -222,10 +324,12 @@ void gnss_cfg_sys(char *sys, uint8_t enable)
     else
     {
         printf("GNSS: %s %s\n", enable ? "enabled" : "disabled", sys);
+        CfgsysType_from_name(sys, enable);
     }
 }
 
-void gnss_cfg_disable_all()
+/// @brief Disable all GNSS module outputs
+void gnss_cfg_disable_out()
 {
     char buff[128];
     snprintf(buff, sizeof(buff), "CSHG CLOSEALL COM1 \r\n");
@@ -249,23 +353,23 @@ void gnss_cfg_mode(char *workMode, char *calcType, uint8_t freqCode)
     {
         if (strcasecmp(calcType, "ppp") == 0)
         {
-            gnss_ctrl.calc_type = GNSS_CALC_PPP;
+            gnss_ctrl.calcType = GNSS_CALC_PPP;
         }
         else if (strcasecmp(calcType, "fppp") == 0)
         {
-            gnss_ctrl.calc_type = GNSS_CALC_FPPP;
+            gnss_ctrl.calcType = GNSS_CALC_FPPP;
         }
         else if (strcasecmp(calcType, "rtk") == 0)
         {
-            gnss_ctrl.calc_type = GNSS_CALC_RTK;
+            gnss_ctrl.calcType = GNSS_CALC_RTK;
         }
         else if (strcasecmp(calcType, "rtd") == 0)
         {
-            gnss_ctrl.calc_type = GNSS_CALC_RTD;
+            gnss_ctrl.calcType = GNSS_CALC_RTD;
         }
         else if (strcasecmp(calcType, "dppp") == 0)
         {
-            gnss_ctrl.calc_type = GNSS_CALC_DPPP;
+            gnss_ctrl.calcType = GNSS_CALC_DPPP;
         }
     }
 }
@@ -297,35 +401,35 @@ void *gnss_thread_func(void *arg)
     pthread_mutex_unlock(&gnss_ctrl.fd_mutex);
 
     usleep(100000); // Sleep for 100 milliseconds to allow the device to initialize
-    // gnss_cfg_disable_all();
+    // gnss_cfg_disable_out();
     usleep(100000); // Sleep for 100 milliseconds
 
-    gnss_ctrl.data_type = GNSS_DATA_AUTO;
+    gnss_ctrl.parseDataType = GNSS_DATA_AUTO;
     gnss_cfg_mode("ROVER", "FPPP", 13);
     sleep(2);
-    gnss_cfg_dis_enable("RMC", 1, 1);
+    gnss_cfg_dataType("RMC", 1, 1);
     // usleep(100000); // Sleep for 100 milliseconds
-    // gnss_cfg_dis_enable( "GGA", 1, 1);
+    // gnss_cfg_dataType( "GGA", 1, 1);
     // usleep(100000); // Sleep for 100 milliseconds
-    // gnss_cfg_dis_enable( "GSA", 1, 1);
+    // gnss_cfg_dataType( "GSA", 1, 1);
     // usleep(100000); // Sleep for 100 milliseconds
-    // gnss_cfg_dis_enable( "GST", 1, 1);
+    // gnss_cfg_dataType( "GST", 1, 1);
 
-    // gnss_cfg_enable_onchange("GPSEPHB");
-    // gnss_cfg_dis_enable( "GPSEPHB", 1, 1);
+    // gnss_cfg_dataType_onchange("GPSEPHB");
+    // gnss_cfg_dataType( "GPSEPHB", 1, 1);
     // gpsephb_file_header();
-    // gnss_cfg_dis_enable( "BD2EPHB", 1, 1);
-    // gnss_cfg_dis_enable( "BD3EPHB", 1, 1);
-    // gnss_cfg_dis_enable( "GLOEPHB", 1, 1);//todo 无数据
-    // gnss_cfg_dis_enable( "GALEPHB", 1, 1);
-    // gnss_cfg_dis_enable( "BD3CANV1EPHB", 1, 1); // todo 无数据
-    // gnss_cfg_dis_enable( "BD3CANV2EPHB", 1, 1);//todo 无数据
-    // gnss_cfg_dis_enable( "BD3CNAV3EPHB", 1, 1);//todo 无数据 解析错误
-    // gnss_cfg_dis_enable( "PRANGEB", 1, 1);//
+    // gnss_cfg_dataType( "BD2EPHB", 1, 1);
+    // gnss_cfg_dataType( "BD3EPHB", 1, 1);
+    // gnss_cfg_dataType( "GLOEPHB", 1, 1);//todo 无数据
+    // gnss_cfg_dataType( "GALEPHB", 1, 1);
+    // gnss_cfg_dataType( "BD3CANV1EPHB", 1, 1); // todo 无数据
+    // gnss_cfg_dataType( "BD3CANV2EPHB", 1, 1);//todo 无数据
+    // gnss_cfg_dataType( "BD3CNAV3EPHB", 1, 1);//todo 无数据 解析错误
+    // gnss_cfg_dataType( "PRANGEB", 1, 1);//
     // char *enable_ins = "CSHG INS ON\r\n"; // 启用组合导航功能
     // gnss_dev_write(enable_ins, strlen(enable_ins));
-    // gnss_cfg_dis_enable("POSDATAB", 1, 1);//最优定位信息输出
-    // gnss_cfg_dis_enable("BDXWEPHB", 1, 1);
+    // gnss_cfg_dataType("POSDATAB", 1, 1);//最优定位信息输出
+    // gnss_cfg_dataType("BDXWEPHB", 1, 1);
     char buf[4096];
 
     while (1)
@@ -341,12 +445,12 @@ void *gnss_thread_func(void *arg)
             {
                 drained = 1;
 
-                if (gnss_ctrl.data_type == GNSS_DATA_AUTO)
+                if (gnss_ctrl.parseDataType == GNSS_DATA_AUTO)
                 {
                     gnss_handle_raw_bytes((const uint8_t *)buf, (size_t)n);
                     gnss_handle_nmea_bytes((const uint8_t *)buf, (size_t)n, 1);
                 }
-                else if (gnss_ctrl.data_type == GNSS_DATA_NMEA)
+                else if (gnss_ctrl.parseDataType == GNSS_DATA_NMEA)
                 {
                     gnss_handle_nmea_bytes((const uint8_t *)buf, (size_t)n, 0);
                 }
