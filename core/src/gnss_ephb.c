@@ -144,7 +144,7 @@ uint32_t rtk_crc24q(const uint8_t *buff, int len)
 
 void GNSS_EPHB_LOG_SUMMARY(const char *format, ...)
 {
-    if (gnss_ctrl.print.ephb == GNSS_PRINT_SUMMARY)
+    if (gnss_ctrl.data_cfg.ephb.print == GNSS_PRINT_SUMMARY)
     {
         va_list args;
         va_start(args, format);
@@ -190,7 +190,7 @@ int handle_gnss_raw(const uint8_t *data, size_t len)
                         decode_bd2ephb((uint8_t *)packet, packet->length, &eph);
                         GNSS_EPHB_LOG_SUMMARY("date:%s BDS-2 EPHB: satid=%u \n", gps_week_sec_to_utc(eph.gps_week_count, eph.gps_tow_s), eph.bd2_satid);
                         print_bd2ephb(&eph, crc_calculated);
-                        ephb_file = &gnss_ctrl.file.bd2ephb;
+                        ephb_file = &gnss_ctrl.data_cfg.ephb.bd2.file;
                         if (ephb_file->en)
                         {
                             bd2ephb_file_append(&eph);  
@@ -210,7 +210,7 @@ int handle_gnss_raw(const uint8_t *data, size_t len)
                         decode_bd3ephb((uint8_t *)packet, packet->length, &eph);
                         GNSS_EPHB_LOG_SUMMARY("date:%s BDS-3 EPHB: satid=%u \n", gps_week_sec_to_utc(eph.gps_week_count, eph.gps_tow_s), eph.bd3_satid);
                         print_bd3ephb(&eph, crc_calculated);
-                        ephb_file = &gnss_ctrl.file.bd3ephb;
+                        ephb_file = &gnss_ctrl.data_cfg.ephb.bd3.file;
                         if (ephb_file->en)
                         {
                             bd3ephb_file_append(&eph);
@@ -230,7 +230,7 @@ int handle_gnss_raw(const uint8_t *data, size_t len)
                         decode_bd3cnav2ephb((uint8_t *)packet, packet->length, &eph);
                         GNSS_EPHB_LOG_SUMMARY("date:%s BDS-3 CNAV2 Ephemeris: satid=%u \n", gps_week_sec_to_utc(eph.gps_week_count, eph.gps_tow_s), eph.bds_satid);
                         print_bd3cnav2ephb(&eph, crc_calculated);
-                        ephb_file = &gnss_ctrl.file.bd3cnav2ephb;
+                        ephb_file = &gnss_ctrl.data_cfg.ephb.bd3cnav2.file;
                         if (ephb_file->en)
                         {
                             bd3cnav2ephb_file_append(&eph);
@@ -250,7 +250,7 @@ int handle_gnss_raw(const uint8_t *data, size_t len)
                         decode_bd3cnav3ephb((uint8_t *)packet, packet->length, &eph);
                         GNSS_EPHB_LOG_SUMMARY("date:%s BDS-3 CNAV3 Ephemeris: satid=%u \n", gps_week_sec_to_utc(eph.gps_week_count, eph.gps_tow_s), eph.bds_satid);
                         print_bd3cnav3ephb(&eph, crc_calculated);
-                        ephb_file = &gnss_ctrl.file.bd3cnav3ephb;
+                        ephb_file = &gnss_ctrl.data_cfg.ephb.bd3cnav3.file;
                         if (ephb_file->en)
                         {
                             bd3cnav3ephb_file_append(&eph);
@@ -268,7 +268,7 @@ int handle_gnss_raw(const uint8_t *data, size_t len)
                     {
                         decode_bdxwephb((uint8_t *)packet, packet->length, &eph);
                         print_bdxwephb(&eph, crc_calculated);
-                        ephb_file = &gnss_ctrl.file.bdxwephb;
+                        ephb_file = &gnss_ctrl.data_cfg.ephb.bdxw.file;
                         GNSS_EPHB_LOG_SUMMARY("date:%s BDXW EPHB: satid=%u \n", gps_week_sec_to_utc(eph.gps_week_count, eph.gps_tow_s), eph.xws_satid);
                         if (ephb_file->en)
                         {
@@ -290,7 +290,7 @@ int handle_gnss_raw(const uint8_t *data, size_t len)
                         print_gpsephb(&eph, crc_calculated);
                         // print_gpsephb_simple(&eph);                    
                         GNSS_EPHB_LOG_SUMMARY("date:%s GPS Ephemeris: satid=%u \n", gps_week_sec_to_utc(eph.gps_week_count, eph.gps_tow_s), eph.gps_satid);
-                        ephb_file = &gnss_ctrl.file.gpsephb;
+                        ephb_file = &gnss_ctrl.data_cfg.ephb.gps.file;
                         if (ephb_file->en)
                         {
                             gpsephb_file_append(&eph);
@@ -310,7 +310,7 @@ int handle_gnss_raw(const uint8_t *data, size_t len)
                         decode_gloephb((uint8_t *)packet, packet->length, &eph);
                         print_gloephb(&eph, crc_calculated);
                         GNSS_EPHB_LOG_SUMMARY("date:%s GLO EPHB: satid=%u \n", gps_week_sec_to_utc(eph.gps_week_count, eph.gps_tow_s), eph.glo_satid);
-                        ephb_file = &gnss_ctrl.file.gloephb;
+                        ephb_file = &gnss_ctrl.data_cfg.ephb.glo.file;
                         // if (ephb_file->gloephb.en)
                         // {
                         //     gloephb_file_append(&eph);
@@ -332,7 +332,7 @@ int handle_gnss_raw(const uint8_t *data, size_t len)
                         print_galephb(&eph, crc_calculated);
                         GNSS_EPHB_LOG_SUMMARY("date:%s Galileo EPHB: satid=%u \n", gps_week_sec_to_utc(eph.gps_week_count, eph.gps_tow_s), eph.gal_satid);
                         
-                        ephb_file = &gnss_ctrl.file.galephb;
+                        ephb_file = &gnss_ctrl.data_cfg.ephb.gal.file;
                         // if (ephb_file->en)
                         // {
                         //     galephb_file_append(&eph);

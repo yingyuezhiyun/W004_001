@@ -32,43 +32,12 @@ extern "C"
 
     typedef struct
     {
-        uint8_t en;
-        int fd;
-        char path[128];
+        uint8_t en;     // 0: disable, 1: enable 是否启用该类型文件保存
+        int fd;         // 文件描述符
+        char path[128]; // 文件路径
     } File_cfg_t;
 
-    typedef union
-    {
-        struct
-        {
-            uint8_t bdxw : 1;
-            uint8_t bd2 : 1;
-            uint8_t bd3 : 1;
-            uint8_t bd3cnav2 : 1;
-            uint8_t bd3cnav3 : 1;
-            uint8_t gps : 1;
-            uint8_t gal : 1;
-            uint8_t glo : 1;
-            uint8_t remain1;
-            uint8_t remain2;
-            uint8_t remain3;
-        } ephb;
-        struct
-        {
-            uint8_t remain1;
-            uint8_t remain2;
-            uint8_t gbs : 1;
-            uint8_t gga : 1;
-            uint8_t gll : 1;
-            uint8_t gsa : 1;
-            uint8_t gst : 1;
-            uint8_t gsv : 1;
-            uint8_t rmc : 1;
-            uint8_t vtg : 1;
-            uint8_t zda : 1;
-        } nmea;
-        uint32_t value;
-    } gnss_DataType_t;
+  
 
     typedef union
     {
@@ -84,6 +53,49 @@ extern "C"
 
     typedef struct
     {
+        uint8_t output;  // 是否输出该类型数据
+        File_cfg_t file; // 文件保存信息
+    } gnss_eph_data_info_t;
+
+    typedef struct
+    {
+        uint8_t output;  // 是否输出该类型数据
+        File_cfg_t file; // 文件保存信息
+        File_cfg_t file_ex; // 文件保存信息
+    } gnss_nmea_data_info_t;
+
+    typedef struct
+    {
+        struct
+        {
+            gnss_PrintType_t print;// 打印输出控制
+            gnss_eph_data_info_t bdxw;
+            gnss_eph_data_info_t bd2;
+            gnss_eph_data_info_t bd3;
+            gnss_eph_data_info_t bd3cnav2;
+            gnss_eph_data_info_t bd3cnav3;
+            gnss_eph_data_info_t gps;
+            gnss_eph_data_info_t gal;
+            gnss_eph_data_info_t glo;
+        } ephb;
+        struct
+        {
+            gnss_PrintType_t print;    // 打印输出控制
+            gnss_PrintType_t print_ex; // 打印输出控制 extra 经过转译后的数据
+            gnss_nmea_data_info_t gbs;
+            gnss_nmea_data_info_t gga;
+            gnss_nmea_data_info_t gll;
+            gnss_nmea_data_info_t gsa;
+            gnss_nmea_data_info_t gst;
+            gnss_nmea_data_info_t gsv;
+            gnss_nmea_data_info_t rmc;
+            gnss_nmea_data_info_t vtg;
+            gnss_nmea_data_info_t zda;
+        } nmea;
+    } gnss_data_cfg_t;
+
+    typedef struct
+    {
         int fd;                                          //
         gnss_ParseDataType_t parseDataType;              // 解析数据类型
         char data_nmea[MINMEA_MAX_SENTENCE_LENGTH + 16]; //
@@ -91,37 +103,11 @@ extern "C"
         uint8_t data_raw[8192];                          //
         uint16_t data_raw_len;                           //
         gnss_CalcType_t calcType;                        // 定位解算类型
-        gnss_DataType_t dataType;                        // 数据类型
         gnss_SysType_t sysType;                          // 卫星系统类型
-        struct
-        {
-            gnss_PrintType_t nmea;
-            gnss_PrintType_t nmea_raw;
-            gnss_PrintType_t ephb;
-        } print; // 打印输出控制
-        struct
-        {
-            File_cfg_t gpsephb;
-            File_cfg_t bd2ephb;
-            File_cfg_t bd3ephb;
-            File_cfg_t gloephb;
-            File_cfg_t galephb;
-            File_cfg_t bdxwephb;
-            File_cfg_t bd3cnav2ephb;
-            File_cfg_t bd3cnav3ephb;
-
-            File_cfg_t gbs;
-            File_cfg_t gga;
-            File_cfg_t gll;
-            File_cfg_t gsa;
-            File_cfg_t gst;
-            File_cfg_t gsv;
-            File_cfg_t rmc;
-            File_cfg_t vtg;
-            File_cfg_t zda;
-        } file; // 文件存储控制
+        gnss_data_cfg_t data_cfg;                        // 数据输出配置
         pthread_mutex_t fd_mutex;
     } gnss_ctrl_t;
+    
 #pragma pack(1)
     typedef struct
     {
@@ -580,6 +566,7 @@ extern "C"
     void print_prangeb(const PRANGEB_Decoded_t *prange, uint32_t payload_crc_calc);
 
     char *gnss_ephb_info_file_header(char *type, uint8_t enable);
+    char *gnss_nmea_ex_file_header(char *type, uint8_t enable);
     char *gnss_nmea_file_header(char *type, uint8_t enable);
     void bd2ephb_file_append(const BD2EPHB_Decoded_t *eph);
     void bd3ephb_file_append(const BD3EPHB_Decoded_t *eph);

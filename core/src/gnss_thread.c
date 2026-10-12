@@ -27,12 +27,36 @@ gnss_ctrl_t gnss_ctrl = {
     .data_nmea_len = 0,
     .data_raw = {0},
     .data_raw_len = 0,
-    .print = {
+   /*  .print = {
         .nmea = GNSS_PRINT_SUMMARY,
         .ephb = GNSS_PRINT_SUMMARY,
         .nmea_raw = GNSS_PRINT_NONE,
     },
     .file = {.gpsephb = {0}, .bd2ephb = {0}, .bd3ephb = {0}, .gloephb = {0}, .galephb = {0}, .bdxwephb = {0}, .bd3cnav2ephb = {0}, .bd3cnav3ephb = {0}, .gbs = {0}, .gga = {0}, .gll = {0}, .gsa = {0}, .gst = {0}, .gsv = {0}, .rmc = {0}, .vtg = {0}, .zda = {0}},
+     */
+    .data_cfg = {
+        .ephb = {
+            .print = GNSS_PRINT_SUMMARY,
+            .bdxw = {.output = 0, .file = {0}},
+            .bd2 = {.output = 0, .file = {0}},
+            .bd3 = {.output = 0, .file = {0}},
+            .glo = {.output = 0, .file = {0}},
+            .gal = {.output = 0, .file = {0}},
+        },
+        .nmea = {
+            .print = GNSS_PRINT_NONE,
+            .print_ex = GNSS_PRINT_SUMMARY,
+            .gbs = {.output = 0, .file = {0}, .file_ex={0}},
+            .gga = {.output = 0, .file = {0}, .file_ex={0}},
+            .gll = {.output = 0, .file = {0}, .file_ex={0}},
+            .gsa = {.output = 0, .file = {0}, .file_ex={0}},
+            .gst = {.output = 0, .file = {0}, .file_ex={0}},
+            .gsv = {.output = 0, .file = {0}, .file_ex={0}},
+            .rmc = {.output = 0, .file = {0}, .file_ex={0}},
+            .vtg = {.output = 0, .file = {0}, .file_ex={0}},
+            .zda = {.output = 0, .file ={ 0},.file_ex={ 0}},
+        },
+    },
     .fd_mutex = PTHREAD_MUTEX_INITIALIZER,
 };
 
@@ -196,39 +220,39 @@ void gnss_cfg_save()
 void CfgdataType_from_name(char *type, uint8_t enable)
 {
     if (strcasecmp(type, "gbs") == 0)
-        gnss_ctrl.dataType.nmea.gbs = enable;
+        gnss_ctrl.data_cfg.nmea.gbs.output = enable;
     else if (strcasecmp(type, "gga") == 0)
-        gnss_ctrl.dataType.nmea.gga = enable;
+        gnss_ctrl.data_cfg.nmea.gga.output = enable;
     else if (strcasecmp(type, "gll") == 0)
-        gnss_ctrl.dataType.nmea.gll = enable;
+        gnss_ctrl.data_cfg.nmea.gll.output = enable;
     else if (strcasecmp(type, "gsa") == 0)
-        gnss_ctrl.dataType.nmea.gsa = enable;
+        gnss_ctrl.data_cfg.nmea.gsa.output = enable;
     else if (strcasecmp(type, "gst") == 0)
-        gnss_ctrl.dataType.nmea.gst = enable;
+        gnss_ctrl.data_cfg.nmea.gst.output = enable;
     else if (strcasecmp(type, "gsv") == 0)
-        gnss_ctrl.dataType.nmea.gsv = enable;
+        gnss_ctrl.data_cfg.nmea.gsv.output = enable;
     else if (strcasecmp(type, "rmc") == 0)
-        gnss_ctrl.dataType.nmea.rmc = enable;
+        gnss_ctrl.data_cfg.nmea.rmc.output = enable;
     else if (strcasecmp(type, "vtg") == 0)
-        gnss_ctrl.dataType.nmea.vtg = enable;
+        gnss_ctrl.data_cfg.nmea.vtg.output = enable;
     else if (strcasecmp(type, "zda") == 0)
-        gnss_ctrl.dataType.nmea.zda = enable;
+        gnss_ctrl.data_cfg.nmea.zda.output = enable;
     else if (strcasecmp(type, "bdxwephb") == 0)
-        gnss_ctrl.dataType.ephb.bdxw = enable;
+        gnss_ctrl.data_cfg.ephb.bdxw.output = enable;
     else if (strcasecmp(type, "gpsephb") == 0)
-        gnss_ctrl.dataType.ephb.gps = enable;
+        gnss_ctrl.data_cfg.ephb.gps.output = enable;
     else if (strcasecmp(type, "bd2ephb") == 0)
-        gnss_ctrl.dataType.ephb.bd2 = enable;
+        gnss_ctrl.data_cfg.ephb.bd2.output = enable;
     else if (strcasecmp(type, "bd3ephb") == 0)
-        gnss_ctrl.dataType.ephb.bd3 = enable;
+        gnss_ctrl.data_cfg.ephb.bd3.output = enable;
     else if (strcasecmp(type, "bd3cnav2ephb") == 0)
-        gnss_ctrl.dataType.ephb.bd3cnav2 = enable;
+        gnss_ctrl.data_cfg.ephb.bd3cnav2.output = enable;
     else if (strcasecmp(type, "bd3cnav3ephb") == 0)
-        gnss_ctrl.dataType.ephb.bd3cnav3 = enable;
+        gnss_ctrl.data_cfg.ephb.bd3cnav3.output = enable;
     else if (strcasecmp(type, "gloephb") == 0)
-        gnss_ctrl.dataType.ephb.glo = enable;
+        gnss_ctrl.data_cfg.ephb.glo.output = enable;
     else if (strcasecmp(type, "galephb") == 0)
-        gnss_ctrl.dataType.ephb.gal = enable;
+        gnss_ctrl.data_cfg.ephb.gal.output = enable;
 }
 
 /// @brief 配置GNSS模块输出数据类型和频率

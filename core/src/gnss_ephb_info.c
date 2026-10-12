@@ -25,7 +25,7 @@
 
 void GNSS_EPHB_LOG_FULL(const char *format, ...)
 {
-    if (gnss_ctrl.print.ephb == GNSS_PRINT_FULL)
+    if (gnss_ctrl.data_cfg.ephb.print == GNSS_PRINT_FULL)
     {
 
         va_list args;
@@ -634,12 +634,12 @@ char *gnss_ephb_info_file_header(char *type, uint8_t enable)
     time(&nowtime);
     struct tm *nowtm = localtime(&nowtime);
     strftime(time_str, sizeof(time_str), "%Y-%m-%d_%H-%M-%S", nowtm);
-    snprintf(file_path, sizeof(file_path), "/root/%s_%s.csv", type, time_str);
+    snprintf(file_path, sizeof(file_path), "/root/ephb_%s_%s.csv", type, time_str);
     File_cfg_t *ephb_file = NULL;
     FILE *fp = NULL;
     if (strcmp(type, "gpsephb") == 0)
     {
-        ephb_file = &gnss_ctrl.file.gpsephb;
+        ephb_file = &gnss_ctrl.data_cfg.ephb.gps.file;
         if (enable && (fp = fopen(file_path, "w")) && fp != NULL)
         {
             memcpy(ephb_file->path, file_path, sizeof(ephb_file->path));
@@ -654,7 +654,7 @@ char *gnss_ephb_info_file_header(char *type, uint8_t enable)
     }
     else if (strcmp(type, "gloephb") == 0)
     {
-        ephb_file = &gnss_ctrl.file.gloephb;
+        ephb_file = &gnss_ctrl.data_cfg.ephb.glo.file;
         if (enable && (fp = fopen(file_path, "w")) && fp != NULL)
         {
             
@@ -665,7 +665,7 @@ char *gnss_ephb_info_file_header(char *type, uint8_t enable)
     }
     else if (strcmp(type, "galephb") == 0)
     {
-        ephb_file = &gnss_ctrl.file.galephb;
+        ephb_file = &gnss_ctrl.data_cfg.ephb.gal.file;
         if (enable && (fp = fopen(file_path, "w")) && fp != NULL)
         {
             memcpy(ephb_file->path, file_path, sizeof(ephb_file->path));
@@ -675,7 +675,7 @@ char *gnss_ephb_info_file_header(char *type, uint8_t enable)
     }
     else if (strcmp(type, "bd2ephb") == 0)
     {
-        ephb_file = &gnss_ctrl.file.bd2ephb;
+        ephb_file = &gnss_ctrl.data_cfg.ephb.bd2.file;
         if (enable && (fp = fopen(file_path, "w")) && fp != NULL)
         {
             memcpy(ephb_file->path, file_path, sizeof(ephb_file->path));
@@ -685,7 +685,7 @@ char *gnss_ephb_info_file_header(char *type, uint8_t enable)
     }
     else if (strcmp(type, "bd3ephb") == 0)
     {
-        ephb_file = &gnss_ctrl.file.bd3ephb;
+        ephb_file = &gnss_ctrl.data_cfg.ephb.bd3.file;
         if (enable && (fp = fopen(file_path, "w")) && fp != NULL)
         {
             memcpy(ephb_file->path, file_path, sizeof(ephb_file->path));
@@ -695,7 +695,7 @@ char *gnss_ephb_info_file_header(char *type, uint8_t enable)
     }
     else if (strcmp(type, "bdxwephb") == 0)
     {
-        ephb_file = &gnss_ctrl.file.bdxwephb;
+        ephb_file = &gnss_ctrl.data_cfg.ephb.bdxw.file;
         if (enable && (fp = fopen(file_path, "w")) && fp != NULL)
         {
             memcpy(ephb_file->path, file_path, sizeof(ephb_file->path));
@@ -705,7 +705,7 @@ char *gnss_ephb_info_file_header(char *type, uint8_t enable)
     }
     else if (strcmp(type, "bd3cnav2ephb") == 0)
     {
-        ephb_file = &gnss_ctrl.file.bd3cnav2ephb;
+        ephb_file = &gnss_ctrl.data_cfg.ephb.bd3cnav2.file;
         if (enable && (fp = fopen(file_path, "w")) && fp != NULL)
         {
             memcpy(ephb_file->path, file_path, sizeof(ephb_file->path));
@@ -715,7 +715,7 @@ char *gnss_ephb_info_file_header(char *type, uint8_t enable)
     }
     else if (strcmp(type, "bd3cnav3ephb") == 0)
     {
-        ephb_file = &gnss_ctrl.file.bd3cnav3ephb;
+        ephb_file = &gnss_ctrl.data_cfg.ephb.bd3cnav3.file;
         if (enable && (fp = fopen(file_path, "w")) && fp != NULL)
         {
             memcpy(ephb_file->path, file_path, sizeof(ephb_file->path));
@@ -741,7 +741,7 @@ void bd2ephb_file_header()
 
 void bd2ephb_file_append(const BD2EPHB_Decoded_t *eph)
 {
-    File_cfg_t *ephb_file = &gnss_ctrl.file.bd2ephb;
+    File_cfg_t *ephb_file = &gnss_ctrl.data_cfg.ephb.bd2.file;
     FILE *fp = fopen(ephb_file->path, "a");
     if (fp)
     {
@@ -793,7 +793,7 @@ void bd3ephb_file_header()
 void bd3ephb_file_append(const BD3EPHB_Decoded_t *eph)
 {
     
-    File_cfg_t *ephb_file = &gnss_ctrl.file.bd3ephb;
+    File_cfg_t *ephb_file = &gnss_ctrl.data_cfg.ephb.bd3.file;
     FILE *fp = fopen(ephb_file->path, "a");
     if (fp)
     {
@@ -849,7 +849,7 @@ void bdxwephb_file_header()
 
 void bdxwephb_file_append(const BDXWEPHB_Decoded_t *eph)
 {
-    File_cfg_t *ephb_file = &gnss_ctrl.file.bdxwephb;
+    File_cfg_t *ephb_file = &gnss_ctrl.data_cfg.ephb.bdxw.file;
     FILE *fp = fopen(ephb_file->path, "a");
     if (fp)
     {
@@ -898,7 +898,7 @@ void bd3cnav2ephb_file_header()
 
 void bd3cnav2ephb_file_append(const BD3CNAV2EPHB_Decoded_t *eph)
 {
-    File_cfg_t *ephb_file = &gnss_ctrl.file.bd3cnav2ephb;
+    File_cfg_t *ephb_file = &gnss_ctrl.data_cfg.ephb.bd3cnav2.file;
     FILE *fp = fopen(ephb_file->path, "a");
     if (fp)
     {
@@ -954,7 +954,7 @@ void bd3cnav3ephb_file_header()
 
 void bd3cnav3ephb_file_append(const BD3CNAV3EPHB_Decoded_t *eph)
 {
-    File_cfg_t *ephb_file = &gnss_ctrl.file.bd3cnav3ephb;
+    File_cfg_t *ephb_file = &gnss_ctrl.data_cfg.ephb.bd3cnav3.file;
     FILE *fp = fopen(ephb_file->path, "a");
     if (fp)
     {
@@ -998,7 +998,7 @@ void bd3cnav3ephb_file_append(const BD3CNAV3EPHB_Decoded_t *eph)
 
 void gpsephb_file_header()
 {
-    File_cfg_t *ephb_file = &gnss_ctrl.file.gpsephb;
+    File_cfg_t *ephb_file = &gnss_ctrl.data_cfg.ephb.gps.file;
     FILE *f = fopen(ephb_file->path, "w");
     if (f)
     {
@@ -1014,7 +1014,7 @@ void gpsephb_file_header()
 
 void gpsephb_file_header2()
 {
-    File_cfg_t *ephb_file = &gnss_ctrl.file.gpsephb;
+    File_cfg_t *ephb_file = &gnss_ctrl.data_cfg.ephb.gps.file;
     FILE *f = fopen(ephb_file->path, "w");
     if (f)
     {
@@ -1033,7 +1033,7 @@ void gpsephb_file_header2()
 
 void gpsephb_file_append(const GPSEPHB_Decoded_t *eph)
 {
-    File_cfg_t *ephb_file = &gnss_ctrl.file.gpsephb;
+    File_cfg_t *ephb_file = &gnss_ctrl.data_cfg.ephb.gps.file;
     FILE *f = fopen(ephb_file->path, "a+");
     if (f)
     {

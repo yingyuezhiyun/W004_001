@@ -124,31 +124,31 @@ DEFUN(gnss_datatype_off_cfg,
     return CMD_SUCCESS;
 }
 
-DEFUN(show_gnss_datatype,
-      show_gnss_datatype_cmd,
-      "show gnss data type",
+DEFUN(show_gnss_data_out,
+      show_gnss_data_out_cmd,
+      "show gnss data out",
       SHOW_STR
       "gnss ctrl\n"
-      "Show gnss data type\n")
+      "Show gnss data out\n")
 {
-    vty_out(vty, "gnss data type: %s", VTY_NEWLINE);
-    vty_out(vty,"\tgbs: \t\t%s%s", gnss_ctrl.dataType.nmea.gbs ? "on" : "off", VTY_NEWLINE);
-    vty_out(vty, "\tgga: \t\t%s%s", gnss_ctrl.dataType.nmea.gga ? "on" : "off", VTY_NEWLINE);
-    vty_out(vty, "\tgll: \t\t%s%s", gnss_ctrl.dataType.nmea.gll ? "on" : "off", VTY_NEWLINE);
-    vty_out(vty, "\tgsa: \t\t%s%s", gnss_ctrl.dataType.nmea.gsa ? "on" : "off", VTY_NEWLINE);
-    vty_out(vty, "\tgst: \t\t%s%s", gnss_ctrl.dataType.nmea.gst ? "on" : "off", VTY_NEWLINE);
-    vty_out(vty, "\tgsv: \t\t%s%s", gnss_ctrl.dataType.nmea.gsv ? "on" : "off", VTY_NEWLINE);
-    vty_out(vty, "\trmc: \t\t%s%s", gnss_ctrl.dataType.nmea.rmc ? "on" : "off", VTY_NEWLINE);
-    vty_out(vty, "\tvtg: \t\t%s%s", gnss_ctrl.dataType.nmea.vtg ? "on" : "off", VTY_NEWLINE);
-    vty_out(vty, "\tzda: \t\t%s%s", gnss_ctrl.dataType.nmea.zda ? "on" : "off", VTY_NEWLINE);
-    vty_out(vty, "\tbdxwephb: \t%s%s", gnss_ctrl.dataType.ephb.bdxw ? "on" : "off", VTY_NEWLINE);
-    vty_out(vty, "\tgpsephb: \t%s%s", gnss_ctrl.dataType.ephb.gps ? "on" : "off", VTY_NEWLINE);
-    vty_out(vty, "\tbd2ephb: \t%s%s", gnss_ctrl.dataType.ephb.bd2 ? "on" : "off", VTY_NEWLINE);
-    vty_out(vty, "\tbd3ephb: \t%s%s", gnss_ctrl.dataType.ephb.bd3 ? "on" : "off", VTY_NEWLINE);
-    vty_out(vty, "\tbd3cnav2ephb: \t%s%s", gnss_ctrl.dataType.ephb.bd3cnav2 ? "on" : "off", VTY_NEWLINE);
-    vty_out(vty, "\tbd3cnav3ephb: \t%s%s", gnss_ctrl.dataType.ephb.bd3cnav3 ? "on" : "off", VTY_NEWLINE);
-    vty_out(vty, "\tgloephb: \t%s%s", gnss_ctrl.dataType.ephb.glo ? "on" : "off", VTY_NEWLINE);
-    vty_out(vty, "\tgalephb: \t%s%s", gnss_ctrl.dataType.ephb.gal ? "on" : "off", VTY_NEWLINE);
+    vty_out(vty, "gnss data out status: %s", VTY_NEWLINE);
+    vty_out(vty,"\tgbs: \t\t%s%s", gnss_ctrl.data_cfg.nmea.gbs.output ? "on" : "off", VTY_NEWLINE);
+    vty_out(vty, "\tgga: \t\t%s%s", gnss_ctrl.data_cfg.nmea.gga.output ? "on" : "off", VTY_NEWLINE);
+    vty_out(vty, "\tgll: \t\t%s%s", gnss_ctrl.data_cfg.nmea.gll.output ? "on" : "off", VTY_NEWLINE);
+    vty_out(vty, "\tgsa: \t\t%s%s", gnss_ctrl.data_cfg.nmea.gsa.output ? "on" : "off", VTY_NEWLINE);
+    vty_out(vty, "\tgst: \t\t%s%s", gnss_ctrl.data_cfg.nmea.gst.output ? "on" : "off", VTY_NEWLINE);
+    vty_out(vty, "\tgsv: \t\t%s%s", gnss_ctrl.data_cfg.nmea.gsv.output ? "on" : "off", VTY_NEWLINE);
+    vty_out(vty, "\trmc: \t\t%s%s", gnss_ctrl.data_cfg.nmea.rmc.output ? "on" : "off", VTY_NEWLINE);
+    vty_out(vty, "\tvtg: \t\t%s%s", gnss_ctrl.data_cfg.nmea.vtg.output ? "on" : "off", VTY_NEWLINE);
+    vty_out(vty, "\tzda: \t\t%s%s", gnss_ctrl.data_cfg.nmea.zda.output ? "on" : "off", VTY_NEWLINE);
+    vty_out(vty, "\tbdxwephb: \t%s%s", gnss_ctrl.data_cfg.ephb.bdxw.output ? "on" : "off", VTY_NEWLINE);
+    vty_out(vty, "\tgpsephb: \t%s%s", gnss_ctrl.data_cfg.ephb.gps.output ? "on" : "off", VTY_NEWLINE);
+    vty_out(vty, "\tbd2ephb: \t%s%s", gnss_ctrl.data_cfg.ephb.bd2.output ? "on" : "off", VTY_NEWLINE);
+    vty_out(vty, "\tbd3ephb: \t%s%s", gnss_ctrl.data_cfg.ephb.bd3.output ? "on" : "off", VTY_NEWLINE);
+    vty_out(vty, "\tbd3cnav2ephb: \t%s%s", gnss_ctrl.data_cfg.ephb.bd3cnav2.output ? "on" : "off", VTY_NEWLINE);
+    vty_out(vty, "\tbd3cnav3ephb: \t%s%s", gnss_ctrl.data_cfg.ephb.bd3cnav3.output ? "on" : "off", VTY_NEWLINE);
+    vty_out(vty, "\tgloephb: \t%s%s", gnss_ctrl.data_cfg.ephb.glo.output ? "on" : "off", VTY_NEWLINE);
+    vty_out(vty, "\tgalephb: \t%s%s", gnss_ctrl.data_cfg.ephb.gal.output ? "on" : "off", VTY_NEWLINE);
     return CMD_SUCCESS;
 }
 
@@ -212,9 +212,43 @@ DEFUN(gnss_mode_cfg,
     return CMD_SUCCESS;
 }
 
-DEFUN(gnss_file_cfg,
-      gnss_file_cfg_cmd,
-      "gnss file (gbs|gga|gll|gsa|gst|gsv|rmc|vtg|zda|bdxwephb|gpsephb|bd2ephb|bd3ephb|bd3cnav2ephb|bd3cnav3ephb|gloephb|galephb) (on|off)",
+DEFUN(gnss_file_nmea_cfg,
+      gnss_file_nmea_cfg_cmd,
+      "gnss file (nmea|nmea_ex) (gbs|gga|gll|gsa|gst|gsv|rmc|vtg|zda) (on|off)",
+      "gnss file <type> \n"
+      "Set gnss file <type>  on or off\n"
+      "on or off\n")
+{
+    gnss_ctrl.parseDataType = GNSS_DATA_AUTO;
+    uint8_t sw = strcmp(argv[2], "on") == 0;
+    // gnss_cfg_disable_all();
+    usleep(100000);
+    char *file_path;
+    if (strcmp(argv[0],"nmea_ex") == 0)
+    {
+       file_path = gnss_nmea_ex_file_header(argv[1], sw);
+    }
+    else
+    {
+        file_path = gnss_nmea_file_header(argv[1], sw);
+    }
+    
+    if (sw)
+    {
+        vty_out(vty, "set gnss file %s %s to on, file path: %s %s", argv[0], argv[1], file_path, VTY_NEWLINE);
+    }
+    else
+    {
+        vty_out(vty, "set gnss file %s %s to off%s", argv[0], argv[1], VTY_NEWLINE);
+    }
+    return CMD_SUCCESS;
+}
+
+
+
+DEFUN(gnss_file_ephb_cfg,
+      gnss_file_cfg_ephb_cmd,
+      "gnss file ephb (bdxw|gps|bd2|bd3|bd3cnav2|bd3cnav3|glo|gal) (on|off)",
       "gnss file <type> \n"
       "Set gnss file <type>  on or off\n"
       "on or off\n")
@@ -224,32 +258,24 @@ DEFUN(gnss_file_cfg,
     // gnss_cfg_disable_all();
     usleep(100000);
     char *file_path;
-    if (strcmp(argv[0], "gbs") == 0 || strcmp(argv[0], "gga") == 0 ||
-        strcmp(argv[0], "gll") == 0 || strcmp(argv[0], "gsa") == 0 ||
-        strcmp(argv[0], "gst") == 0 || strcmp(argv[0], "gsv") == 0 ||
-        strcmp(argv[0], "rmc") == 0 || strcmp(argv[0], "vtg") == 0 ||
-        strcmp(argv[0], "zda") == 0)
-    {
-        file_path = gnss_nmea_file_header(argv[0], sw);
-    }
-    else
-    {
-        file_path = gnss_ephb_info_file_header(argv[0], sw);
-    }
+    file_path = gnss_ephb_info_file_header(argv[0], sw);
     if (sw)
     {
-        vty_out(vty, "set gnss file %s to on, file path: %s %s", argv[0], file_path, VTY_NEWLINE);
+        vty_out(vty, "set gnss file ephb %s to on, file path: %s %s", argv[0], file_path, VTY_NEWLINE);
     }
     else
     {
-        vty_out(vty, "set gnss file %s to off%s", argv[0], VTY_NEWLINE);
+        vty_out(vty, "set gnss file ephb %s to off%s", argv[0], VTY_NEWLINE);
     }
     return CMD_SUCCESS;
 }
 
+
+
+
 DEFUN(gnss_print_cfg,
       gnss_print_cfg_cmd,
-      "gnss print (nmea|nmea_raw|ephb) (summary|full|none)",
+      "gnss print (nmea|nmea_ex|ephb) (summary|full|none)",
       "gnss print <type> \n"
       "Set gnss print <type> on summary or detail\n"
       "summary | full | none\n")
@@ -270,18 +296,18 @@ DEFUN(gnss_print_cfg,
 
     if (strcmp(argv[0], "nmea") == 0)
     {
-        gnss_ctrl.print.nmea = print_type;
+        gnss_ctrl.data_cfg.nmea.print = print_type;
         vty_out(vty, "set gnss print nmea to %s%s", argv[1], VTY_NEWLINE);
     }
     else if (strcmp(argv[0], "ephb") == 0)
     {
-        gnss_ctrl.print.ephb = print_type;
+        gnss_ctrl.data_cfg.ephb.print = print_type;
         vty_out(vty, "set gnss print ephb to %s%s", argv[1], VTY_NEWLINE);
     }
-    else if (strcmp(argv[0], "nmea_raw") == 0)
+    else if (strcmp(argv[0], "nmea_ex") == 0)
     {
-        gnss_ctrl.print.nmea_raw = print_type;
-        vty_out(vty, "set gnss print nmea_raw to %s%s", argv[1], VTY_NEWLINE);
+        gnss_ctrl.data_cfg.nmea.print_ex = print_type;
+        vty_out(vty, "set gnss print nmea_ex to %s%s", argv[1], VTY_NEWLINE);
     }   
     return CMD_SUCCESS;
 }
@@ -455,7 +481,7 @@ void tty_init(void)
     install_element(ENABLE_NODE, &gnss_datatype_onchange_cfg_cmd);
     install_element(RADIO_NODE, &gnss_datatype_onchange_cfg_cmd);
 
-    install_element(ENABLE_NODE, &show_gnss_datatype_cmd);
+    install_element(ENABLE_NODE, &show_gnss_data_out_cmd);
 
     install_element(ENABLE_NODE, &gnss_parse_data_type_cfg_cmd);
     install_element(RADIO_NODE, &gnss_parse_data_type_cfg_cmd);
@@ -463,8 +489,11 @@ void tty_init(void)
     install_element(ENABLE_NODE, &gnss_mode_cfg_cmd);
     install_element(RADIO_NODE, &gnss_mode_cfg_cmd);
 
-    install_element(ENABLE_NODE, &gnss_file_cfg_cmd);
-    install_element(RADIO_NODE, &gnss_file_cfg_cmd);
+    install_element(ENABLE_NODE, &gnss_file_nmea_cfg_cmd);
+    install_element(RADIO_NODE, &gnss_file_nmea_cfg_cmd);
+    install_element(ENABLE_NODE, &gnss_file_cfg_ephb_cmd);
+    install_element(RADIO_NODE, &gnss_file_cfg_ephb_cmd);
+
 
     install_element(ENABLE_NODE, &gnss_print_cfg_cmd);
     install_element(RADIO_NODE, &gnss_print_cfg_cmd);
