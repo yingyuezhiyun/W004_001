@@ -259,7 +259,7 @@ void CfgdataType_from_name(char *type, uint8_t enable)
 /// @param type NMEA sentence type, e.g. "RMC", "GGA", "GLL", "GSA", "GST", "GSV", "VTG", "ZDA" , "GBS" ,"HDT", "NTR", "ORI", "ROT", "TRA", "DTM"
 /// @param enable 0 to disable, 1 to enable
 /// @param per_second > 0 , number of sentences to output per second
-void gnss_cfg_dataType(char *type, uint8_t enable, uint8_t per_second)
+void gnss_cfg_data(char *type, uint8_t enable, uint8_t per_second)
 {
 
     char buff[128];
@@ -287,7 +287,7 @@ void gnss_cfg_dataType(char *type, uint8_t enable, uint8_t per_second)
 
 /// @brief 配置GNSS模块输出数据类型的变化触发事件
 /// @param type 
-void gnss_cfg_dataType_onchange(char *type)
+void gnss_cfg_data_onchange(char *type)
 {
 
     char buff[128];
@@ -364,7 +364,7 @@ void gnss_cfg_disable_out()
 /// @param workMode 工作模式 BASE:基准站模式 ROVER:流动站模式
 /// @param calcType 解算类型 RTD/RTK/PPP/DPPP/FPPP
 /// @param freqCode 工作频点代码 1：全频点模式  2：低功耗模式 10：高性能模式 13：导航增强模式
-void gnss_cfg_mode(char *workMode, char *calcType, uint8_t freqCode)
+void gnss_cfg_calcType_ex(char *workMode, char *calcType, uint8_t freqCode)
 {
     char buff[128];
     snprintf(buff, sizeof(buff), "CSHG MODE %s %s %d \r\n", workMode, calcType, freqCode);
@@ -398,6 +398,70 @@ void gnss_cfg_mode(char *workMode, char *calcType, uint8_t freqCode)
     }
 }
 
+void gnss_cfg_calcType(char *calcType)
+{
+    char buff[128];
+    if (strcasecmp(calcType, "ppp") == 0)
+    {
+        snprintf(buff, sizeof(buff), "CSHG MODE rover %s 13 \r\n", calcType);
+        gnss_dev_write(buff, strlen(buff));
+        gnss_ctrl.calcType = GNSS_CALC_PPP;
+    }
+    else if (strcasecmp(calcType, "fppp") == 0)
+    {
+        snprintf(buff, sizeof(buff), "CSHG MODE rover %s 13 \r\n", calcType);
+        gnss_dev_write(buff, strlen(buff));
+        gnss_ctrl.calcType = GNSS_CALC_FPPP;
+    }
+    else if (strcasecmp(calcType, "rtk") == 0)
+    {
+        snprintf(buff, sizeof(buff), "CSHG MODE rover %s 13 \r\n", calcType);
+        gnss_dev_write(buff, strlen(buff));
+        gnss_ctrl.calcType = GNSS_CALC_RTK;
+    }
+    else if (strcasecmp(calcType, "rtd") == 0)
+    {
+        snprintf(buff, sizeof(buff), "CSHG MODE rover %s 13 \r\n", calcType);
+        gnss_dev_write(buff, strlen(buff));
+        gnss_ctrl.calcType = GNSS_CALC_RTD;
+    }
+    else if (strcasecmp(calcType, "dppp") == 0)
+    {
+        snprintf(buff, sizeof(buff), "CSHG MODE rover %s 13 \r\n", calcType);
+        gnss_dev_write(buff, strlen(buff));
+        gnss_ctrl.calcType = GNSS_CALC_DPPP;
+    }
+    else if (strcasecmp(calcType, "bds_ppp") == 0)
+    {
+        snprintf(buff, sizeof(buff), "CSHG MODE rover ppp 13 \r\n");
+        gnss_dev_write(buff, strlen(buff));
+        sleep(3);
+        snprintf(buff, sizeof(buff), "CSHG SYSEN bds ON \r\n");
+        gnss_dev_write(buff, strlen(buff));
+        gnss_ctrl.calcType = GNSS_CALC_BDS_PPP;
+    }
+    else if (strcasecmp(calcType, "bds_rtk") == 0)
+    {
+        snprintf(buff, sizeof(buff), "CSHG MODE rover rtk 13 \r\n");
+        gnss_dev_write(buff, strlen(buff));
+        sleep(3);
+        snprintf(buff, sizeof(buff), "CSHG SYSEN bds ON \r\n");
+        gnss_dev_write(buff, strlen(buff));
+        gnss_ctrl.calcType = GNSS_CALC_BDS_RTK;
+    }
+    else if (strcasecmp(calcType, "bds_rtd") == 0)
+    {
+        snprintf(buff, sizeof(buff), "CSHG MODE rover rtd 13 \r\n");
+        gnss_dev_write(buff, strlen(buff));
+        sleep(3);
+        snprintf(buff, sizeof(buff), "CSHG SYSEN bds ON \r\n");
+        gnss_dev_write(buff, strlen(buff));
+        gnss_ctrl.calcType = GNSS_CALC_BDS_RTD;
+    }
+    
+
+}
+
 void *gnss_thread_func(void *arg)
 {
     (void)arg;
@@ -429,31 +493,31 @@ void *gnss_thread_func(void *arg)
     usleep(100000); // Sleep for 100 milliseconds
 
     gnss_ctrl.parseDataType = GNSS_DATA_AUTO;
-    gnss_cfg_mode("ROVER", "FPPP", 13);
+    gnss_cfg_calcType_ex("ROVER", "FPPP", 13);
     sleep(2);
-    gnss_cfg_dataType("RMC", 1, 1);
+    gnss_cfg_data("RMC", 1, 1);
     // usleep(100000); // Sleep for 100 milliseconds
-    // gnss_cfg_dataType( "GGA", 1, 1);
+    // gnss_cfg_data( "GGA", 1, 1);
     // usleep(100000); // Sleep for 100 milliseconds
-    // gnss_cfg_dataType( "GSA", 1, 1);
+    // gnss_cfg_data( "GSA", 1, 1);
     // usleep(100000); // Sleep for 100 milliseconds
-    // gnss_cfg_dataType( "GST", 1, 1);
+    // gnss_cfg_data( "GST", 1, 1);
 
-    // gnss_cfg_dataType_onchange("GPSEPHB");
-    // gnss_cfg_dataType( "GPSEPHB", 1, 1);
+    // gnss_cfg_data_onchange("GPSEPHB");
+    // gnss_cfg_data( "GPSEPHB", 1, 1);
     // gpsephb_file_header();
-    // gnss_cfg_dataType( "BD2EPHB", 1, 1);
-    // gnss_cfg_dataType( "BD3EPHB", 1, 1);
-    // gnss_cfg_dataType( "GLOEPHB", 1, 1);//todo 无数据
-    // gnss_cfg_dataType( "GALEPHB", 1, 1);
-    // gnss_cfg_dataType( "BD3CANV1EPHB", 1, 1); // todo 无数据
-    // gnss_cfg_dataType( "BD3CANV2EPHB", 1, 1);//todo 无数据
-    // gnss_cfg_dataType( "BD3CNAV3EPHB", 1, 1);//todo 无数据 解析错误
-    // gnss_cfg_dataType( "PRANGEB", 1, 1);//
+    // gnss_cfg_data( "BD2EPHB", 1, 1);
+    // gnss_cfg_data( "BD3EPHB", 1, 1);
+    // gnss_cfg_data( "GLOEPHB", 1, 1);//todo 无数据
+    // gnss_cfg_data( "GALEPHB", 1, 1);
+    // gnss_cfg_data( "BD3CANV1EPHB", 1, 1); // todo 无数据
+    // gnss_cfg_data( "BD3CANV2EPHB", 1, 1);//todo 无数据
+    // gnss_cfg_data( "BD3CNAV3EPHB", 1, 1);//todo 无数据 解析错误
+    // gnss_cfg_data( "PRANGEB", 1, 1);//
     // char *enable_ins = "CSHG INS ON\r\n"; // 启用组合导航功能
     // gnss_dev_write(enable_ins, strlen(enable_ins));
-    // gnss_cfg_dataType("POSDATAB", 1, 1);//最优定位信息输出
-    // gnss_cfg_dataType("BDXWEPHB", 1, 1);
+    // gnss_cfg_data("POSDATAB", 1, 1);//最优定位信息输出
+    // gnss_cfg_data("BDXWEPHB", 1, 1);
     char buf[4096];
 
     while (1)

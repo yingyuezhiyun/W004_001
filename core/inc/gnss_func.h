@@ -23,11 +23,14 @@ extern "C"
 
     typedef enum
     {
-        GNSS_CALC_PPP,
         GNSS_CALC_FPPP,
+        GNSS_CALC_DPPP,
+        GNSS_CALC_PPP,
         GNSS_CALC_RTK,
         GNSS_CALC_RTD,
-        GNSS_CALC_DPPP,
+        GNSS_CALC_BDS_PPP,
+        GNSS_CALC_BDS_RTK,
+        GNSS_CALC_BDS_RTD,
     } gnss_CalcType_t;
 
     typedef struct
@@ -539,9 +542,10 @@ extern "C"
     int handle_gnss_raw(const uint8_t *data, size_t len);
     int gnss_dev_write(const void *buf, size_t count);
     void gnss_cfg_disable_out();
-    void gnss_cfg_dataType_onchange(char *type);
-    void gnss_cfg_dataType(char *type, uint8_t enable, uint8_t per_second);
-    void gnss_cfg_mode(char *workMode, char *calcType, uint8_t freqCode);
+    void gnss_cfg_data_onchange(char *type);
+    void gnss_cfg_data(char *type, uint8_t enable, uint8_t per_second);
+    void gnss_cfg_calcType(char *calcType);
+    void gnss_cfg_calcType_ex(char *workMode, char *calcType, uint8_t freqCode);
     void gnss_cfg_sys(char *sys, uint8_t enable);
     void gnss_reset();
     void gnss_cfg_save();

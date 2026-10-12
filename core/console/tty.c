@@ -78,26 +78,26 @@ DEFUN(gnss_parse_data_type_cfg,
 
 DEFUN(gnss_datatype_onchange_cfg,
       gnss_datatype_onchange_cfg_cmd,
-      "gnss (" GNSS_TYPE ") onchange",
+      "gnss data (" GNSS_TYPE ") onchange",
       "gnss ctrl\n"
       "Set gnss <type> on or off\n"
       "on or off\n")
 {
-    gnss_cfg_dataType_onchange(argv[0]);
+    gnss_cfg_data_onchange(argv[0]);
     vty_out(vty, "set gnss type %s to onchange%s", argv[0], VTY_NEWLINE);
     return CMD_SUCCESS;
 }
 
 DEFUN(gnss_datatype_cfg,
       gnss_datatype_cfg_cmd,
-      "gnss (" GNSS_TYPE ") on <1-10>",
+      "gnss data (" GNSS_TYPE ") on <1-10>",
       "gnss ctrl\n"
       "Set gnss <type> on or off\n"
       "on or off\n")
 {
 
     int per_second = atoi(argv[1]);
-    gnss_cfg_dataType(argv[0], 1, per_second);
+    gnss_cfg_data(argv[0], 1, per_second);
     vty_out(vty, "set gnss type %s to on %d/s%s", argv[0], per_second, VTY_NEWLINE);
 
     return CMD_SUCCESS;
@@ -106,7 +106,7 @@ DEFUN(gnss_datatype_cfg,
 
 DEFUN(gnss_datatype_off_cfg,
       gnss_datatype_off_cfg_cmd,
-      "gnss (" GNSS_TYPE "|all) off",
+      "gnss data (" GNSS_TYPE "|all) off",
       "gnss ctrl\n"
       "Set gnss <type> on or off\n"
       "on or off\n")
@@ -118,7 +118,7 @@ DEFUN(gnss_datatype_off_cfg,
     }
     else
     {
-        gnss_cfg_dataType(argv[0], 0, 0);
+        gnss_cfg_data(argv[0], 0, 0);
         vty_out(vty, "set gnss type %s to off%s", argv[0], VTY_NEWLINE);
     }
     return CMD_SUCCESS;
@@ -206,8 +206,23 @@ DEFUN(gnss_mode_cfg,
     char *workMode = argv[0];
     char *calcType = argv[1];
     uint8_t freqCode = atoi(argv[2]);
-    gnss_cfg_mode(workMode, calcType, freqCode);
+    gnss_cfg_calcType_ex(workMode, calcType, freqCode);
     vty_out(vty, "set gnss mode to %s %s freq code %d%s", workMode, calcType, freqCode, VTY_NEWLINE);
+    vty_out(vty, "\033[1;33mNote: the module will restart after setting mode, please re-enable the desired data output%s\033[0m", VTY_NEWLINE);
+    return CMD_SUCCESS;
+}
+
+DEFUN(gnss_calc_type_cfg,
+      gnss_calc_type_cfg_cmd,
+      "gnss calc (rtd|rtk|ppp|dppp|fppp|bds_ppp|bds_rtk|bds_rtd)",
+      "gnss ctrl\n"
+      "Set gnss calculation type\n"
+      "Calculation type\n")
+{
+    char *calcType = argv[0];
+    vty_out(vty, "start to set gnss calculation type to %s%s", calcType, VTY_NEWLINE);
+    gnss_cfg_calcType(calcType);
+    vty_out(vty, "set gnss calculation type to %s%s", calcType, VTY_NEWLINE);
     vty_out(vty, "\033[1;33mNote: the module will restart after setting mode, please re-enable the desired data output%s\033[0m", VTY_NEWLINE);
     return CMD_SUCCESS;
 }
@@ -367,7 +382,7 @@ DEFUN(gnss_freset,
 
 DEFUN(gnss_cfgSave,
       gnss_cfgSave_cmd,
-      "gnss cfg save",
+      "gnss save cfg",
       "gnss cfg save\n"
       "Save gnss module config\n")
 {
@@ -488,6 +503,9 @@ void tty_init(void)
 
     install_element(ENABLE_NODE, &gnss_mode_cfg_cmd);
     install_element(RADIO_NODE, &gnss_mode_cfg_cmd);
+
+    install_element(ENABLE_NODE, &gnss_calc_type_cfg_cmd);
+    install_element(RADIO_NODE, &gnss_calc_type_cfg_cmd);
 
     install_element(ENABLE_NODE, &gnss_file_nmea_cfg_cmd);
     install_element(RADIO_NODE, &gnss_file_nmea_cfg_cmd);
